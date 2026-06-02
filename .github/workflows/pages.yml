@@ -35,7 +35,7 @@ jobs:
 
       - name: Build
         env:
-          BASE_PATH: /chronicle-wiki/
+          BASE_PATH: /
         run: pnpm build
 
       - name: Publish gh-pages branch
