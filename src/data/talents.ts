@@ -7,6 +7,8 @@ export interface TalentEntry {
   tabIndex: number;
   spellRanks: number[];
   iconTexture: string;
+  prereqTalent?: number[];
+  prereqRank?: number[];
 }
 
 export interface TalentTabData {

@@ -1,10 +1,92 @@
 import { useMemo, useState } from "react";
-import type { ClassTalentData, TalentEntry, TalentTabData } from "@/data/talents";
-import { iconUrl } from "@/lib/icons";
-import { cn } from "@/lib/utils";
-import type { ResolvedServerContext } from "@/types";
+import type { ClassTalentData, TalentEntry, TalentTabData } from "../data/talents";
+import { iconUrl } from "../lib/icons";
+import { cn } from "../lib/utils";
+import type { ResolvedServerContext } from "../types";
 
 export type TalentRanks = Record<number, number>;
+
+type TalentPrereqArrow = {
+  from: TalentEntry;
+  to: TalentEntry;
+  requiredRank: number;
+};
+
+const TALENT_CELL_SIZE = 56;
+const TALENT_GRID_GAP = 16;
+const TALENT_BUTTON_SIZE = 44;
+const TALENT_GRID_COLUMNS = 4;
+const TALENT_GRID_ROWS = 7;
+
+const TALENT_GRID_WIDTH = TALENT_GRID_COLUMNS * TALENT_CELL_SIZE + (TALENT_GRID_COLUMNS - 1) * TALENT_GRID_GAP;
+const TALENT_GRID_HEIGHT = TALENT_GRID_ROWS * TALENT_CELL_SIZE + (TALENT_GRID_ROWS - 1) * TALENT_GRID_GAP;
+
+export function prerequisiteArrows(talents: TalentEntry[]): TalentPrereqArrow[] {
+  const byId = new Map(talents.map((talent) => [talent.id, talent]));
+  return talents.flatMap((talent) =>
+    (talent.prereqTalent ?? []).flatMap((prereqId, index) => {
+      const from = byId.get(prereqId);
+      if (!from) return [];
+      return [{ from, to: talent, requiredRank: talent.prereqRank?.[index] ?? from.maxRank }];
+    }),
+  );
+}
+
+function talentCenter(talent: Pick<TalentEntry, "tierID" | "columnIndex">) {
+  return {
+    x: talent.columnIndex * (TALENT_CELL_SIZE + TALENT_GRID_GAP) + TALENT_CELL_SIZE / 2,
+    y: talent.tierID * (TALENT_CELL_SIZE + TALENT_GRID_GAP) + TALENT_CELL_SIZE / 2,
+  };
+}
+
+function TalentPrereqArrows({ arrows, ranks }: { arrows: TalentPrereqArrow[]; ranks: TalentRanks }) {
+  if (arrows.length === 0) return null;
+
+  const buttonEdge = TALENT_BUTTON_SIZE / 2;
+  return (
+    <svg
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-4 z-0 overflow-visible"
+      viewBox={`0 0 ${TALENT_GRID_WIDTH} ${TALENT_GRID_HEIGHT}`}
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <marker id="talent-prereq-arrow-active" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L8 4 L0 8 Z" className="fill-amber-300" />
+        </marker>
+        <marker id="talent-prereq-arrow-inactive" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L8 4 L0 8 Z" className="fill-zinc-600" />
+        </marker>
+      </defs>
+      {arrows.map(({ from, to, requiredRank }) => {
+        const fromPoint = talentCenter(from);
+        const toPoint = talentCenter(to);
+        const active = (ranks[from.id] ?? 0) >= requiredRank;
+        const strokeClass = active ? "stroke-amber-300 drop-shadow-[0_0_6px_rgba(252,211,77,0.55)]" : "stroke-zinc-600";
+        const marker = active ? "url(#talent-prereq-arrow-active)" : "url(#talent-prereq-arrow-inactive)";
+        const startY = fromPoint.y + buttonEdge;
+        const endY = toPoint.y - buttonEdge;
+        const midY = startY + Math.max(12, (endY - startY) / 2);
+        const points = fromPoint.x === toPoint.x
+          ? `${fromPoint.x},${startY} ${toPoint.x},${endY}`
+          : `${fromPoint.x},${startY} ${fromPoint.x},${midY} ${toPoint.x},${midY} ${toPoint.x},${endY}`;
+
+        return (
+          <polyline
+            key={`${from.id}-${to.id}`}
+            points={points}
+            fill="none"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            markerEnd={marker}
+            className={cn("transition", strokeClass)}
+          />
+        );
+      })}
+    </svg>
+  );
+}
 
 function TalentButton({ talent, rank, context, onChange }: { talent: TalentEntry; rank: number; context: ResolvedServerContext; onChange: (rank: number) => void }) {
   const maxed = rank >= talent.maxRank;
@@ -39,6 +121,7 @@ function TalentButton({ talent, rank, context, onChange }: { talent: TalentEntry
 
 function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; ranks: TalentRanks; context: ResolvedServerContext; onRankChange: (talent: TalentEntry, rank: number) => void }) {
   const points = useMemo(() => tab.talents.reduce((sum, talent) => sum + (ranks[talent.id] ?? 0), 0), [tab.talents, ranks]);
+  const arrows = useMemo(() => prerequisiteArrows(tab.talents), [tab.talents]);
   return (
     <section className="wiki-card p-4">
       <div className="mb-4 flex items-center justify-between">
@@ -50,17 +133,20 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-4 rounded-lg border border-white/5 bg-black/25 p-4">
-        {Array.from({ length: 7 }).map((_, tier) =>
-          Array.from({ length: 4 }).map((__, col) => {
-            const talent = tab.talents.find((candidate) => candidate.tierID === tier && candidate.columnIndex === col);
-            return (
-              <div key={`${tier}-${col}`} className="flex h-14 items-center justify-center">
-                {talent && <TalentButton talent={talent} rank={ranks[talent.id] ?? 0} context={context} onChange={(rank) => onRankChange(talent, rank)} />}
-              </div>
-            );
-          }),
-        )}
+      <div className="relative mx-auto w-[19rem] overflow-visible rounded-lg border border-white/5 bg-black/25 p-4">
+        <TalentPrereqArrows arrows={arrows} ranks={ranks} />
+        <div className="relative z-10 grid w-[17rem] grid-cols-4 gap-4">
+          {Array.from({ length: TALENT_GRID_ROWS }).map((_, tier) =>
+            Array.from({ length: TALENT_GRID_COLUMNS }).map((__, col) => {
+              const talent = tab.talents.find((candidate) => candidate.tierID === tier && candidate.columnIndex === col);
+              return (
+                <div key={`${tier}-${col}`} className="flex h-14 items-center justify-center">
+                  {talent && <TalentButton talent={talent} rank={ranks[talent.id] ?? 0} context={context} onChange={(rank) => onRankChange(talent, rank)} />}
+                </div>
+              );
+            }),
+          )}
+        </div>
       </div>
     </section>
   );
