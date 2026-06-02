@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: Publish GitHub Pages branch
 
 on:
   push:
@@ -6,16 +6,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,18 +38,19 @@ jobs:
           BASE_PATH: /chronicle-wiki/
         run: pnpm build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish gh-pages branch
+        run: |
+          set -euo pipefail
+          touch dist/.nojekyll
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages || true
+          rm -rf /tmp/chronicle-wiki-pages
+          mkdir -p /tmp/chronicle-wiki-pages
+          cp -a dist/. /tmp/chronicle-wiki-pages/
+          git checkout --orphan gh-pages-worktree
+          git rm -rf . >/dev/null 2>&1 || true
+          cp -a /tmp/chronicle-wiki-pages/. .
+          git add .
+          git commit -m "deploy: publish GitHub Pages artifact"
+          git push -f origin HEAD:gh-pages
