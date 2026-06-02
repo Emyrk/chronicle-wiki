@@ -49,8 +49,8 @@ jobs:
           mkdir -p /tmp/chronicle-wiki-pages
           cp -a dist/. /tmp/chronicle-wiki-pages/
           git checkout --orphan gh-pages-worktree
-          git rm -rf . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a /tmp/chronicle-wiki-pages/. .
-          git add .
+          git add -A
           git commit -m "deploy: publish GitHub Pages artifact"
           git push -f origin HEAD:gh-pages
