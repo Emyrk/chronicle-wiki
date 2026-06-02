@@ -25,7 +25,6 @@ export interface WikiFlavor {
   name: string;
   expansion: Expansion;
   clientVersion: string;
-  defaultDatasetId?: string;
   maxLevel: number;
   maxTalentPoints: number;
   fallbackFlavor?: string;

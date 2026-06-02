@@ -1,5 +1,5 @@
-import { fallbackTalentTrees, type TalentTreeJSON } from "@/data/talents";
-import type { ResolvedServerContext, SpellRef } from "@/types";
+import { fallbackTalentTrees, type TalentTreeJSON } from "../data/talents";
+import type { ResolvedServerContext, SpellRef } from "../types";
 
 export function apiUrl(context: ResolvedServerContext, path: string) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
@@ -7,10 +7,7 @@ export function apiUrl(context: ResolvedServerContext, path: string) {
 }
 
 export async function fetchTalentTrees(context: ResolvedServerContext): Promise<{ data: TalentTreeJSON; source: "remote" | "fallback" }> {
-  const params = context.flavor.defaultDatasetId
-    ? `?dataset_id=${encodeURIComponent(context.flavor.defaultDatasetId)}`
-    : "";
-  const url = apiUrl(context, `/api/v1/wowdb/talent-trees${params}`);
+  const url = apiUrl(context, "/api/v1/wowdb/talent-trees");
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -24,10 +21,7 @@ export async function fetchTalentTrees(context: ResolvedServerContext): Promise<
 
 export async function fetchSpell(context: ResolvedServerContext, spellId: number): Promise<SpellRef | undefined> {
   if (spellId <= 0) return undefined;
-  const params = context.flavor.defaultDatasetId
-    ? `?dataset_id=${encodeURIComponent(context.flavor.defaultDatasetId)}`
-    : "";
-  const url = apiUrl(context, `/api/v1/wowdb/spell/${spellId}${params}`);
+  const url = apiUrl(context, `/api/v1/wowdb/spell/${spellId}`);
   try {
     const response = await fetch(url);
     if (!response.ok) return undefined;
