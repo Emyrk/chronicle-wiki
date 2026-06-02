@@ -14,7 +14,6 @@ export interface WikiServer {
   bannerUrl: string;
   flavor: string;
   iconBucket: string;
-  donationUrl?: string;
   theme: {
     primary: string;
     accent: string;
