@@ -13,7 +13,7 @@ Routes use the server/community slug, then resolve to a shared flavor/dataset un
 
 ## MVP scope
 
-- Talent calculator powered by the selected server's Chronicle talent-tree API, with local fixtures as a fallback.
+- Talent calculator powered by the selected server's Chronicle talent-tree API, with local fixtures as a fallback. See `docs/talent-builder-regression.md` for the parsing and unlock regression contract.
 - Molten Core guide shell for legacy Vanilla, Vanilla+, and Turtle WoW.
 - Unit explorer showing Molten Core creatures and spells cast, structured so log-derived spell lists can be dropped in later.
 - Static content and static overrides first. No database yet.
