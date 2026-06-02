@@ -32,6 +32,46 @@ export function prerequisiteArrows(talents: TalentEntry[]): TalentPrereqArrow[] 
   );
 }
 
+export function rowPointRequirement(talent: Pick<TalentEntry, "tierID">) {
+  return talent.tierID * 5;
+}
+
+function pointsSpentBeforeRow(talents: TalentEntry[], ranks: TalentRanks, tierID: number) {
+  return talents.reduce((sum, talent) => {
+    if (talent.tierID >= tierID) return sum;
+    return sum + (ranks[talent.id] ?? 0);
+  }, 0);
+}
+
+function prerequisitesMet(talent: TalentEntry, talents: TalentEntry[], ranks: TalentRanks) {
+  const byId = new Map(talents.map((candidate) => [candidate.id, candidate]));
+  return (talent.prereqTalent ?? []).every((prereqId, index) => {
+    const prereq = byId.get(prereqId);
+    if (!prereq) return true;
+    const requiredRank = talent.prereqRank?.[index] ?? prereq.maxRank;
+    return (ranks[prereq.id] ?? 0) >= requiredRank;
+  });
+}
+
+export function canUseTalent(talent: TalentEntry, talents: TalentEntry[], ranks: TalentRanks) {
+  return pointsSpentBeforeRow(talents, ranks, talent.tierID) >= rowPointRequirement(talent) && prerequisitesMet(talent, talents, ranks);
+}
+
+function spentTalentsStillValid(talents: TalentEntry[], ranks: TalentRanks) {
+  return talents.every((talent) => (ranks[talent.id] ?? 0) === 0 || canUseTalent(talent, talents, ranks));
+}
+
+export function updateTalentRank(talent: TalentEntry, requestedRank: number, talents: TalentEntry[], ranks: TalentRanks): TalentRanks {
+  const currentRank = ranks[talent.id] ?? 0;
+  const nextRank = Math.max(0, Math.min(talent.maxRank, requestedRank));
+  if (nextRank === currentRank) return ranks;
+  if (nextRank > currentRank && !canUseTalent(talent, talents, ranks)) return ranks;
+
+  const nextRanks = { ...ranks, [talent.id]: nextRank };
+  if (nextRank < currentRank && !spentTalentsStillValid(talents, nextRanks)) return ranks;
+  return nextRanks;
+}
+
 function talentCenter(talent: Pick<TalentEntry, "tierID" | "columnIndex">) {
   return {
     x: talent.columnIndex * (TALENT_CELL_SIZE + TALENT_GRID_GAP) + TALENT_CELL_SIZE / 2,
@@ -88,12 +128,16 @@ function TalentPrereqArrows({ arrows, ranks }: { arrows: TalentPrereqArrow[]; ra
   );
 }
 
-function TalentButton({ talent, rank, context, onChange }: { talent: TalentEntry; rank: number; context: ResolvedServerContext; onChange: (rank: number) => void }) {
+function TalentButton({ talent, rank, locked, context, onChange }: { talent: TalentEntry; rank: number; locked: boolean; context: ResolvedServerContext; onChange: (rank: number) => void }) {
   const maxed = rank >= talent.maxRank;
+  const title = locked
+    ? `${talent.name} locked: spend ${rowPointRequirement(talent)} points in this tree and complete prerequisite arrows first`
+    : `${talent.name} (${rank}/${talent.maxRank})`;
   return (
     <button
       type="button"
-      title={`${talent.name} (${rank}/${talent.maxRank})`}
+      title={title}
+      aria-disabled={locked}
       onClick={(event) => {
         if (event.shiftKey || event.metaKey) onChange(Math.max(0, rank - 1));
         else onChange(Math.min(talent.maxRank, rank + 1));
@@ -102,9 +146,13 @@ function TalentButton({ talent, rank, context, onChange }: { talent: TalentEntry
         event.preventDefault();
         onChange(Math.max(0, rank - 1));
       }}
-      className="group relative h-11 w-11 rounded border border-zinc-600 bg-zinc-950 shadow-lg transition hover:scale-105 hover:border-primary"
+      className={cn(
+        "group relative h-11 w-11 rounded border bg-zinc-950 shadow-lg transition",
+        locked ? "cursor-not-allowed border-zinc-800 opacity-45" : "border-zinc-600 hover:scale-105 hover:border-primary",
+      )}
     >
-      <img src={iconUrl(talent.iconTexture, context)} alt="" className={cn("h-full w-full rounded object-cover", rank === 0 && "grayscale opacity-45")} />
+      <img src={iconUrl(talent.iconTexture, context)} alt="" className={cn("h-full w-full rounded object-cover", (rank === 0 || locked) && "grayscale opacity-45")} />
+      {locked && <span className="absolute inset-0 rounded bg-black/35" />}
       <span className={cn(
         "absolute -bottom-1 -right-1 rounded px-1 text-[10px] font-bold",
         maxed ? "bg-amber-400 text-black" : rank > 0 ? "bg-green-600 text-white" : "bg-zinc-700 text-zinc-300",
@@ -141,7 +189,15 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
               const talent = tab.talents.find((candidate) => candidate.tierID === tier && candidate.columnIndex === col);
               return (
                 <div key={`${tier}-${col}`} className="flex h-14 items-center justify-center">
-                  {talent && <TalentButton talent={talent} rank={ranks[talent.id] ?? 0} context={context} onChange={(rank) => onRankChange(talent, rank)} />}
+                  {talent && (
+                    <TalentButton
+                      talent={talent}
+                      rank={ranks[talent.id] ?? 0}
+                      locked={(ranks[talent.id] ?? 0) === 0 && !canUseTalent(talent, tab.talents, ranks)}
+                      context={context}
+                      onChange={(rank) => onRankChange(talent, rank)}
+                    />
+                  )}
                 </div>
               );
             }),
@@ -171,7 +227,7 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
             tab={tab}
             ranks={ranks}
             context={context}
-            onRankChange={(talent, rank) => setRanks((current) => ({ ...current, [talent.id]: rank }))}
+            onRankChange={(talent, rank) => setRanks((current) => updateTalentRank(talent, rank, tab.talents, current))}
           />
         ))}
       </div>
