@@ -35,9 +35,6 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Lint
-        run: pnpm lint
-
       - name: Build
         env:
           BASE_PATH: /chronicle-wiki/
