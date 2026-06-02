@@ -1,7 +1,7 @@
 import type { ResolvedServerContext } from "@/types";
 
 export function iconBucketForContext(context: ResolvedServerContext) {
-  return context.server.iconBucket ?? context.flavor.iconBucket ?? "azerothcore";
+  return context.server.iconBucket;
 }
 
 export function iconUrl(texture: string, context: ResolvedServerContext) {

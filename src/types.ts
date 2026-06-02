@@ -13,7 +13,8 @@ export interface WikiServer {
   logoUrl: string;
   bannerUrl: string;
   flavor: string;
-  iconBucket?: string;
+  iconBucket: string;
+  donationUrl?: string;
   theme: {
     primary: string;
     accent: string;
@@ -26,7 +27,6 @@ export interface WikiFlavor {
   expansion: Expansion;
   clientVersion: string;
   defaultDatasetId?: string;
-  iconBucket?: string;
   maxLevel: number;
   maxTalentPoints: number;
   fallbackFlavor?: string;

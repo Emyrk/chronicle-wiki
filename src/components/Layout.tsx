@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useParams } from "react-router-dom";
 import { BookOpen, ExternalLink, Home, Search, TreePine } from "lucide-react";
-import { resolveServerContext, serverList } from "@/data/servers";
+import { resolveServerContext } from "@/data/servers";
+import { SiteFooter } from "@/components/SiteFooter";
 import { cn } from "@/lib/utils";
 
 export function Layout() {
@@ -67,9 +68,7 @@ export function Layout() {
       <main className="mx-auto max-w-7xl px-4 py-8">
         <Outlet />
       </main>
-      <footer className="mx-auto max-w-7xl px-4 pb-8 text-xs text-muted-foreground">
-        Server routes: {serverList.slice(0, 8).map((s) => <Link key={s.slug} to={`/${s.slug}`} className="ml-2 underline hover:text-white">/{s.slug}</Link>)}
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
