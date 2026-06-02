@@ -45,7 +45,7 @@ export function TalentPage() {
           Using local fixture data. This is expected until each Chronicle deployment exposes talent-tree CORS to wiki.chronicleclassic.com.
         </div>
       )}
-      {selected ? <TalentTreeViewer data={selected} /> : <div className="wiki-card p-5 text-muted-foreground">No talent data for this class yet.</div>}
+      {selected ? <TalentTreeViewer data={selected} context={context} /> : <div className="wiki-card p-5 text-muted-foreground">No talent data for this class yet.</div>}
     </div>
   );
 }

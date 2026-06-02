@@ -1,0 +1,10 @@
+import type { ResolvedServerContext } from "@/types";
+
+export function iconBucketForContext(context: ResolvedServerContext) {
+  return context.server.iconBucket ?? context.flavor.iconBucket ?? "azerothcore";
+}
+
+export function iconUrl(texture: string, context: ResolvedServerContext) {
+  const bucket = iconBucketForContext(context);
+  return `https://icons.chronicleclassic.com/${bucket}/${texture.toLowerCase()}.webp`;
+}

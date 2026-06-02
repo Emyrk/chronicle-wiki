@@ -7,6 +7,7 @@ export const flavors: Record<string, WikiFlavor> = {
     expansion: "vanilla",
     clientVersion: "1.12.1",
     defaultDatasetId: "legacy",
+    iconBucket: "azerothcore",
     maxLevel: 60,
     maxTalentPoints: 51,
   },
@@ -16,6 +17,7 @@ export const flavors: Record<string, WikiFlavor> = {
     expansion: "vanilla",
     clientVersion: "1.12.1",
     defaultDatasetId: "turtle",
+    iconBucket: "turtle",
     maxLevel: 60,
     maxTalentPoints: 51,
     fallbackFlavor: "legacy",
@@ -26,6 +28,7 @@ export const flavors: Record<string, WikiFlavor> = {
     expansion: "vanilla",
     clientVersion: "1.12.1",
     defaultDatasetId: "vanillaplus",
+    iconBucket: "vanillaplus",
     maxLevel: 60,
     maxTalentPoints: 51,
     fallbackFlavor: "legacy",
@@ -36,6 +39,7 @@ export const flavors: Record<string, WikiFlavor> = {
     expansion: "vanilla",
     clientVersion: "1.12.1",
     defaultDatasetId: "legacy",
+    iconBucket: "kronos",
     maxLevel: 60,
     maxTalentPoints: 51,
     fallbackFlavor: "legacy",
@@ -45,6 +49,7 @@ export const flavors: Record<string, WikiFlavor> = {
     name: "Wrath of the Lich King",
     expansion: "wotlk",
     clientVersion: "3.3.5a",
+    iconBucket: "azerothcore",
     maxLevel: 80,
     maxTalentPoints: 71,
   },
@@ -53,6 +58,7 @@ export const flavors: Record<string, WikiFlavor> = {
     name: "TBC-style 3.3.5a",
     expansion: "tbc",
     clientVersion: "3.3.5a",
+    iconBucket: "azerothcore",
     maxLevel: 70,
     maxTalentPoints: 61,
   },
@@ -85,6 +91,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://chronicleclassic.com/servers/turtle/logo.png",
     bannerUrl: "https://chronicleclassic.com/servers/turtle/banner.webp",
     flavor: "nightmares-of-ursol",
+    iconBucket: "turtle",
     theme: { primary: "#2f8f5b", accent: "#a3e635" },
   },
   octo: {
@@ -99,6 +106,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://chronicleclassic.com/servers/octowow/logo.webp",
     bannerUrl: "https://chronicleclassic.com/servers/octowow/banner.jpg",
     flavor: "nightmares-of-ursol",
+    iconBucket: "octowow",
     theme: { primary: "#0891b2", accent: "#67e8f9" },
   },
   kronos: {
@@ -113,6 +121,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://chronicleclassic.com/servers/kronos/logo.png",
     bannerUrl: "https://chronicleclassic.com/servers/kronos/banner.jpg",
     flavor: "kronos",
+    iconBucket: "kronos",
     theme: { primary: "#b45309", accent: "#fbbf24" },
   },
   vanillaplus: {
@@ -127,6 +136,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://chronicleclassic.com/servers/vanillaplus/logo.png",
     bannerUrl: "https://chronicleclassic.com/servers/vanillaplus/banner.png",
     flavor: "vanillaplus",
+    iconBucket: "vanillaplus",
     theme: { primary: "#7c3aed", accent: "#c4b5fd" },
   },
   chromie: {
@@ -140,6 +150,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://icons.chronicleclassic.com/servers/chromiecraft/chromie-square.webp",
     bannerUrl: "https://icons.chronicleclassic.com/servers/chromiecraft/chromie-banner.png",
     flavor: "wotlk",
+    iconBucket: "azerothcore",
     theme: { primary: "#d946ef", accent: "#f0abfc" },
   },
   oldmanwarcraft: {
@@ -154,6 +165,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://chronicleclassic.com/servers/oldmanwarcraft/logo.png",
     bannerUrl: "https://chronicleclassic.com/servers/oldmanwarcraft/banner.webp",
     flavor: "wotlk",
+    iconBucket: "azerothcore",
     theme: { primary: "#64748b", accent: "#cbd5e1" },
   },
   faebright: {
@@ -167,6 +179,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://icons.chronicleclassic.com/servers/faebright/faebright-logo.webp",
     bannerUrl: "https://icons.chronicleclassic.com/servers/faebright/faebright-banner.jpg",
     flavor: "tbc335",
+    iconBucket: "azerothcore",
     theme: { primary: "#ec4899", accent: "#f9a8d4" },
   },
   nostrum: {
@@ -180,6 +193,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://icons.chronicleclassic.com/servers/nostrumwow/nostrum-logo.webp",
     bannerUrl: "https://icons.chronicleclassic.com/servers/nostrumwow/nostrum-banner.jpg",
     flavor: "wotlk",
+    iconBucket: "azerothcore",
     theme: { primary: "#dc2626", accent: "#fca5a5" },
   },
   warmane: {
@@ -193,6 +207,7 @@ export const servers: Record<string, WikiServer> = {
     logoUrl: "https://icons.chronicleclassic.com/servers/warmane/warmane-logo.webp",
     bannerUrl: "https://icons.chronicleclassic.com/servers/warmane/warmane-banner.png",
     flavor: "wotlk",
+    iconBucket: "warmane",
     theme: { primary: "#f97316", accent: "#fed7aa" },
   },
 };
