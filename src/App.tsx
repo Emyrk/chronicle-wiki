@@ -6,12 +6,14 @@ import { TalentPage } from "@/pages/TalentPage";
 import { RaidPage } from "@/pages/RaidPage";
 import { BossGuidePage } from "@/pages/BossGuidePage";
 import { UnitExplorerPage } from "@/pages/UnitExplorerPage";
+import { WikiDevelopmentPage } from "@/pages/WikiDevelopmentPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/wiki-development" element={<WikiDevelopmentPage />} />
       <Route path="/:serverSlug" element={<Layout />}>
         <Route index element={<ServerHomePage />} />
         <Route path="talents" element={<TalentPage />} />
