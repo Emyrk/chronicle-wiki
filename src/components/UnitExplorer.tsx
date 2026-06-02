@@ -1,0 +1,32 @@
+import type { CreatureGuideEntry } from "@/types";
+
+export function UnitExplorer({ creatures }: { creatures: CreatureGuideEntry[] }) {
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      {creatures.map((creature) => (
+        <article key={creature.id} className="wiki-card p-5">
+          <div className="mb-3 flex items-start justify-between gap-4">
+            <div>
+              <h3 className="font-serif text-2xl font-bold text-white">{creature.name}</h3>
+              <p className="text-sm text-muted-foreground">NPC {creature.id} · {creature.role}</p>
+            </div>
+            <span className="wiki-pill">{creature.spells.length} spells</span>
+          </div>
+          <p className="mb-4 text-sm text-zinc-300">{creature.notes}</p>
+          <div className="space-y-2">
+            {creature.spells.map((spell) => (
+              <div key={`${creature.id}-${spell.id}-${spell.name}`} className="rounded-lg border border-white/10 bg-black/25 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <strong className="text-white">{spell.name}</strong>
+                  {spell.id > 0 ? <code className="text-xs text-amber-300">{spell.id}</code> : <span className="text-xs text-muted-foreground">pending</span>}
+                </div>
+                {spell.school && <div className="text-xs text-muted-foreground">{spell.school}</div>}
+                {spell.notes && <p className="mt-1 text-sm text-zinc-300">{spell.notes}</p>}
+              </div>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}

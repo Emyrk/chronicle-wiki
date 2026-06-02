@@ -1,0 +1,76 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-school-fire: #f97316;
+  --color-school-nature: #4ade80;
+  --color-school-frost: #60a5fa;
+  --color-school-shadow: #c084fc;
+  --color-school-arcane: #f472b6;
+  --color-class-warrior: #C79C6E;
+  --color-class-paladin: #F58CBA;
+  --color-class-hunter: #ABD473;
+  --color-class-rogue: #FFF569;
+  --color-class-priest: #FFFFFF;
+  --color-class-shaman: #0070DE;
+  --color-class-mage: #69CCF0;
+  --color-class-warlock: #9482C9;
+  --color-class-druid: #FF7D0A;
+  --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
+  --font-mono: Roboto Mono, ui-monospace, monospace;
+  --font-serif: Libre Baskerville, ui-serif, serif;
+  --font-wow: Libre Baskerville, ui-serif, serif;
+  --radius: 0.25rem;
+}
+
+:root {
+  --background: oklch(0.16 0.01 252);
+  --foreground: oklch(0.93 0.004 248);
+  --card: oklch(0.22 0.012 252);
+  --card-foreground: oklch(0.93 0.004 248);
+  --muted: oklch(0.29 0.012 252);
+  --muted-foreground: oklch(0.72 0.014 252);
+  --primary: #d97706;
+  --primary-foreground: #0f172a;
+  --border: oklch(0.34 0.014 252);
+  --ring: var(--primary);
+  color-scheme: dark;
+}
+
+* { border-color: var(--border); }
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, color-mix(in oklab, var(--primary) 18%, transparent), transparent 34rem),
+    linear-gradient(135deg, #09090b 0%, #111827 55%, #050505 100%);
+  color: var(--foreground);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+a { color: inherit; }
+
+.wiki-card {
+  @apply rounded-xl border border-white/10 bg-card/90 shadow-2xl shadow-black/25 backdrop-blur;
+}
+
+.wiki-pill {
+  @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-muted-foreground;
+}
+
+.prose-wiki {
+  @apply prose prose-invert max-w-none prose-headings:font-serif prose-headings:text-white prose-a:text-amber-300 prose-strong:text-white;
+}
