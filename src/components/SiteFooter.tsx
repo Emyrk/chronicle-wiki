@@ -1,8 +1,20 @@
 import { ExternalLink, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
-import { serverList } from "@/data/servers";
 
-const donationLinks = serverList.filter((server) => server.donationUrl);
+const donationLinks = [
+  {
+    label: "GitHub Sponsors",
+    href: "https://github.com/sponsors/Emyrk",
+  },
+  {
+    label: "Patreon",
+    href: "https://www.patreon.com/cw/ChronicleClassic",
+  },
+  {
+    label: "Buy Me a Coffee",
+    href: "https://buymeacoffee.com/chronicleclassic",
+  },
+];
 
 export function SiteFooter() {
   return (
@@ -30,9 +42,9 @@ export function SiteFooter() {
             <Heart className="h-3.5 w-3.5 text-pink-400" /> Donate
           </h2>
           <div className="mt-3 flex flex-col gap-2">
-            {donationLinks.map((server) => (
-              <a key={server.slug} href={server.donationUrl} className="hover:text-white">
-                {server.shortName}
+            {donationLinks.map((link) => (
+              <a key={link.href} href={link.href} className="inline-flex items-center gap-1 hover:text-white">
+                {link.label} <ExternalLink className="h-3.5 w-3.5" />
               </a>
             ))}
           </div>
