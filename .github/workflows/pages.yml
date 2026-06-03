@@ -33,6 +33,12 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Install Playwright Chrome
+        run: pnpm exec playwright install --with-deps chrome
+
+      - name: Visual regression smoke tests
+        run: pnpm test:visual
+
       - name: Build
         env:
           BASE_PATH: /

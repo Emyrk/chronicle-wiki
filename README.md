@@ -27,6 +27,8 @@ pnpm build
 pnpm dev
 ```
 
+Visual screenshot smoke tests are documented in `docs/visual-regression.md` and run with `pnpm test:visual` after installing Google Chrome for Playwright.
+
 ## Content inheritance
 
 Guide resolution order:

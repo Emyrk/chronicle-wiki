@@ -6,4 +6,6 @@ dist
 !.env.example
 .vite
 coverage
+test-results
+playwright-report
 *.tsbuildinfo
