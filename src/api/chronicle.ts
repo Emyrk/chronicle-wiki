@@ -1,13 +1,6 @@
 import { classList, fallbackTalentTrees, type ClassTalentData, type TalentTreeJSON } from "../data/talents";
 import type { ResolvedServerContext, SpellRef } from "../types";
-
-type LocalizedText = string | Record<string, string> | undefined;
-
-function localizedText(value: LocalizedText) {
-  if (!value) return undefined;
-  if (typeof value === "string") return value;
-  return value["0"] ?? Object.values(value)[0];
-}
+import { extractReferencedSpellIds, getEnglishText, resolvedSpellNotes, type WoWSpell } from "./wowdb";
 
 export function apiUrl(context: ResolvedServerContext, path: string) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
@@ -69,17 +62,31 @@ export async function fetchTalentTrees(context: ResolvedServerContext): Promise<
   }
 }
 
-export async function fetchSpell(context: ResolvedServerContext, spellId: number): Promise<SpellRef | undefined> {
+async function fetchSpellRaw(context: ResolvedServerContext, spellId: number): Promise<WoWSpell | undefined> {
   if (spellId <= 0) return undefined;
   const url = apiUrl(context, `/api/v1/wowdb/spell/${spellId}`);
   try {
     const response = await fetch(url);
     if (!response.ok) return undefined;
-    const spell = await response.json() as { id?: number; name?: LocalizedText; description?: LocalizedText; aura_description?: LocalizedText; school?: { string?: string } };
-    const name = localizedText(spell.name) ?? `Spell ${spellId}`;
-    const notes = localizedText(spell.description) ?? localizedText(spell.aura_description);
-    return { id: spell.id ?? spellId, name, school: spell.school?.string, notes };
+    const spell = await response.json() as WoWSpell;
+    return { ...spell, id: spell.id ?? spellId };
   } catch {
     return undefined;
   }
+}
+
+async function fetchReferencedSpells(context: ResolvedServerContext, spell: WoWSpell): Promise<Map<number, WoWSpell>> {
+  const templates = [getEnglishText(spell.description), getEnglishText(spell.aura_description)];
+  const referencedIds = Array.from(new Set(templates.flatMap(extractReferencedSpellIds))).filter((id) => id !== spell.id);
+  const entries = await Promise.all(referencedIds.map(async (spellId) => [spellId, await fetchSpellRaw(context, spellId)] as const));
+  return new Map(entries.filter((entry): entry is readonly [number, WoWSpell] => Boolean(entry[1])));
+}
+
+export async function fetchSpell(context: ResolvedServerContext, spellId: number): Promise<SpellRef | undefined> {
+  const spell = await fetchSpellRaw(context, spellId);
+  if (!spell) return undefined;
+  const referencedSpells = await fetchReferencedSpells(context, spell);
+  const name = getEnglishText(spell.name) || `Spell ${spellId}`;
+  const notes = resolvedSpellNotes(spell, referencedSpells);
+  return { id: spell.id ?? spellId, name, school: spell.school?.string, notes };
 }

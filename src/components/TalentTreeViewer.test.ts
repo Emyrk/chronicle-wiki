@@ -153,8 +153,8 @@ describe("TalentTreeViewer tooltips", () => {
       columnIndex: 0,
       maxRank: 3,
       spellRanks: [1001, 1002, 1003],
-      description: "Increases your chance to hit by 1% per rank.",
-      rankDescriptions: ["+1% hit", "+2% hit", "+3% hit"],
+      description: "Hurls a fiery ball that causes 25 to 31 Fire damage and an additional 12 Fire damage over 8 sec.",
+      rankDescriptions: ["+1% hit", "Causes 28 to 35 Holy damage within 10 yards.", "+3% hit"],
     } as Partial<TalentEntry> & Pick<TalentEntry, "id" | "tierID" | "columnIndex"> & { description: string; rankDescriptions: string[] });
     const data: ClassTalentData = {
       id: 1,
@@ -170,9 +170,10 @@ describe("TalentTreeViewer tooltips", () => {
     expect(html).toContain("group-focus-visible:block");
     expect(html).toContain("Precision");
     expect(html).toContain("Rank 1/3");
-    expect(html).toContain("Increases your chance to hit by 1% per rank.");
+    expect(html).toContain("Hurls a fiery ball that causes 25 to 31 Fire damage and an additional 12 Fire damage over 8 sec.");
     expect(html).toContain("Current rank: +1% hit");
-    expect(html).toContain("Next rank: +2% hit");
+    expect(html).toContain("Next rank: Causes 28 to 35 Holy damage within 10 yards.");
+    expect(html).not.toMatch(/\$s1|\$o2|\$d|\$23455s1|\$23455a1|\$lpoint:points;/);
     expect(html).toContain("Spell ranks: 1001, 1002, 1003");
   });
 
