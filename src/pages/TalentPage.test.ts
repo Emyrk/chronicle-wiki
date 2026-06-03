@@ -40,4 +40,13 @@ describe("TalentPage player-facing header", () => {
     expect(html).not.toContain("Server / flavor");
     expect(html).not.toContain("Reparse current source");
   });
+
+  it("renders class icons through the selected server icon bucket while keeping labels visible", () => {
+    const html = renderTalentPage("/turtle/talents/mage");
+
+    expect(html).toContain('src="https://icons.chronicleclassic.com/turtle/inv_staff_13.webp"');
+    expect(html).toContain('src="https://icons.chronicleclassic.com/turtle/inv_sword_27.webp"');
+    expect(html).toContain(">Mage</span>");
+    expect(html).toContain(">Warrior</span>");
+  });
 });

@@ -120,15 +120,15 @@ export const fallbackTalentTrees: TalentTreeJSON = {
 };
 
 export const classList = [
-  { id: 1, slug: "warrior", name: "Warrior" },
-  { id: 2, slug: "paladin", name: "Paladin" },
-  { id: 3, slug: "hunter", name: "Hunter" },
-  { id: 4, slug: "rogue", name: "Rogue" },
-  { id: 5, slug: "priest", name: "Priest" },
-  { id: 7, slug: "shaman", name: "Shaman" },
-  { id: 8, slug: "mage", name: "Mage" },
-  { id: 9, slug: "warlock", name: "Warlock" },
-  { id: 11, slug: "druid", name: "Druid" },
+  { id: 1, slug: "warrior", name: "Warrior", iconTexture: "inv_sword_27" },
+  { id: 2, slug: "paladin", name: "Paladin", iconTexture: "spell_holy_sealofmight" },
+  { id: 3, slug: "hunter", name: "Hunter", iconTexture: "inv_weapon_bow_07" },
+  { id: 4, slug: "rogue", name: "Rogue", iconTexture: "ability_backstab" },
+  { id: 5, slug: "priest", name: "Priest", iconTexture: "inv_staff_30" },
+  { id: 7, slug: "shaman", name: "Shaman", iconTexture: "spell_nature_bloodlust" },
+  { id: 8, slug: "mage", name: "Mage", iconTexture: "inv_staff_13" },
+  { id: 9, slug: "warlock", name: "Warlock", iconTexture: "spell_nature_faeriefire" },
+  { id: 11, slug: "druid", name: "Druid", iconTexture: "inv_misc_monsterclaw_04" },
 ];
 
 export function classIdFromSlug(slug: string | undefined) {

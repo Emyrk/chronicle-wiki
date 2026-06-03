@@ -6,6 +6,7 @@ import { fetchTalentTrees } from "@/api/chronicle";
 import { TalentTreeViewer } from "@/components/TalentTreeViewer";
 import { NotFoundPage } from "./NotFoundPage";
 import { cn } from "@/lib/utils";
+import { iconUrl } from "@/lib/icons";
 
 export function TalentPage() {
   const { serverSlug, classSlug } = useParams();
@@ -33,9 +34,10 @@ export function TalentPage() {
             <Link
               key={cls.id}
               to={`/${context.server.slug}/talents/${cls.slug}`}
-              className={cn("rounded-lg border px-3 py-2 text-sm", cls.id === selectedClassId ? "border-primary bg-primary/15 text-white" : "border-white/10 bg-white/5 text-muted-foreground hover:text-white")}
+              className={cn("inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm", cls.id === selectedClassId ? "border-primary bg-primary/15 text-white" : "border-white/10 bg-white/5 text-muted-foreground hover:text-white")}
             >
-              {cls.name}
+              <img src={iconUrl(cls.iconTexture, context)} alt="" className="h-6 w-6 rounded border border-white/10 object-cover" />
+              <span>{cls.name}</span>
             </Link>
           ))}
         </div>
