@@ -9,6 +9,9 @@ import { UnitExplorerPage } from "@/pages/UnitExplorerPage";
 import { GuidesPage } from "@/pages/GuidesPage";
 import { WikiDevelopmentPage } from "@/pages/WikiDevelopmentPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { allRaidInstances } from "@/data/instances";
+
+const defaultRaidSlug = allRaidInstances()[0]?.slug ?? "molten-core";
 
 export default function App() {
   return (
@@ -20,9 +23,9 @@ export default function App() {
         <Route path="guides" element={<GuidesPage />} />
         <Route path="talents" element={<TalentPage />} />
         <Route path="talents/:classSlug" element={<TalentPage />} />
-        <Route path="raids" element={<Navigate to="molten-core" replace />} />
-        <Route path="raids/molten-core" element={<RaidPage />} />
-        <Route path="raids/molten-core/:bossSlug" element={<BossGuidePage />} />
+        <Route path="raids" element={<Navigate to={defaultRaidSlug} replace />} />
+        <Route path="raids/:instanceSlug" element={<RaidPage />} />
+        <Route path="raids/:instanceSlug/:bossSlug" element={<BossGuidePage />} />
         <Route path="explorer" element={<UnitExplorerPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

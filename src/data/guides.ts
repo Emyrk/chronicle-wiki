@@ -1,4 +1,5 @@
 import type { CreatureGuideEntry, GuidePage, GuidePatch } from "@/types";
+import { getRaidInstance } from "./instances";
 import { flavors, getServer } from "./servers";
 
 const garrCreatures: CreatureGuideEntry[] = [
@@ -218,10 +219,4 @@ export function resolveGuide(serverSlug: string, guideSlug: string): GuidePage |
   return guide;
 }
 
-export const moltenCoreBosses = [
-  { slug: "garr", name: "Garr", status: "mvp" },
-  { slug: "lucifron", name: "Lucifron", status: "stub" },
-  { slug: "magmadar", name: "Magmadar", status: "stub" },
-  { slug: "gehennas", name: "Gehennas", status: "stub" },
-  { slug: "ragnaros", name: "Ragnaros", status: "stub" },
-];
+export const moltenCoreBosses = getRaidInstance("molten-core")?.encounters.map(({ slug, name, status }) => ({ slug, name, status })) ?? [];

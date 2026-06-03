@@ -1,3 +1,5 @@
+import { allRaidInstances } from "./instances";
+
 export type GuideSectionSlug = "raids" | "dungeons";
 
 export interface GuideIndexEntry {
@@ -21,16 +23,14 @@ export const guideSections: GuideIndexSection[] = [
     slug: "raids",
     title: "Raids",
     description: "Raid hubs, boss guides, and log-backed mechanics by server.",
-    entries: [
-      {
-        slug: "molten-core",
-        title: "Molten Core",
-        description: "First raid guide hub. Garr is the initial boss guide, with the rest staged as structured placeholders.",
-        status: "mvp",
-        href: (serverSlug) => `/${serverSlug}/raids/molten-core`,
-        keywords: ["mc", "molten core", "garr", "lucifron", "magmadar", "gehennas", "ragnaros"],
-      },
-    ],
+    entries: allRaidInstances().map((instance) => ({
+      slug: instance.slug,
+      title: instance.title,
+      description: instance.description,
+      status: instance.status,
+      href: (serverSlug) => `/${serverSlug}/raids/${instance.slug}`,
+      keywords: instance.keywords,
+    })),
   },
   {
     slug: "dungeons",

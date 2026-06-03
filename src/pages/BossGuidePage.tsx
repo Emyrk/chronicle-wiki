@@ -6,10 +6,10 @@ import { UnitExplorer } from "@/components/UnitExplorer";
 import { NotFoundPage } from "./NotFoundPage";
 
 export function BossGuidePage() {
-  const { serverSlug, bossSlug } = useParams();
+  const { serverSlug, instanceSlug, bossSlug } = useParams();
   const context = resolveServerContext(serverSlug);
-  if (!context || !bossSlug) return <NotFoundPage />;
-  const guide = resolveGuide(context.server.slug, `raids/molten-core/${bossSlug}`);
+  if (!context || !instanceSlug || !bossSlug) return <NotFoundPage />;
+  const guide = resolveGuide(context.server.slug, `raids/${instanceSlug}/${bossSlug}`);
   if (!guide) return <NotFoundPage />;
 
   return (
