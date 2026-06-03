@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
@@ -27,8 +28,13 @@ import {
 function renderTalentTree(data: ClassTalentData, path = "/talents/test") {
   const context = resolveServerContext("turtle");
   if (!context) throw new Error("missing turtle context");
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return renderToStaticMarkup(
-    createElement(MemoryRouter, { initialEntries: [path] }, createElement(TalentTreeViewer, { data, context })),
+    createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      createElement(MemoryRouter, { initialEntries: [path] }, createElement(TalentTreeViewer, { data, context })),
+    ),
   );
 }
 

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
+import { fetchTalentTooltipSpell, talentTooltipSpellQueryKey } from "../api/chronicle";
 import type { ClassTalentData, TalentEntry, TalentTabData } from "../data/talents";
 import { iconUrl } from "../lib/icons";
 import { cn } from "../lib/utils";
@@ -361,8 +363,10 @@ function TalentTooltipCard({
   talent,
   rank,
   locked,
+  description,
   currentRankText,
   nextRankText,
+  loadingSpellDetails,
   lockReasons,
   id,
   className,
@@ -371,8 +375,10 @@ function TalentTooltipCard({
   talent: TalentEntry;
   rank: number;
   locked: boolean;
+  description: string;
   currentRankText?: string;
   nextRankText?: string;
+  loadingSpellDetails?: boolean;
   lockReasons: string[];
   id: string;
   className: string;
@@ -387,7 +393,8 @@ function TalentTooltipCard({
     >
       <strong className="block text-sm text-white">{talent.name}</strong>
       <span className="mt-1 block font-semibold text-amber-200">Rank {rank}/{talent.maxRank}{locked ? " · Locked" : ""}</span>
-      <span className="mt-2 block text-zinc-300">{talentDescription(talent)}</span>
+      <span className="mt-2 block text-zinc-300">{description}</span>
+      {loadingSpellDetails && <span className="mt-2 block animate-pulse text-muted-foreground">Loading spell details…</span>}
       {currentRankText && <span className="mt-2 block text-emerald-200">Current rank: {currentRankText}</span>}
       {nextRankText && <span className="mt-1 block text-sky-200">Next rank: {nextRankText}</span>}
       {locked && (
@@ -411,17 +418,50 @@ function talentVisualState(rank: number, maxRank: number, locked: boolean): Tale
 }
 
 function TalentButton({ talent, rank, locked, talents, ranks, context, onChange }: { talent: TalentEntry; rank: number; locked: boolean; talents: TalentEntry[]; ranks: TalentRanks; context: ResolvedServerContext; onChange: (rank: number) => void }) {
+  const queryClient = useQueryClient();
   const maxed = rank >= talent.maxRank;
   const visualState = talentVisualState(rank, talent.maxRank, locked);
   const tooltipId = `talent-tooltip-${talent.id}`;
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TalentTooltipPosition | undefined>();
   const rankTexts = talentRankTexts(talent);
-  const currentRankText = rank > 0 ? rankTexts[rank - 1] : undefined;
-  const nextRankText = rank < talent.maxRank ? rankTexts[rank] ?? rankTexts[rank === 0 ? 0 : rank] : undefined;
+  const currentSpellId = rank > 0 ? talent.spellRanks[rank - 1] : undefined;
+  const nextSpellId = rank < talent.maxRank ? talent.spellRanks[rank] ?? talent.spellRanks[rank === 0 ? 0 : rank] : undefined;
+  const primarySpellId = currentSpellId ?? nextSpellId;
+  const currentRankQuery = useQuery({
+    queryKey: currentSpellId ? talentTooltipSpellQueryKey(context, currentSpellId) : ["chronicle", context.chronicle.baseUrl, "wowdb", "spell-tooltip", "none", talent.id, "current"],
+    queryFn: () => fetchTalentTooltipSpell(queryClient, context, currentSpellId ?? 0),
+    enabled: Boolean(tooltipPosition && currentSpellId),
+    staleTime: Infinity,
+    gcTime: 30 * 60 * 1000,
+  });
+  const nextRankQuery = useQuery({
+    queryKey: nextSpellId ? talentTooltipSpellQueryKey(context, nextSpellId) : ["chronicle", context.chronicle.baseUrl, "wowdb", "spell-tooltip", "none", talent.id, "next"],
+    queryFn: () => fetchTalentTooltipSpell(queryClient, context, nextSpellId ?? 0),
+    enabled: Boolean(tooltipPosition && nextSpellId),
+    staleTime: Infinity,
+    gcTime: 30 * 60 * 1000,
+  });
+  const primarySpell = currentSpellId ? currentRankQuery.data : nextRankQuery.data;
+  const description = primarySpell?.notes ?? talentDescription(talent);
+  const currentRankText = rank > 0 ? currentRankQuery.data?.notes ?? rankTexts[rank - 1] : undefined;
+  const nextRankText = rank < talent.maxRank ? nextRankQuery.data?.notes ?? rankTexts[rank] ?? rankTexts[rank === 0 ? 0 : rank] : undefined;
+  const loadingSpellDetails = Boolean(tooltipPosition && primarySpellId && ((currentSpellId && currentRankQuery.isPending) || (nextSpellId && nextRankQuery.isPending)));
   const lockReasons = locked ? lockedTalentReasons(talent, talents, ranks) : [];
   const title = locked ? `${talent.name} locked. ${lockReasons.join(" ")}` : `${talent.name} (${rank}/${talent.maxRank})`;
+  const prefetchTooltipSpells = () => {
+    for (const spellId of [currentSpellId, nextSpellId]) {
+      if (!spellId) continue;
+      void queryClient.prefetchQuery({
+        queryKey: talentTooltipSpellQueryKey(context, spellId),
+        queryFn: () => fetchTalentTooltipSpell(queryClient, context, spellId),
+        staleTime: Infinity,
+        gcTime: 30 * 60 * 1000,
+      });
+    }
+  };
   const showTooltip = () => {
+    prefetchTooltipSpells();
     const rect = buttonRef.current?.getBoundingClientRect();
     if (rect) setTooltipPosition(talentTooltipPosition(rect));
   };
@@ -454,8 +494,10 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
       talent={talent}
       rank={rank}
       locked={locked}
+      description={description}
       currentRankText={currentRankText}
       nextRankText={nextRankText}
+      loadingSpellDetails={loadingSpellDetails}
       lockReasons={lockReasons}
       className={TALENT_TOOLTIP_CLASS_NAME}
       position={tooltipPosition}
@@ -509,8 +551,10 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
           talent={talent}
           rank={rank}
           locked={locked}
+          description={description}
           currentRankText={currentRankText}
           nextRankText={nextRankText}
+          loadingSpellDetails={loadingSpellDetails}
           lockReasons={lockReasons}
           className={TALENT_TOOLTIP_SSR_CLASS_NAME}
         />

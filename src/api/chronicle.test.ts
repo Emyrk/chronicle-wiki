@@ -1,5 +1,6 @@
+import { QueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiUrl, fetchSpell, fetchTalentTrees } from "./chronicle";
+import { apiUrl, fetchSpell, fetchTalentTrees, fetchTalentTooltipSpell, spellRecordQueryKey } from "./chronicle";
 import { resolveServerContext } from "../data/servers";
 
 function context(slug: string) {
@@ -45,79 +46,86 @@ describe("Chronicle API URLs", () => {
     expect(result.data.classes["1"]?.tabs.map((tab) => tab.name)).toEqual(["Arms", "Fury"]);
   });
 
-  it("hydrates remote talent names and rank descriptions from spell rank details", async () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
-      if (String(url).endsWith("/talent-trees")) {
-        return {
-          ok: true,
-          json: async () => ({
-            classes: {
-              "1": {
-                tabs: [
+  it("leaves spell rank hydration to async tooltip queries instead of fetching every spell with talent trees", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        classes: {
+          "1": {
+            tabs: [
+              {
+                id: 161,
+                name: "Arms",
+                orderIndex: 0,
+                talents: [{ id: 56, name: "Improved Heroic Strike", tierID: 0, columnIndex: 0, maxRank: 2, tabIndex: 0, spellRanks: [12282, 12663], iconTexture: "Ability_Rogue_Ambush" }],
+              },
+            ],
+          },
+        },
+      }),
+    } as Response);
+
+    const result = await fetchTalentTrees(context("turtle"));
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/talent-trees");
+    expect(result.data.classes["1"]?.tabs[0]?.talents[0]).toMatchObject({
+      name: "Improved Heroic Strike",
+      spellRanks: [12282, 12663],
+    });
+  });
+
+  it("keys cached spell records by server API context and spell ID", () => {
+    expect(spellRecordQueryKey(context("turtle"), 133)).toEqual(["chronicle", "https://turtle.chronicleclassic.com", "wowdb", "spell", 133]);
+    expect(spellRecordQueryKey(context("vanillaplus"), 133)).toEqual(["chronicle", "https://vanillaplus.chronicleclassic.com", "wowdb", "spell", 133]);
+  });
+
+  it("preserves talent metadata that arrives with talent trees without eager spell hydration", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        classes: {
+          "1": {
+            tabs: [
+              {
+                id: 161,
+                name: "Arms",
+                orderIndex: 0,
+                talents: [
                   {
-                    id: 161,
-                    name: "Arms",
-                    orderIndex: 0,
-                    talents: [
-                      { id: 56, tierID: 0, columnIndex: 0, maxRank: 2, tabIndex: 0, spellRanks: [12282, 12663], iconTexture: "Ability_Rogue_Ambush" },
-                    ],
+                    id: 56,
+                    name: "Improved Heroic Strike",
+                    description: "Reduces Heroic Strike cost.",
+                    rankDescriptions: ["Reduces Heroic Strike cost by 1 rage.", "Reduces Heroic Strike cost by 2 rage."],
+                    tierID: 0,
+                    columnIndex: 0,
+                    maxRank: 2,
+                    tabIndex: 0,
+                    spellRanks: [12282, 12663],
+                    iconTexture: "Ability_Rogue_Ambush",
                   },
                 ],
               },
-            },
-          }),
-        } as Response;
-      }
-
-      const urlParts = String(url).split("/");
-      const id = Number(urlParts[urlParts.length - 1]);
-      return {
-        ok: true,
-        json: async () => ({
-          id,
-          name: { "0": "Improved Heroic Strike" },
-          description: { "0": id === 12282 ? "Reduces Heroic Strike cost by 1 rage." : "Reduces Heroic Strike cost by 2 rage." },
-          school: { string: "Physical" },
-        }),
-      } as Response;
-    });
+            ],
+          },
+        },
+      }),
+    } as Response);
 
     const result = await fetchTalentTrees(context("turtle"));
     const talent = result.data.classes["1"]?.tabs[0]?.talents[0];
 
-    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/12282");
-    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/12663");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(talent).toMatchObject({
       name: "Improved Heroic Strike",
-      description: "Reduces Heroic Strike cost by 1 rage.",
+      description: "Reduces Heroic Strike cost.",
       rankDescriptions: ["Reduces Heroic Strike cost by 1 rage.", "Reduces Heroic Strike cost by 2 rage."],
+      spellRanks: [12282, 12663],
     });
   });
 
-  it("resolves DBC spell parameters while hydrating talent rank descriptions", async () => {
+  it("resolves DBC spell parameters for tooltip spell records", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
-      if (String(url).endsWith("/talent-trees")) {
-        return {
-          ok: true,
-          json: async () => ({
-            classes: {
-              "8": {
-                tabs: [
-                  {
-                    id: 41,
-                    name: "Fire",
-                    orderIndex: 0,
-                    talents: [
-                      { id: 6, tierID: 0, columnIndex: 1, maxRank: 1, tabIndex: 0, spellRanks: [133], iconTexture: "Spell_Fire_FlameBolt" },
-                    ],
-                  },
-                ],
-              },
-            },
-          }),
-        } as Response;
-      }
-
       expect(String(url)).toBe("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/133");
       return {
         ok: true,
@@ -149,12 +157,10 @@ describe("Chronicle API URLs", () => {
       } as Response;
     });
 
-    const result = await fetchTalentTrees(context("turtle"));
-    const talent = result.data.classes["8"]?.tabs[0]?.talents[0];
+    const spell = await fetchSpell(context("turtle"), 133);
 
-    expect(talent?.description).toBe("Hurls a fiery ball that causes 25 to 31 Fire damage and an additional 12 Fire damage over 8 sec.");
-    expect(talent?.rankDescriptions).toEqual(["Hurls a fiery ball that causes 25 to 31 Fire damage and an additional 12 Fire damage over 8 sec."]);
-    expect(talent?.description).not.toMatch(/\$s1|\$o2|\$d/);
+    expect(spell?.notes).toBe("Hurls a fiery ball that causes 25 to 31 Fire damage and an additional 12 Fire damage over 8 sec.");
+    expect(spell?.notes).not.toMatch(/\$s1|\$o2|\$d/);
   });
 
   it("falls back to Death Knight talent data for Wrath servers", async () => {
@@ -223,6 +229,75 @@ describe("Chronicle API URLs", () => {
     expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/23455");
     expect(result?.notes).toBe("Causes 28 to 35 Holy damage within 10 yards.");
     expect(result?.notes).not.toMatch(/\$23455s1|\$23455a1/);
+  });
+
+  it("reuses cached direct and referenced spell records for repeated tooltip lookups", async () => {
+    const queryClient = new QueryClient();
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+      if (String(url).endsWith("/15237")) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 15237,
+            name: { "0": "Holy Nova" },
+            description: { "0": "Causes $23455s1 Holy damage within $23455a1 yards." },
+            spell_level: 1,
+            effect_base_points: [0, 0, 0],
+            effect_die_sides: [1, 1, 1],
+            effect_base_dice: [1, 1, 1],
+          }),
+        } as Response;
+      }
+
+      if (String(url).endsWith("/23455")) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 23455,
+            name: { "0": "Holy Nova Trigger" },
+            spell_level: 1,
+            effect_base_points: [27, 0, 0],
+            effect_die_sides: [8, 1, 1],
+            effect_base_dice: [1, 1, 1],
+            effect_radius: [{ ID: 13, Radius: 10, RadiusPerLevel: 0, RadiusMin: 0, RadiusMax: 10 }],
+          }),
+        } as Response;
+      }
+
+      throw new Error(`unexpected URL ${String(url)}`);
+    });
+
+    await expect(fetchTalentTooltipSpell(queryClient, context("turtle"), 15237)).resolves.toMatchObject({
+      id: 15237,
+      notes: "Causes 28 to 35 Holy damage within 10 yards.",
+    });
+    await expect(fetchTalentTooltipSpell(queryClient, context("turtle"), 15237)).resolves.toMatchObject({
+      id: 15237,
+      notes: "Causes 28 to 35 Holy damage within 10 yards.",
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/15237");
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/23455");
+  });
+
+  it("does not reuse same spell ID cache entries across servers", async () => {
+    const queryClient = new QueryClient();
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => ({
+      ok: true,
+      json: async () => ({
+        id: 133,
+        name: { "0": String(url).includes("vanillaplus") ? "VanillaPlus Fireball" : "Turtle Fireball" },
+        description: { "0": "Hurls fire." },
+      }),
+    } as Response));
+
+    await expect(fetchTalentTooltipSpell(queryClient, context("turtle"), 133)).resolves.toMatchObject({ name: "Turtle Fireball" });
+    await expect(fetchTalentTooltipSpell(queryClient, context("vanillaplus"), 133)).resolves.toMatchObject({ name: "VanillaPlus Fireball" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/133");
+    expect(fetchMock).toHaveBeenCalledWith("https://vanillaplus.chronicleclassic.com/api/v1/wowdb/spell/133");
   });
 
   it("does not append dataset_id to spell lookups", async () => {
