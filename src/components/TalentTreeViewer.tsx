@@ -496,6 +496,8 @@ function TalentTooltipCard({
   className: string;
   position?: TalentTooltipPosition;
 }) {
+  const hasRankSpecificDescription = Boolean(rankDescriptionParts || currentRankText || nextRankText);
+
   return (
     <span
       id={id}
@@ -505,7 +507,7 @@ function TalentTooltipCard({
     >
       <strong className="block text-sm text-white">{talent.name}</strong>
       <span className="mt-1 block font-semibold text-amber-200">Rank {rank}/{talent.maxRank}{locked ? " · Locked" : ""}</span>
-      <span className="mt-2 block text-zinc-300">{description}</span>
+      {!hasRankSpecificDescription && <span className="mt-2 block text-zinc-300">{description}</span>}
       {loadingSpellDetails && <span className="mt-2 block animate-pulse text-muted-foreground">Loading spell details…</span>}
       {rankDescriptionParts ? <TalentRankDescription parts={rankDescriptionParts} /> : (
         <>

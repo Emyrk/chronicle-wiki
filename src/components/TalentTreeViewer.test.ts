@@ -273,6 +273,7 @@ describe("TalentTreeViewer tooltips", () => {
 
     expect(html).toContain("Impact");
     expect(html).toContain("Rank 2/3");
+    expect(html).not.toContain("Gives your Fire spells a chance to stun the target.");
     expect(html).toContain("Gives your Fireball ");
     expect(html).toContain("rank-ladder-value-active");
     expect(html).toContain("2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">4</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">6</span>");
@@ -356,7 +357,7 @@ describe("TalentTreeViewer tooltips", () => {
     expect(html).toContain("group-focus-visible:block");
     expect(html).toContain("Precision");
     expect(html).toContain("Rank 1/3");
-    expect(html).toContain("Hurls a fiery ball that causes 25 to 31 Fire damage and an additional 12 Fire damage over 8 sec.");
+    expect(html).not.toContain("Hurls a fiery ball that causes 25 to 31 Fire damage and an additional 12 Fire damage over 8 sec.");
     expect(html).toContain("Current rank: +1% hit");
     expect(html).toContain("Next rank: Causes 28 to 35 Holy damage within 10 yards.");
     expect(html).not.toMatch(/\$s1|\$o2|\$d|\$23455s1|\$23455a1|\$lpoint:points;/);
@@ -383,7 +384,7 @@ describe("TalentTreeViewer tooltips", () => {
     const html = renderTalentTree(data, `/talents/warrior?build=${encodeTalentBuild({ 94: 1 })}`);
 
     expect(html).toContain("Debug Rank Leak");
-    expect(html).toContain("Player-facing talent summary.");
+    expect(html).not.toContain("Player-facing talent summary.");
     expect(html).toContain("Current rank: Rank one player text.");
     expect(html).toContain("Next rank: Rank two player text.");
     expect(html).not.toContain("48123");
