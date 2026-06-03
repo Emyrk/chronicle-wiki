@@ -9,6 +9,11 @@ export interface TalentEntry {
   iconTexture: string;
   prereqTalent?: number[];
   prereqRank?: number[];
+  description?: string;
+  effect?: string;
+  effects?: string[] | string;
+  rankDescriptions?: string[];
+  rankDescription?: string[];
 }
 
 export interface TalentTabData {

@@ -140,6 +140,68 @@ describe("TalentTreeViewer talent locking", () => {
   });
 });
 
+describe("TalentTreeViewer tooltips", () => {
+  it("renders a keyboard-focusable tooltip with rank, description, current rank, and next rank text", () => {
+    const described = talent({
+      id: 90,
+      name: "Precision",
+      tierID: 0,
+      columnIndex: 0,
+      maxRank: 3,
+      spellRanks: [1001, 1002, 1003],
+      description: "Increases your chance to hit by 1% per rank.",
+      rankDescriptions: ["+1% hit", "+2% hit", "+3% hit"],
+    } as Partial<TalentEntry> & Pick<TalentEntry, "id" | "tierID" | "columnIndex"> & { description: string; rankDescriptions: string[] });
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Warrior",
+      tabs: [{ id: 161, name: "Arms", backgroundFile: "WarriorArms", orderIndex: 0, iconTexture: "ability_warrior_savageblow", talents: [described] }],
+    };
+
+    const html = renderTalentTree(data, `/talents/warrior?build=${encodeTalentBuild({ 90: 1 })}`);
+
+    expect(html).toContain('aria-describedby="talent-tooltip-90"');
+    expect(html).toContain('id="talent-tooltip-90"');
+    expect(html).toContain('role="tooltip"');
+    expect(html).toContain("group-focus-visible:block");
+    expect(html).toContain("Precision");
+    expect(html).toContain("Rank 1/3");
+    expect(html).toContain("Increases your chance to hit by 1% per rank.");
+    expect(html).toContain("Current rank: +1% hit");
+    expect(html).toContain("Next rank: +2% hit");
+    expect(html).toContain("Spell ranks: 1001, 1002, 1003");
+  });
+
+  it("explains row and prerequisite blockers for locked talents", () => {
+    const source = talent({ id: 91, name: "Tactical Mastery", tierID: 0, columnIndex: 0, maxRank: 2 });
+    const locked = talent({ id: 92, name: "Anger Management", tierID: 1, columnIndex: 0, maxRank: 1, prereqTalent: [91] });
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Warrior",
+      tabs: [{ id: 161, name: "Arms", backgroundFile: "WarriorArms", orderIndex: 0, iconTexture: "ability_warrior_savageblow", talents: [source, locked] }],
+    };
+
+    const html = renderTalentTree(data, `/talents/warrior?build=${encodeTalentBuild({ 91: 1 })}`);
+
+    expect(html).toContain("Locked");
+    expect(html).toContain("Spend 5 points in this tree to unlock this row.");
+    expect(html).toContain("Requires Tactical Mastery at rank 2/2.");
+  });
+
+  it("degrades gracefully when description text is missing", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Warrior",
+      tabs: [{ id: 161, name: "Arms", backgroundFile: "WarriorArms", orderIndex: 0, iconTexture: "ability_warrior_savageblow", talents: [talent({ id: 93, name: "Deflection", tierID: 0, columnIndex: 0, maxRank: 5 })] }],
+    };
+
+    const html = renderTalentTree(data);
+
+    expect(html).toContain("No description data available yet.");
+    expect(html).toContain("Rank 0/5");
+  });
+});
+
 describe("TalentTreeViewer render geometry", () => {
   it("matches ChronicleClassic's compact 4-column talent grid geometry", () => {
     const data: ClassTalentData = {

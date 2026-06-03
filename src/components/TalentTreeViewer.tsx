@@ -215,16 +215,53 @@ function TalentPrereqArrows({ arrows, ranks, height }: { arrows: TalentPrereqArr
   );
 }
 
-function TalentButton({ talent, rank, locked, context, onChange }: { talent: TalentEntry; rank: number; locked: boolean; context: ResolvedServerContext; onChange: (rank: number) => void }) {
+function talentDescription(talent: TalentEntry) {
+  if (talent.description) return talent.description;
+  if (talent.effect) return talent.effect;
+  if (typeof talent.effects === "string") return talent.effects;
+  return "No description data available yet.";
+}
+
+function talentRankTexts(talent: TalentEntry) {
+  if (talent.rankDescriptions) return talent.rankDescriptions;
+  if (talent.rankDescription) return talent.rankDescription;
+  if (Array.isArray(talent.effects)) return talent.effects;
+  return [];
+}
+
+function lockedTalentReasons(talent: TalentEntry, talents: TalentEntry[], ranks: TalentRanks) {
+  const reasons: string[] = [];
+  const requiredPoints = rowPointRequirement(talent);
+  if (pointsSpentBeforeRow(talents, ranks, talent.tierID) < requiredPoints) {
+    reasons.push(`Spend ${requiredPoints} points in this tree to unlock this row.`);
+  }
+
+  const byId = new Map(talents.map((candidate) => [candidate.id, candidate]));
+  for (const prereqId of talent.prereqTalent ?? []) {
+    const prereq = byId.get(prereqId);
+    if (!prereq) continue;
+    if ((ranks[prereq.id] ?? 0) < prereq.maxRank) {
+      reasons.push(`Requires ${prereq.name} at rank ${prereq.maxRank}/${prereq.maxRank}.`);
+    }
+  }
+
+  return reasons.length > 0 ? reasons : ["Complete prerequisite requirements to unlock this talent."];
+}
+
+function TalentButton({ talent, rank, locked, talents, ranks, context, onChange }: { talent: TalentEntry; rank: number; locked: boolean; talents: TalentEntry[]; ranks: TalentRanks; context: ResolvedServerContext; onChange: (rank: number) => void }) {
   const maxed = rank >= talent.maxRank;
-  const title = locked
-    ? `${talent.name} locked: spend ${rowPointRequirement(talent)} points in this tree and complete prerequisite arrows first`
-    : `${talent.name} (${rank}/${talent.maxRank})`;
+  const tooltipId = `talent-tooltip-${talent.id}`;
+  const rankTexts = talentRankTexts(talent);
+  const currentRankText = rank > 0 ? rankTexts[rank - 1] : undefined;
+  const nextRankText = rank < talent.maxRank ? rankTexts[rank] ?? rankTexts[rank === 0 ? 0 : rank] : undefined;
+  const lockReasons = locked ? lockedTalentReasons(talent, talents, ranks) : [];
+  const title = locked ? `${talent.name} locked. ${lockReasons.join(" ")}` : `${talent.name} (${rank}/${talent.maxRank})`;
   return (
     <button
       type="button"
       title={title}
       aria-disabled={locked}
+      aria-describedby={tooltipId}
       onClick={(event) => {
         if (event.shiftKey || event.metaKey) onChange(Math.max(0, rank - 1));
         else onChange(Math.min(talent.maxRank, rank + 1));
@@ -246,9 +283,23 @@ function TalentButton({ talent, rank, locked, context, onChange }: { talent: Tal
       )}>
         {rank}/{talent.maxRank}
       </span>
-      <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-56 -translate-x-1/2 rounded-lg border border-white/10 bg-zinc-950 p-2 text-left text-xs shadow-2xl group-hover:block">
-        <strong className="block text-white">{talent.name}</strong>
-        <span className="text-muted-foreground">Spell ranks: {talent.spellRanks.join(", ")}</span>
+      <span
+        id={tooltipId}
+        role="tooltip"
+        className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-lg border border-amber-400/25 bg-zinc-950 p-3 text-left text-xs text-zinc-200 shadow-2xl group-hover:block group-focus-visible:block"
+      >
+        <strong className="block text-sm text-white">{talent.name}</strong>
+        <span className="mt-1 block font-semibold text-amber-200">Rank {rank}/{talent.maxRank}{locked ? " · Locked" : ""}</span>
+        <span className="mt-2 block text-zinc-300">{talentDescription(talent)}</span>
+        {currentRankText && <span className="mt-2 block text-emerald-200">Current rank: {currentRankText}</span>}
+        {nextRankText && <span className="mt-1 block text-sky-200">Next rank: {nextRankText}</span>}
+        {locked && (
+          <span className="mt-2 block space-y-1 text-red-200">
+            <span className="block font-semibold">Locked</span>
+            {lockReasons.map((reason) => <span key={reason} className="block">{reason}</span>)}
+          </span>
+        )}
+        <span className="mt-2 block text-muted-foreground">Spell ranks: {talent.spellRanks.join(", ")}</span>
       </span>
     </button>
   );
@@ -295,6 +346,8 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
                         talent={talent}
                         rank={ranks[talent.id] ?? 0}
                         locked={(ranks[talent.id] ?? 0) === 0 && !canUseTalent(talent, tab.talents, ranks)}
+                        talents={tab.talents}
+                        ranks={ranks}
                         context={context}
                         onChange={(rank) => onRankChange(talent, rank)}
                       />
