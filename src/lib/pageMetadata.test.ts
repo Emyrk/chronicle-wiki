@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveServerContext } from "../data/servers";
-import { pageMetadataForContext, renderFaviconLinks } from "./pageMetadata";
+import type { ResolvedServerContext } from "@/types";
+import { defaultPageMetadata, pageMetadataForContext, renderFaviconLinks } from "./pageMetadata";
 
 function context(slug: string) {
   const resolved = resolveServerContext(slug);
@@ -14,8 +15,21 @@ describe("server page metadata", () => {
     expect(pageMetadataForContext(context("octo")).faviconHref).toBe("https://chronicleclassic.com/servers/octowow/logo.webp");
   });
 
-  it("falls back to flavor favicon metadata when a server has no override", () => {
-    expect(pageMetadataForContext(context("legacy")).faviconHref).toBe("https://chronicleclassic.com/favicon.ico");
+  it("falls back to the Chronicle favicon when a server has no favicon override", () => {
+    expect(pageMetadataForContext(context("legacy")).faviconHref).toBe(defaultPageMetadata.faviconHref);
+    expect(pageMetadataForContext(context("kronos")).faviconHref).toBe(defaultPageMetadata.faviconHref);
+    expect(pageMetadataForContext(context("chromie")).faviconHref).toBe(defaultPageMetadata.faviconHref);
+  });
+
+  it("treats empty server and flavor favicon metadata as missing", () => {
+    const legacy = context("legacy");
+    const emptyFaviconContext: ResolvedServerContext = {
+      server: { ...legacy.server, faviconUrl: "" },
+      flavor: { ...legacy.flavor, faviconUrl: "" },
+    };
+
+    expect(pageMetadataForContext(emptyFaviconContext).faviconHref).toBe(defaultPageMetadata.faviconHref);
+    expect(renderFaviconLinks(pageMetadataForContext(emptyFaviconContext)).every((link) => link.href.length > 0)).toBe(true);
   });
 
   it("renders stable favicon tags whose href changes across server contexts", () => {

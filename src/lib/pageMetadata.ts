@@ -11,10 +11,12 @@ export interface FaviconLinkDescriptor {
   href: string;
 }
 
+const chronicleFaviconHref = "https://chronicleclassic.com/favicon.ico";
+
 export const defaultPageMetadata: PageMetadata = {
   title: "Chronicle Wiki",
   description: "Chronicle Wiki, server-scoped Classic WoW knowledgebase powered by Chronicle data.",
-  faviconHref: "https://chronicleclassic.com/favicon.ico",
+  faviconHref: chronicleFaviconHref,
 };
 
 export function pageMetadataForContext(context: ResolvedServerContext): PageMetadata {
@@ -22,8 +24,13 @@ export function pageMetadataForContext(context: ResolvedServerContext): PageMeta
   return {
     title: `${server.name} - Chronicle Wiki`,
     description: `${server.name} wiki guides and tools for ${flavor.name}.`,
-    faviconHref: server.faviconUrl ?? flavor.faviconUrl ?? server.logoUrl,
+    faviconHref: resolveFaviconHref(server.faviconUrl),
   };
+}
+
+function resolveFaviconHref(faviconUrl: string | undefined): string {
+  const trimmed = faviconUrl?.trim();
+  return trimmed || chronicleFaviconHref;
 }
 
 export function renderFaviconLinks(metadata: PageMetadata): FaviconLinkDescriptor[] {
