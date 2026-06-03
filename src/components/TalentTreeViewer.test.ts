@@ -208,6 +208,45 @@ describe("TalentTreeViewer tooltips", () => {
   });
 });
 
+describe("TalentTreeViewer visual talent states", () => {
+  it("renders locked, available, selected, and maxed talents with stable state hooks and distinct treatments", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Mage",
+      tabs: [
+        {
+          id: 81,
+          name: "Arcane",
+          backgroundFile: "MageArcane",
+          orderIndex: 0,
+          iconTexture: "spell_holy_magicalsentry",
+          talents: [
+            talent({ id: 201, name: "Available Focus", tierID: 0, columnIndex: 0, maxRank: 3 }),
+            talent({ id: 202, name: "Selected Focus", tierID: 0, columnIndex: 1, maxRank: 3 }),
+            talent({ id: 203, name: "Maxed Focus", tierID: 0, columnIndex: 2, maxRank: 2 }),
+            talent({ id: 204, name: "Locked Focus", tierID: 1, columnIndex: 0, maxRank: 1 }),
+          ],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data, `/talents/mage?build=${encodeTalentBuild({ 202: 1, 203: 2 })}`);
+
+    expect(html).toContain('data-state="available"');
+    expect(html).toContain('data-state="selected"');
+    expect(html).toContain('data-state="maxed"');
+    expect(html).toContain('data-state="locked"');
+    expect(html).toContain("talent-state-available");
+    expect(html).toContain("talent-state-selected");
+    expect(html).toContain("talent-state-maxed");
+    expect(html).toContain("talent-state-locked");
+    expect(html).toContain("Available Focus");
+    expect(html).toContain("Selected Focus");
+    expect(html).toContain("Maxed Focus");
+    expect(html).toContain("Locked Focus");
+  });
+});
+
 describe("TalentTreeViewer render geometry", () => {
   it("isolates talent-grid horizontal scrolling for narrow mobile screens", () => {
     const data: ClassTalentData = {

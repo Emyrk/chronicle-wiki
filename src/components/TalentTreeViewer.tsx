@@ -392,8 +392,18 @@ function TalentTooltipCard({
   );
 }
 
+type TalentVisualState = "locked" | "available" | "selected" | "maxed";
+
+function talentVisualState(rank: number, maxRank: number, locked: boolean): TalentVisualState {
+  if (locked) return "locked";
+  if (rank >= maxRank) return "maxed";
+  if (rank > 0) return "selected";
+  return "available";
+}
+
 function TalentButton({ talent, rank, locked, talents, ranks, context, onChange }: { talent: TalentEntry; rank: number; locked: boolean; talents: TalentEntry[]; ranks: TalentRanks; context: ResolvedServerContext; onChange: (rank: number) => void }) {
   const maxed = rank >= talent.maxRank;
+  const visualState = talentVisualState(rank, talent.maxRank, locked);
   const tooltipId = `talent-tooltip-${talent.id}`;
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TalentTooltipPosition | undefined>();
@@ -428,6 +438,8 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
       aria-disabled={locked}
       aria-describedby={tooltipId}
       data-talent-tooltip-trigger="true"
+      data-state={visualState}
+      data-talent-id={talent.id}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
       onFocus={showTooltip}
@@ -441,15 +453,21 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
         onChange(Math.max(0, rank - 1));
       }}
       className={cn(
-        "group relative h-10 w-10 rounded-sm border bg-zinc-950 shadow-lg transition before:absolute before:-inset-0.5 before:content-['']",
-        locked ? "cursor-not-allowed border-zinc-800 opacity-45" : "border-zinc-600 hover:scale-105 hover:border-primary",
+        "group relative h-10 w-10 rounded-sm border bg-zinc-950 shadow-lg transition before:absolute before:-inset-0.5 before:rounded-sm before:content-['']",
+        visualState === "locked" && "talent-state-locked cursor-not-allowed border-zinc-800 opacity-50 before:bg-black/20",
+        visualState === "available" && "talent-state-available border-primary/70 shadow-primary/20 before:border before:border-primary/35 hover:scale-105 hover:border-primary hover:shadow-primary/30",
+        visualState === "selected" && "talent-state-selected border-emerald-300/80 shadow-emerald-500/20 ring-1 ring-emerald-300/45 before:border before:border-emerald-300/35 hover:scale-105 hover:border-emerald-200",
+        visualState === "maxed" && "talent-state-maxed border-amber-300 shadow-amber-400/25 ring-2 ring-amber-300/55 before:border before:border-amber-200/50 before:shadow-[0_0_14px_rgba(251,191,36,0.28)] hover:scale-105 hover:border-amber-200",
       )}
     >
-      <img src={iconUrl(talent.iconTexture, context)} alt="" className={cn("h-full w-full rounded object-cover", (rank === 0 || locked) && "grayscale opacity-45")} />
-      {locked && <span className="absolute inset-0 rounded bg-black/35" />}
+      <img src={iconUrl(talent.iconTexture, context)} alt="" className={cn("h-full w-full rounded object-cover", locked && "grayscale opacity-35")} />
+      {locked && <span className="absolute inset-0 rounded bg-black/45" />}
+      {maxed && <span className="pointer-events-none absolute inset-0 rounded bg-amber-300/10 shadow-[inset_0_0_12px_rgba(251,191,36,0.38)]" />}
+      {visualState === "available" && <span className="pointer-events-none absolute inset-0 rounded bg-primary/10 shadow-[inset_0_0_10px_rgba(20,184,166,0.22)]" />}
+      {visualState === "selected" && <span className="pointer-events-none absolute inset-0 rounded bg-emerald-300/10 shadow-[inset_0_0_10px_rgba(16,185,129,0.28)]" />}
       <span className={cn(
-        "absolute -bottom-1 -right-1 rounded px-1 text-[10px] font-bold",
-        maxed ? "bg-amber-400 text-black" : rank > 0 ? "bg-green-600 text-white" : "bg-zinc-700 text-zinc-300",
+        "absolute -bottom-1 -right-1 rounded border px-1 text-[10px] font-bold shadow-sm",
+        visualState === "maxed" ? "border-amber-100/70 bg-amber-300 text-black" : visualState === "selected" ? "border-emerald-100/50 bg-emerald-500 text-black" : visualState === "available" ? "border-primary/60 bg-primary/85 text-black" : "border-zinc-500/60 bg-zinc-800 text-zinc-300",
       )}>
         {rank}/{talent.maxRank}
       </span>
