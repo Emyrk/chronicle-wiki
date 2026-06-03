@@ -7,4 +7,35 @@ describe("global search tool descriptions", () => {
 
     expect(result?.description).toBe("Plan and share class builds for the selected server.");
   });
+
+  it("finds server-scoped raid and boss pages from common aliases", () => {
+    expect(globalSearchResults("turtle", "rag")[0]).toMatchObject({
+      title: "Ragnaros",
+      href: "/turtle/raids/molten-core#encounter-ragnaros",
+      category: "Bosses",
+    });
+    expect(globalSearchResults("turtle", "geddon")[0]).toMatchObject({
+      title: "Baron Geddon",
+      href: "/turtle/raids/molten-core#encounter-baron-geddon",
+      category: "Bosses",
+    });
+    expect(globalSearchResults("turtle", "mc")[0]).toMatchObject({
+      title: "Molten Core",
+      href: "/turtle/raids/molten-core",
+      category: "Raids",
+    });
+  });
+
+  it("finds unit, spell, guide, server, class, and talent spec keywords", () => {
+    expect(globalSearchResults("turtle", "flamewaker")[0]).toMatchObject({ href: "/turtle/explorer", category: "Units" });
+    expect(globalSearchResults("turtle", "living bomb")[0]).toMatchObject({ href: "/turtle/explorer", category: "Spells" });
+    expect(globalSearchResults("turtle", "dispels")[0]).toMatchObject({ href: "/turtle/guides" });
+    expect(globalSearchResults("turtle", "octo")[0]).toMatchObject({ title: "Octo WoW", href: "/octo" });
+    expect(globalSearchResults("turtle", "mage")[0]).toMatchObject({ title: "Mage talents", href: "/turtle/talents/mage" });
+    expect(globalSearchResults("turtle", "frost spec")[0]).toMatchObject({ title: "Mage Frost talents", href: "/turtle/talents/mage" });
+  });
+
+  it("ranks current-server results before global server navigation when both match", () => {
+    expect(globalSearchResults("turtle", "turtle").map((entry) => entry.href).slice(0, 2)).toEqual(["/turtle", "/turtle/talents"]);
+  });
 });

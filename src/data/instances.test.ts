@@ -11,6 +11,7 @@ describe("instance overview data", () => {
       "Magmadar",
       "Gehennas",
       "Garr",
+      "Baron Geddon",
       "Ragnaros",
     ]);
   });
@@ -28,6 +29,7 @@ describe("instance overview data", () => {
       ["Magmadar", "#encounter-magmadar"],
       ["Gehennas", "#encounter-gehennas"],
       ["Garr", "#encounter-garr"],
+      ["Baron Geddon", "#encounter-baron-geddon"],
       ["Ragnaros", "#encounter-ragnaros"],
     ]);
     expect(instanceAnchorId("Garr")).toBe("encounter-garr");

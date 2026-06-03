@@ -93,6 +93,13 @@ export const raidInstances: InstanceDefinition[] = [
         summary: "Add-control encounter with a baseline guide and space for realm-specific notes.",
       },
       {
+        slug: "baron-geddon",
+        name: "Baron Geddon",
+        status: "guide-pending",
+        role: "Boss",
+        summary: "Elemental encounter known for Living Bomb, dispel pressure, and raid spacing checks.",
+      },
+      {
         slug: "ragnaros",
         name: "Ragnaros",
         status: "guide-pending",
@@ -100,7 +107,7 @@ export const raidInstances: InstanceDefinition[] = [
         summary: "Final encounter against the Firelord, with phase timing, submerge pressure, and add control defining the fight.",
       },
     ],
-    keywords: ["mc", "molten core", "lucifron", "magmadar", "gehennas", "garr", "ragnaros"],
+    keywords: ["mc", "molten core", "lucifron", "magmadar", "gehennas", "garr", "baron geddon", "geddon", "living bomb", "ragnaros", "rag"],
   },
 ];
 
