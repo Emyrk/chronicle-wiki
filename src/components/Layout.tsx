@@ -1,8 +1,6 @@
-import { useEffect } from "react";
 import { Link, NavLink, Outlet, useParams } from "react-router-dom";
 import { BookOpen, ExternalLink, Home, Search, TreePine } from "lucide-react";
 import { resolveServerContext } from "@/data/servers";
-import { applyPageMetadata, defaultPageMetadata, pageMetadataForContext } from "@/lib/pageMetadata";
 import { IssueQuicklink } from "@/components/IssueQuicklink";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteSearch } from "@/components/SiteSearch";
@@ -11,12 +9,6 @@ import { cn } from "@/lib/utils";
 export function Layout() {
   const { serverSlug } = useParams();
   const context = resolveServerContext(serverSlug);
-
-  useEffect(() => {
-    if (!context) return;
-    applyPageMetadata(document, pageMetadataForContext(context));
-    return () => applyPageMetadata(document, defaultPageMetadata);
-  }, [context]);
 
   if (!context) {
     return <Outlet />;

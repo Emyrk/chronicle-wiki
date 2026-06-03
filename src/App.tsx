@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { HomePage } from "@/pages/HomePage";
 import { ServerHomePage } from "@/pages/ServerHomePage";
@@ -10,10 +11,17 @@ import { GuidesPage } from "@/pages/GuidesPage";
 import { WikiDevelopmentPage } from "@/pages/WikiDevelopmentPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { allRaidInstances } from "@/data/instances";
+import { applyPageMetadata, routeMetadataForPathname } from "@/lib/pageMetadata";
 
 const defaultRaidSlug = allRaidInstances()[0]?.slug ?? "molten-core";
 
 export default function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    applyPageMetadata(document, routeMetadataForPathname(location.pathname));
+  }, [location.pathname]);
+
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
