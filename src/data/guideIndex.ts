@@ -9,6 +9,7 @@ export interface GuideIndexEntry {
   status: "mvp" | "stub" | "planned";
   href: (serverSlug: string) => string;
   keywords: string[];
+  backgroundImageUrl?: string;
 }
 
 export interface GuideIndexSection {
@@ -16,6 +17,13 @@ export interface GuideIndexSection {
   title: string;
   description: string;
   entries: GuideIndexEntry[];
+}
+
+const chronicleAssetBaseUrl = "https://chronicleclassic.com";
+
+function chronicleAssetUrl(path: string | undefined) {
+  if (!path) return undefined;
+  return `${chronicleAssetBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export const guideSections: GuideIndexSection[] = [
@@ -30,6 +38,7 @@ export const guideSections: GuideIndexSection[] = [
       status: instance.status,
       href: (serverSlug) => `/${serverSlug}/raids/${instance.slug}`,
       keywords: instance.keywords,
+      backgroundImageUrl: chronicleAssetUrl(instance.backgroundImagePath),
     })),
   },
   {

@@ -24,6 +24,7 @@ export interface InstanceDefinition {
   encounters: InstanceEncounter[];
   overviewSections: InstanceOverviewSection[];
   keywords: string[];
+  backgroundImagePath?: string;
 }
 
 export interface InstanceTableOfContentsEntry {
@@ -44,6 +45,7 @@ export const raidInstances: InstanceDefinition[] = [
     kind: "raid",
     description: "A ten-encounter elemental raid below Blackrock Mountain, organized by boss order with server-specific guides linked from each encounter.",
     status: "mvp",
+    backgroundImagePath: "/assets/instances/molten-core/background.jpg",
     overviewSections: [
       {
         id: "overview",
