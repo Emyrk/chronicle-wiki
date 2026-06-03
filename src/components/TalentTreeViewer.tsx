@@ -172,6 +172,19 @@ export function searchParamsWithTalentBuild(params: URLSearchParams, ranks: Tale
   return next;
 }
 
+export function canonicalTalentBuildUrl(href: string, ranks: TalentRanks) {
+  const url = new URL(href);
+  url.search = searchParamsWithTalentBuild(url.searchParams, ranks).toString();
+  return url.toString();
+}
+
+type BuildUrlClipboard = Pick<Clipboard, "writeText">;
+
+export async function copyTalentBuildUrl(clipboard: BuildUrlClipboard | undefined, href: string, ranks: TalentRanks) {
+  if (!clipboard) return;
+  await clipboard.writeText(canonicalTalentBuildUrl(href, ranks));
+}
+
 function talentCenter(talent: Pick<TalentEntry, "tierID" | "columnIndex">) {
   return {
     x: talent.columnIndex * (TALENT_CELL_WIDTH + TALENT_GRID_GAP) + TALENT_BUTTON_SIZE / 2,
@@ -534,6 +547,12 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
     setRanks(nextRanks);
     setSearchParams(searchParamsWithTalentBuild(searchParams, nextRanks), { replace: true });
   }
+
+  async function copyBuildLink() {
+    if (typeof window === "undefined") return;
+    await copyTalentBuildUrl(navigator.clipboard, window.location.href, ranks);
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -545,7 +564,12 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
           <div className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm font-bold text-white">
             Requires level {requiredLevel}
           </div>
-          <button className="rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => commitRanks({})}>Reset {total}/{maxPoints} points</button>
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <button type="button" className="rounded-lg border border-primary/50 bg-primary/15 px-3 py-2 text-sm font-bold text-white hover:bg-primary/25" onClick={() => void copyBuildLink()} title="Share your current talents">
+              Copy build link
+            </button>
+            <button type="button" className="rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => commitRanks({})}>Reset {total}/{maxPoints} points</button>
+          </div>
         </div>
       </div>
       <div className={tabGridClassName}>

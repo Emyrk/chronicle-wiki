@@ -7,6 +7,8 @@ import type { ClassTalentData, TalentEntry } from "../data/talents";
 import {
   calculateRequiredPlayerLevel,
   canUseTalent,
+  canonicalTalentBuildUrl,
+  copyTalentBuildUrl,
   decodeTalentBuild,
   encodeTalentBuild,
   normalizeTalentRanks,
@@ -434,5 +436,54 @@ describe("TalentTreeViewer URL build state", () => {
     const params = searchParamsWithTalentBuild(new URLSearchParams("foo=bar"), { 12: 2, 30: 1 });
     const cleared = searchParamsWithTalentBuild(params, {});
     expect(cleared.toString()).toBe("foo=bar");
+  });
+
+  it("builds the canonical copy URL from the current server route, class route, and encoded build state", () => {
+    const url = canonicalTalentBuildUrl("https://wiki.chronicleclassic.com/turtle/talents/mage?foo=bar", { 12: 2, 30: 1 });
+
+    expect(url).toBe("https://wiki.chronicleclassic.com/turtle/talents/mage?foo=bar&build=c.2_u.1");
+  });
+
+  it("copies the canonical build URL through the Copy build link action", async () => {
+    const copied: string[] = [];
+
+    await copyTalentBuildUrl({ writeText: async (value) => { copied.push(value); } }, "https://wiki.chronicleclassic.com/turtle/talents/mage?build=stale", { 12: 2 });
+
+    expect(copied).toEqual(["https://wiki.chronicleclassic.com/turtle/talents/mage?build=c.2"]);
+  });
+
+  it("renders a player-facing Copy build link control near the talent point summary", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Mage",
+      tabs: [
+        {
+          id: 81,
+          name: "Arcane",
+          backgroundFile: "MageArcane",
+          orderIndex: 0,
+          iconTexture: "spell_holy_magicalsentry",
+          talents: [talent({ id: 10, tierID: 0, columnIndex: 0, maxRank: 5 })],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data, `/turtle/talents/mage?build=${encodeTalentBuild({ 10: 3 })}`);
+
+    expect(html).toContain("Reset 3/51 points");
+    expect(html).toContain("Copy build link");
+    expect(html).toContain("Share your current talents");
+    expect(html).not.toContain("canonical");
+  });
+
+  it("normalizes invalid or stale shared build strings before generating the canonical copy URL", () => {
+    const valid = talent({ id: 1, tierID: 0, columnIndex: 0, maxRank: 2 });
+    const stale = talent({ id: 2, tierID: 1, columnIndex: 0, maxRank: 3 });
+    const normalized = normalizeTalentRanks([[valid, stale]], decodeTalentBuild("1.9_2.2_missing"), 2);
+
+    expect(normalized).toEqual({ 1: 2 });
+    expect(canonicalTalentBuildUrl("https://wiki.chronicleclassic.com/turtle/talents/mage?build=1.9_2.2_missing", normalized)).toBe(
+      "https://wiki.chronicleclassic.com/turtle/talents/mage?build=1.2",
+    );
   });
 });
