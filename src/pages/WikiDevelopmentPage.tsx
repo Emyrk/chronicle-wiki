@@ -1,4 +1,4 @@
-import { Bot, ExternalLink, Github, Sparkles } from "lucide-react";
+import { ClipboardList, ExternalLink, Github, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IssueQuicklink } from "@/components/IssueQuicklink";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -13,7 +13,7 @@ export function WikiDevelopmentPage() {
         <section className="mt-6 wiki-card overflow-hidden border-border/60 bg-card">
           <div className="border-b border-border/60 bg-gradient-to-br from-primary/15 via-black/50 to-transparent p-8">
             <div className="inline-flex items-center gap-2 rounded border border-border/60 bg-black/40 px-3 py-1 text-xs uppercase tracking-[0.25em] text-zinc-300">
-              <Bot className="h-3.5 w-3.5" /> Disclosure
+              <ClipboardList className="h-3.5 w-3.5" /> Feedback
             </div>
             <h1 className="mt-5 text-4xl font-bold tracking-tight text-white md:text-6xl">{aiDisclosure.title}</h1>
             <p className="mt-4 max-w-3xl text-lg text-zinc-300">{aiDisclosure.summary}</p>
@@ -39,7 +39,7 @@ export function WikiDevelopmentPage() {
               <Github className="h-4 w-4" /> Browse GitHub issues <ExternalLink className="h-3.5 w-3.5" />
             </a>
             <p className="basis-full max-w-3xl text-xs leading-5 text-muted-foreground">
-              The quicklink opens a GitHub issue with the current URL and page context prefilled.
+              The quicklink opens a GitHub issue with this page attached so corrections land in the right place.
             </p>
           </div>
         </section>

@@ -6,7 +6,7 @@ export interface GuideIndexEntry {
   slug: string;
   title: string;
   description: string;
-  status: "mvp" | "stub" | "planned";
+  status: "available" | "guide-pending" | "planned";
   href: (serverSlug: string) => string;
   keywords: string[];
   backgroundImageUrl?: string;
@@ -42,7 +42,7 @@ export const guideSections: GuideIndexSection[] = [
   {
     slug: "dungeons",
     title: "Dungeons",
-    description: "Dungeon guides will live here once Chronicle has enough instance-level data to avoid hand-wavy filler.",
+    description: "Dungeon guides will live here as encounters get enough confirmed mechanics for useful player notes.",
     entries: [],
   },
 ];

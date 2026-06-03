@@ -31,13 +31,13 @@ export const baseGuides: Record<string, GuidePage> = {
     raid: "Molten Core",
     boss: "garr",
     summary: "Garr is an add-control encounter. The baseline plan is to banish or tank Firesworn, kill them deliberately, dispel dangerous effects, and avoid turning add deaths into raid-wide chaos.",
-    sourceLabel: "Legacy Vanilla baseline",
+    sourceLabel: "Legacy Vanilla",
     spellIds: [19492, 19514, 19496],
     creatures: garrCreatures,
     callouts: [
       {
         title: "Baseline, not gospel",
-        body: "This page is the Legacy fallback. Server pages should patch mechanics once Chronicle logs confirm differences.",
+        body: "This is the standard Vanilla plan. Check your server's notes before assuming every custom realm handles the fight the same way.",
         tone: "info",
       },
     ],
@@ -67,7 +67,7 @@ export const baseGuides: Record<string, GuidePage> = {
       {
         title: "DPS",
         body: [
-          "Follow the add kill order. Chronicle should eventually make target discipline painfully visible here.",
+          "Follow the add kill order. Clean target discipline keeps the raid stable and the pull readable.",
           "Avoid padding into banished or controlled adds unless the raid leader explicitly calls for swaps.",
         ],
       },
@@ -78,12 +78,12 @@ export const baseGuides: Record<string, GuidePage> = {
 export const flavorPatches: Record<string, Record<string, GuidePatch>> = {
   "nightmares-of-ursol": {
     "raids/molten-core/garr": {
-      sourceLabel: "Nightmares of Ursol override",
-      summary: "Turtle-style servers share the Legacy Garr shell until log-derived creature spell lists prove exact custom behavior. Use this page as the place to record Nightmares of Ursol differences.",
+      sourceLabel: "Nightmares of Ursol",
+      summary: "Turtle-style servers start from the Legacy Garr plan, then add Nightmares of Ursol differences where the fight diverges.",
       callouts: [
         {
-          title: "Needs log-derived spell confirmation",
-          body: "Turtle, Octo, and other Nightmares of Ursol deployments may share content, but each server route still queries its own Chronicle API for live data.",
+          title: "Check your realm",
+          body: "Turtle, Octo, and other Nightmares of Ursol realms can share a guide family while still differing in exact spell behavior.",
           tone: "warning",
         },
       ],
@@ -91,24 +91,24 @@ export const flavorPatches: Record<string, Record<string, GuidePatch>> = {
         {
           title: "Nightmares of Ursol notes",
           body: [
-            "This override is intentionally thin until Chronicle logs provide the exact spells cast by Garr and Firesworn in Molten Core.",
-            "When those spell lists arrive, add or remove spells here instead of forking the whole guide.",
+            "Treat the Legacy assignments as the starting point, then adjust for any realm-specific Garr and Firesworn behavior your raid sees.",
+            "Keep add control, dispels, and kill timing explicit so raid leaders can adapt the plan quickly.",
           ],
         },
       ],
       addSpells: [
-        { id: 0, name: "Pending Turtle-specific spell", notes: "Placeholder for log-confirmed custom mechanic." },
+        { id: 0, name: "Realm-specific mechanic", notes: "Record custom Garr or Firesworn behavior once your raid confirms it." },
       ],
     },
   },
   vanillaplus: {
     "raids/molten-core/garr": {
-      sourceLabel: "Vanilla+ override",
-      summary: "Vanilla+ Garr starts from the Legacy guide, with server-specific custom mechanics to be filled from Chronicle spell-cast evidence.",
+      sourceLabel: "Vanilla+",
+      summary: "Vanilla+ Garr starts from the Legacy guide, with room for server-specific mechanics as raids confirm them.",
       callouts: [
         {
           title: "Vanilla+ custom content expected",
-          body: "This guide is wired for Vanilla+ overrides. The current MVP keeps mechanics conservative until log-derived spells are added.",
+          body: "This guide keeps the core Garr plan conservative. Adjust banishes, dispels, and add timing if Vanilla+ mechanics demand it.",
           tone: "warning",
         },
       ],
@@ -116,8 +116,8 @@ export const flavorPatches: Record<string, Record<string, GuidePatch>> = {
         {
           title: "Vanilla+ notes",
           body: [
-            "Use the unit explorer to attach Vanilla+ creature spell lists once available.",
-            "Prefer structured spell additions and removals over duplicating the Legacy page.",
+            "Use observed Vanilla+ creature behavior to refine the raid plan.",
+            "Call out any mechanic that changes assignments, positioning, dispels, or kill order.",
           ],
         },
       ],
@@ -128,11 +128,11 @@ export const flavorPatches: Record<string, Record<string, GuidePatch>> = {
 export const serverPatches: Record<string, Record<string, GuidePatch>> = {
   turtle: {
     "raids/molten-core/garr": {
-      sourceLabel: "Turtle server note",
+      sourceLabel: "Turtle",
       callouts: [
         {
-          title: "Turtle route",
-          body: "This page uses Turtle branding and Turtle Chronicle API calls, while inheriting shared Nightmares of Ursol guide content.",
+          title: "Turtle WoW notes",
+          body: "Use the Nightmares of Ursol Garr plan as the starting point, then adjust for Turtle-specific raid behavior.",
           tone: "info",
         },
       ],
@@ -140,11 +140,11 @@ export const serverPatches: Record<string, Record<string, GuidePatch>> = {
   },
   octo: {
     "raids/molten-core/garr": {
-      sourceLabel: "Octo server note",
+      sourceLabel: "Octo",
       callouts: [
         {
-          title: "Octo route",
-          body: "Octo shares Nightmares of Ursol content but should query Octo Chronicle logs for live evidence.",
+          title: "Octo notes",
+          body: "Use the Nightmares of Ursol Garr plan as the starting point, then adjust for Octo-specific raid behavior.",
           tone: "info",
         },
       ],

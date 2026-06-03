@@ -45,7 +45,7 @@ export function GuidesPage() {
               ))}
             </div>
           ) : (
-            <div className="wiki-card p-5 text-sm text-muted-foreground">No guide matches yet. If Chronicle has logs for it, this is where the AI eventually stops pretending and starts citing.</div>
+            <div className="wiki-card p-5 text-sm text-muted-foreground">No guide matches yet. Try a raid, boss, dungeon, or server keyword.</div>
           )}
         </section>
       ) : (
@@ -99,10 +99,16 @@ function GuideCard({ serverSlug, entry, section }: { serverSlug: string; entry: 
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{section}</p>
             <h3 className="mt-1 text-2xl font-bold text-white">{entry.title}</h3>
           </div>
-          <span className="wiki-pill">{entry.status}</span>
+          <span className="wiki-pill">{guideStatusLabel(entry.status)}</span>
         </div>
         <p className="mt-3 text-sm text-zinc-200">{entry.description}</p>
       </div>
     </Link>
   );
+}
+
+function guideStatusLabel(status: GuideIndexEntry["status"]) {
+  if (status === "available") return "Available";
+  if (status === "guide-pending") return "Guide pending";
+  return "Planned";
 }

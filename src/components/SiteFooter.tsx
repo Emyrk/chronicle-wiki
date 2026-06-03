@@ -32,7 +32,7 @@ export function SiteFooter() {
           <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-zinc-400">Wiki</h2>
           <div className="mt-3 flex flex-col gap-2">
             <Link to="/" className="hover:text-white">Server selector</Link>
-            <Link to="/wiki-development" className="hover:text-white">Wiki Development</Link>
+            <Link to="/wiki-development" className="hover:text-white">Wiki feedback</Link>
             <a href={wikiDevelopmentLinks.githubIssues} className="inline-flex items-center gap-1 hover:text-white">
               Report errors <ExternalLink className="h-3.5 w-3.5" />
             </a>

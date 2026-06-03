@@ -27,7 +27,7 @@ export function globalSearchResults(serverSlug: string, query: string): SearchRe
     },
     {
       title: "Unit explorer",
-      description: "Creatures and spells cast, ready for log-derived data.",
+      description: "Creatures and spells cast, organized for raid planning.",
       href: `/${serverSlug}/explorer`,
       category: "Tools",
       keywords: ["units", "creatures", "spells", "casts", "explorer"],

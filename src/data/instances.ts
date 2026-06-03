@@ -1,5 +1,5 @@
 export type InstanceKind = "raid" | "dungeon";
-export type InstanceStatus = "mvp" | "stub" | "planned";
+export type InstanceStatus = "available" | "guide-pending" | "planned";
 
 export interface InstanceEncounter {
   slug: string;
@@ -44,7 +44,7 @@ export const raidInstances: InstanceDefinition[] = [
     title: "Molten Core",
     kind: "raid",
     description: "A ten-encounter elemental raid below Blackrock Mountain, organized by boss order with server-specific guides linked from each encounter.",
-    status: "mvp",
+    status: "available",
     backgroundImagePath: "/assets/instances/molten-core/background.jpg",
     overviewSections: [
       {
@@ -67,35 +67,35 @@ export const raidInstances: InstanceDefinition[] = [
       {
         slug: "lucifron",
         name: "Lucifron",
-        status: "stub",
+        status: "guide-pending",
         role: "Boss",
         summary: "Opening encounter with Lucifron and Flamewaker adds. Expect curse pressure, mind control, and an early check on dispels and target control.",
       },
       {
         slug: "magmadar",
         name: "Magmadar",
-        status: "stub",
+        status: "guide-pending",
         role: "Boss",
         summary: "Core hound encounter built around fear control, frenzy handling, and steady raid positioning.",
       },
       {
         slug: "gehennas",
         name: "Gehennas",
-        status: "stub",
+        status: "guide-pending",
         role: "Boss",
         summary: "Curse and add-control encounter with sustained raid damage and Flamewaker pressure.",
       },
       {
         slug: "garr",
         name: "Garr",
-        status: "mvp",
+        status: "available",
         role: "Boss with adds",
-        summary: "Add-control encounter with a completed baseline guide and server override hooks.",
+        summary: "Add-control encounter with a completed baseline guide and room for realm-specific notes.",
       },
       {
         slug: "ragnaros",
         name: "Ragnaros",
-        status: "stub",
+        status: "guide-pending",
         role: "Final boss",
         summary: "Final encounter against the Firelord, with phase timing, submerge pressure, and add control defining the fight.",
       },

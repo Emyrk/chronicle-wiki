@@ -80,8 +80,8 @@ export function RaidPage() {
   );
 }
 
-function statusLabel(status: "mvp" | "stub" | "planned") {
-  if (status === "mvp") return "Available";
-  if (status === "stub") return "Stub";
+function statusLabel(status: "available" | "guide-pending" | "planned") {
+  if (status === "available") return "Available";
+  if (status === "guide-pending") return "Guide pending";
   return "Planned";
 }

@@ -26,7 +26,7 @@ export function BossGuidePage() {
           </a>
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
-          <span className="wiki-pill">Source: {guide.sourceLabel}</span>
+          <span className="wiki-pill">{guide.sourceLabel}</span>
           <span className="wiki-pill">{context.flavor.name}</span>
           <span className="wiki-pill">{guide.creatures.length} units</span>
           <span className="wiki-pill">{guide.spellIds.length} tracked spells</span>
@@ -51,15 +51,15 @@ export function BossGuidePage() {
         </div>
         <aside className="space-y-4">
           <div className="wiki-card p-5">
-            <h2 className="text-2xl font-bold text-white">Evidence hooks</h2>
+            <h2 className="text-2xl font-bold text-white">Fight evidence</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Next API slice: recent wipes/clears and log-derived spell casts for this boss from {context.server.shortName} Chronicle.
+              Use recent wipes, clears, and creature casts from {context.server.shortName} Chronicle to confirm assignments before raid night.
             </p>
           </div>
           <div className="wiki-card p-5">
-            <h2 className="text-2xl font-bold text-white">Guide inheritance</h2>
+            <h2 className="text-2xl font-bold text-white">Realm notes</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Route chooses server. Server chooses live Chronicle API. Server maps to flavor. Flavor patches Legacy content.
+              Start from the shared fight plan, then use realm notes for custom mechanics, positioning changes, or assignment differences.
             </p>
           </div>
         </aside>

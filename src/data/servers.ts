@@ -61,7 +61,7 @@ export const servers: Record<string, WikiServer> = {
     name: "Legacy Vanilla",
     shortName: "Legacy",
     subtitle: "Baseline Vanilla 1.12.1",
-    description: "Default Classic-era wiki content used when a supported server does not have an override yet.",
+    description: "Default Classic-era wiki content for Vanilla-style realms.",
     tags: ["Vanilla", "1.12.1", "Baseline"],
     chronicleBaseUrl: "https://chronicleclassic.com",
     logoUrl: "https://chronicleclassic.com/chronicle-logo.svg",

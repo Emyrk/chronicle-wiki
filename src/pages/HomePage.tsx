@@ -13,7 +13,7 @@ export function HomePage() {
           <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">Chronicle Wiki</p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-white md:text-6xl">Private server knowledgebase</h1>
           <p className="mt-4 max-w-3xl text-lg leading-8 text-zinc-300">
-            Server-scoped guides and tools powered by Chronicle datasets. Pick the server you play on; shared flavors inherit baseline content underneath.
+            Server-scoped guides and tools powered by Chronicle data. Pick the server you play on; related realms share a common starting point.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <IssueQuicklink />

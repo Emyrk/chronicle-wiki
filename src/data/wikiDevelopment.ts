@@ -4,16 +4,16 @@ export const wikiDevelopmentLinks = {
 };
 
 export const aiDisclosure = {
-  title: "Wiki Development",
-  summary: "This website is entirely maintained by AI because of the sheer amount of work involved in maintaining a wiki across multiple Chronicle-supported game versions and private-server flavors.",
+  title: "Wiki Feedback",
+  summary: "Chronicle Wiki grows through player reports, confirmed mechanics, and server-specific corrections. If something looks wrong, send the page context so it can be fixed in the open.",
   sections: [
     {
-      heading: "Report errors on GitHub",
-      body: "AI maintenance makes mistakes. If a guide, talent, icon, or server-specific detail is wrong, report it on GitHub so the issue can be tracked and fixed in the open.",
+      heading: "Report errors",
+      body: "If a guide, talent, icon, or server-specific detail is wrong, report it on GitHub so the correction can be tracked and linked to the affected page.",
     },
     {
-      heading: "Why AI maintenance",
-      body: "Using AI for wiki maintenance lets Chronicle focus development on Chronicle itself: logs, evidence, analysis, and the core tooling players rely on.",
+      heading: "What helps most",
+      body: "Include the server, encounter, class, talent build, or spell name you checked. Links to Chronicle pages, combat logs, or screenshots make fixes faster.",
     },
   ],
 };
