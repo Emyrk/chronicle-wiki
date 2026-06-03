@@ -279,6 +279,35 @@ describe("TalentTreeViewer tooltips", () => {
     expect(html).not.toContain("Spell ranks:");
   });
 
+  it("does not render spell rank IDs as player-facing tooltip text", () => {
+    const described = talent({
+      id: 94,
+      name: "Debug Rank Leak",
+      tierID: 0,
+      columnIndex: 0,
+      maxRank: 3,
+      spellRanks: [48123, 48124, 48125],
+      description: "Player-facing talent summary.",
+      rankDescriptions: ["Rank one player text.", "Rank two player text.", "Rank three player text."],
+    } as Partial<TalentEntry> & Pick<TalentEntry, "id" | "tierID" | "columnIndex"> & { description: string; rankDescriptions: string[] });
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Warrior",
+      tabs: [{ id: 161, name: "Arms", backgroundFile: "WarriorArms", orderIndex: 0, iconTexture: "ability_warrior_savageblow", talents: [described] }],
+    };
+
+    const html = renderTalentTree(data, `/talents/warrior?build=${encodeTalentBuild({ 94: 1 })}`);
+
+    expect(html).toContain("Debug Rank Leak");
+    expect(html).toContain("Player-facing talent summary.");
+    expect(html).toContain("Current rank: Rank one player text.");
+    expect(html).toContain("Next rank: Rank two player text.");
+    expect(html).not.toContain("48123");
+    expect(html).not.toContain("48124");
+    expect(html).not.toContain("48125");
+    expect(html).not.toContain("Spell ranks:");
+  });
+
   it("explains row and prerequisite blockers for locked talents", () => {
     const source = talent({ id: 91, name: "Tactical Mastery", tierID: 0, columnIndex: 0, maxRank: 2 });
     const locked = talent({ id: 92, name: "Anger Management", tierID: 1, columnIndex: 0, maxRank: 1, prereqTalent: [91] });
