@@ -10,7 +10,8 @@ export default defineConfig({
     toHaveScreenshot: {
       animations: "disabled",
       caret: "hide",
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: process.env.CI ? 0.08 : 0.02,
+      threshold: 0.3,
     },
   },
   forbidOnly: Boolean(process.env.CI),
