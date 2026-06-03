@@ -81,6 +81,15 @@ describe("ChronicleClassic visual language", () => {
     expect(turtle).not.toContain("debug");
   });
 
+  it("uses the square Chronicle C logo on the Legacy Vanilla server card while preserving the home wordmark", () => {
+    const html = renderRoute("/", createElement(HomePage));
+
+    expect(html).toContain('src="https://chronicleclassic.com/chronicle-logo.svg" alt="Chronicle"');
+    expect(html).toContain('src="https://chronicleclassic.com/chronicle-logo.png" alt="Legacy Vanilla logo"');
+    expect(html).not.toContain('src="https://chronicleclassic.com/chronicle-logo.svg" alt="Legacy Vanilla logo"');
+    expect(html.match(/src="https:\/\/chronicleclassic\.com\/chronicle-logo\.svg"/g)).toHaveLength(1);
+  });
+
   it("renders the server selector with Chronicle home server-card structure and footer actions", () => {
     const html = renderRoute("/", createElement(HomePage));
 
