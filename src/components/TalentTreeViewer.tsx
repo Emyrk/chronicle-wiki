@@ -314,9 +314,9 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
     <section className="wiki-card self-start p-4">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src={iconUrl(tab.iconTexture, context)} alt="" className="h-10 w-10 rounded border border-white/10" />
+          <img src={iconUrl(tab.iconTexture, context)} alt="" className="h-10 w-10 rounded border border-border/60" />
           <div>
-            <h3 className="font-serif text-xl font-bold text-white">{tab.name}</h3>
+            <h3 className="text-xl font-bold text-white">{tab.name}</h3>
             <p className="text-sm text-muted-foreground">{points} points spent</p>
           </div>
         </div>
@@ -385,14 +385,14 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-serif text-3xl font-bold text-white">{data.name} talents</h2>
+          <h2 className="text-3xl font-bold text-white">{data.name} talents</h2>
           <p className="text-sm text-muted-foreground">Click to add a point. Right-click, shift-click, or command-click to remove one. Shareable builds are stored in the URL.</p>
         </div>
         <div className="flex flex-col items-start gap-2 sm:items-end">
           <div className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm font-bold text-white">
             Requires level {requiredLevel}
           </div>
-          <button className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => commitRanks({})}>Reset {total}/{maxPoints} points</button>
+          <button className="rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => commitRanks({})}>Reset {total}/{maxPoints} points</button>
         </div>
       </div>
       <div className={tabGridClassName}>

@@ -16,7 +16,7 @@ export function RaidPage() {
     <div className="space-y-6">
       <div className="wiki-card p-6">
         <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name} · Raid overview</p>
-        <h1 className="mt-2 font-serif text-5xl font-bold text-white">{instance.title}</h1>
+        <h1 className="mt-2 text-5xl font-bold text-white">{instance.title}</h1>
         <p className="mt-3 max-w-3xl text-zinc-300">{instance.description}</p>
         <div className="mt-5 flex flex-wrap gap-2">
           <span className="wiki-pill">{context.flavor.name}</span>
@@ -27,7 +27,7 @@ export function RaidPage() {
 
       <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start">
         <aside className="wiki-card p-4 lg:sticky lg:top-24">
-          <h2 className="font-serif text-xl font-bold text-white">Contents</h2>
+          <h2 className="text-xl font-bold text-white">Contents</h2>
           <nav aria-label={`${instance.title} contents`} className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
             {overview.tableOfContents.map((entry) => (
               <a
@@ -60,13 +60,13 @@ export function RaidPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{encounter.role ?? "Encounter"}</p>
-                      <h3 className="mt-1 font-serif text-3xl font-bold text-white">{encounter.name}</h3>
+                      <h3 className="mt-1 text-3xl font-bold text-white">{encounter.name}</h3>
                     </div>
                     <span className="wiki-pill">{statusLabel(encounter.status)}</span>
                   </div>
                   <p className="mt-3 text-sm text-muted-foreground">{guide?.summary ?? encounter.summary}</p>
                   {guide ? (
-                    <Link to={`/${context.server.slug}/raids/${instance.slug}/${encounter.slug}`} className="mt-4 inline-flex text-sm font-semibold text-amber-300 underline">
+                    <Link to={`/${context.server.slug}/raids/${instance.slug}/${encounter.slug}`} className="mt-4 inline-flex text-sm font-semibold text-primary underline">
                       Open {encounter.name} guide
                     </Link>
                   ) : null}

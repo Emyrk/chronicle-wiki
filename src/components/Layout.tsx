@@ -38,13 +38,13 @@ export function Layout() {
         "--ring": server.theme.accent,
       } as React.CSSProperties}
     >
-      <header className="border-b border-white/10 bg-black/35 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+      <header className="border-b border-border/60 bg-black/70 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
           <Link to={`/${server.slug}`} className="flex items-center gap-3">
-            <img src={server.logoUrl} alt="" className="h-12 w-12 rounded-lg border border-white/10 object-cover" />
+            <img src={server.logoUrl} alt="" className="h-11 w-11 rounded-lg border border-border/60 bg-black/70 object-cover" />
             <div>
               <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Chronicle Wiki</div>
-              <h1 className="font-serif text-2xl font-bold text-white">{server.name}</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-white">{server.name}</h1>
               <div className="text-sm text-muted-foreground">{flavor.name} · {flavor.clientVersion}</div>
             </div>
           </Link>
@@ -59,7 +59,7 @@ export function Layout() {
                   end={item.to === `/${server.slug}`}
                   className={({ isActive }) => cn(
                     "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition",
-                    isActive ? "border-primary bg-primary/15 text-white" : "border-white/10 bg-white/5 text-muted-foreground hover:text-white",
+                    isActive ? "border-primary/70 bg-primary/15 text-white" : "border-border/60 bg-black/40 text-muted-foreground hover:border-primary/50 hover:text-white",
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -70,7 +70,7 @@ export function Layout() {
             <IssueQuicklink context={context} />
             <a
               href={server.chronicleBaseUrl}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-muted-foreground hover:text-white"
+              className="wiki-action"
             >
               Chronicle <ExternalLink className="h-4 w-4" />
             </a>

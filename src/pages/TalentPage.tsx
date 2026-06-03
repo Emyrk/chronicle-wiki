@@ -24,7 +24,7 @@ export function TalentPage() {
       <div className="wiki-card p-5">
         <div>
           <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name}</p>
-          <h1 className="mt-2 font-serif text-4xl font-bold text-white">Talent calculator</h1>
+          <h1 className="mt-2 text-4xl font-bold tracking-tight text-white">Talent calculator</h1>
           <p className="mt-2 max-w-3xl text-zinc-300">Plan, compare, and share class builds for {context.server.name}.</p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -32,9 +32,9 @@ export function TalentPage() {
             <Link
               key={cls.id}
               to={`/${context.server.slug}/talents/${cls.slug}`}
-              className={cn("inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm", cls.id === selectedClassId ? "border-primary bg-primary/15 text-white" : "border-white/10 bg-white/5 text-muted-foreground hover:text-white")}
+              className={cn("inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition", cls.id === selectedClassId ? "border-primary/70 bg-primary/15 text-white" : "border-border/60 bg-black/40 text-muted-foreground hover:border-primary/50 hover:text-white")}
             >
-              <img src={iconUrl(cls.iconTexture, context)} alt="" className="h-6 w-6 rounded border border-white/10 object-cover" />
+              <img src={iconUrl(cls.iconTexture, context)} alt="" className="h-6 w-6 rounded border border-border/60 object-cover" />
               <span>{cls.name}</span>
             </Link>
           ))}

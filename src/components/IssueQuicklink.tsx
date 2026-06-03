@@ -19,7 +19,7 @@ export function IssueQuicklink({ context, className }: IssueQuicklinkProps) {
       target="_blank"
       rel="noreferrer"
       className={cn(
-        "inline-flex items-center gap-2 rounded-lg border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-sm text-amber-100 transition hover:border-amber-300/40 hover:bg-amber-300/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/70",
+        "wiki-action",
         className,
       )}
     >

@@ -11,7 +11,7 @@ export function SiteSearch() {
 
   return (
     <div className="relative w-full lg:w-72">
-      <label className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-muted-foreground focus-within:border-primary/70 focus-within:text-white">
+      <label className="flex items-center gap-2 rounded-lg border border-border/60 bg-black/50 px-3 py-2 text-sm text-muted-foreground focus-within:border-primary/70 focus-within:text-white">
         <Search className="h-4 w-4" />
         <input
           value={query}
@@ -21,14 +21,14 @@ export function SiteSearch() {
         />
       </label>
       {showResults && (
-        <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950 shadow-2xl shadow-black/40 lg:w-96">
+        <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-lg border border-border/60 bg-zinc-950 shadow-2xl shadow-black/40 lg:w-96">
           {results.length > 0 ? (
             results.map((result) => (
               <Link
                 key={`${result.category}/${result.href}`}
                 to={result.href}
                 onClick={() => setQuery("")}
-                className="block border-b border-white/5 px-4 py-3 last:border-b-0 hover:bg-white/5"
+                className="block border-b border-border/60 px-4 py-3 last:border-b-0 hover:bg-black/50"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-white">{result.title}</span>

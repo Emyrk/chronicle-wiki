@@ -23,9 +23,9 @@ export function ServerHomePage() {
         {cards.map((card) => {
           const Icon = card.icon;
           return (
-            <Link key={card.to} to={card.to} className="wiki-card p-5 transition hover:-translate-y-1 hover:border-primary/60">
+            <Link key={card.to} to={card.to} className="wiki-card p-5 transition hover:border-primary/50 hover:bg-black/70">
               <Icon className="mb-4 h-8 w-8 text-primary" />
-              <h2 className="font-serif text-2xl font-bold text-white">{card.title}</h2>
+              <h2 className="text-2xl font-bold text-white">{card.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{card.body}</p>
             </Link>
           );

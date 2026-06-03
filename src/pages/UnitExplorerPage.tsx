@@ -14,7 +14,7 @@ export function UnitExplorerPage() {
     <div className="space-y-6">
       <div className="wiki-card p-6">
         <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name}</p>
-        <h1 className="mt-2 font-serif text-4xl font-bold text-white">Molten Core unit explorer</h1>
+        <h1 className="mt-2 text-4xl font-bold text-white">Molten Core unit explorer</h1>
         <p className="mt-3 max-w-3xl text-zinc-300">
           MVP authoring view. Today this is seeded with Garr. Drop in log-derived creature spell casts here, then we can turn them into structured guide patches.
         </p>
