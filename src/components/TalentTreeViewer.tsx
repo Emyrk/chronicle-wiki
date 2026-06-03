@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { fetchTalentTooltipSpell, prefetchTalentTooltipSpell, talentTooltipSpellQueryKey } from "../api/chronicle";
 import type { ClassTalentData, TalentEntry, TalentTabData } from "../data/talents";
@@ -421,8 +421,8 @@ export function mergeTalentRankDescriptions(descriptions: string[], activeRank: 
   }, []);
 }
 
-function rankDescriptionsForTooltip(rankTexts: string[], rank: number, currentRankText?: string, nextRankText?: string) {
-  const descriptions = [...rankTexts];
+export function rankDescriptionsForTooltip(rankTexts: string[], rank: number, currentRankText?: string, nextRankText?: string, fetchedRankTexts: string[] = []) {
+  const descriptions = [...(fetchedRankTexts.some((description) => description.trim()) ? fetchedRankTexts : rankTexts)];
   if (rank > 0 && currentRankText) descriptions[rank - 1] = currentRankText;
   if (rank < descriptions.length && nextRankText) descriptions[rank] = nextRankText;
   return descriptions;
@@ -557,16 +557,26 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
     staleTime: Infinity,
     gcTime: 30 * 60 * 1000,
   });
+  const rankSpellQueries = useQueries({
+    queries: talent.spellRanks.map((spellId) => ({
+      queryKey: talentTooltipSpellQueryKey(context, spellId),
+      queryFn: () => fetchTalentTooltipSpell(queryClient, context, spellId),
+      enabled: Boolean(tooltipPosition && spellId),
+      staleTime: Infinity,
+      gcTime: 30 * 60 * 1000,
+    })),
+  });
   const primarySpell = currentSpellId ? currentRankQuery.data : nextRankQuery.data;
   const description = primarySpell?.notes ?? talentDescription(talent);
   const currentRankText = rank > 0 ? currentRankQuery.data?.notes ?? rankTexts[rank - 1] : undefined;
   const nextRankText = rank < talent.maxRank ? nextRankQuery.data?.notes ?? rankTexts[rank] ?? rankTexts[rank === 0 ? 0 : rank] : undefined;
-  const rankDescriptionParts = mergeTalentRankDescriptions(rankDescriptionsForTooltip(rankTexts, rank, currentRankText, nextRankText), rank);
-  const loadingSpellDetails = Boolean(tooltipPosition && primarySpellId && ((currentSpellId && currentRankQuery.isPending) || (nextSpellId && nextRankQuery.isPending)));
+  const fetchedRankTexts = rankSpellQueries.map((query, index) => query.data?.notes ?? rankTexts[index] ?? "");
+  const rankDescriptionParts = mergeTalentRankDescriptions(rankDescriptionsForTooltip(rankTexts, rank, currentRankText, nextRankText, fetchedRankTexts), rank);
+  const loadingSpellDetails = Boolean(tooltipPosition && primarySpellId && ((currentSpellId && currentRankQuery.isPending) || (nextSpellId && nextRankQuery.isPending) || rankSpellQueries.some((query) => query.isPending)));
   const lockReasons = locked ? lockedTalentReasons(talent, talents, ranks) : [];
   const title = locked ? `${talent.name} locked. ${lockReasons.join(" ")}` : `${talent.name} (${rank}/${talent.maxRank})`;
   const prefetchTooltipSpells = () => {
-    for (const spellId of [currentSpellId, nextSpellId]) {
+    for (const spellId of talent.spellRanks) {
       if (!spellId) continue;
       void prefetchTalentTooltipSpell(queryClient, context, spellId);
     }

@@ -3,6 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
+import { talentTooltipSpellQueryKey } from "../api/chronicle";
 import { resolveServerContext } from "../data/servers";
 import { fallbackTalentTrees } from "../data/talents";
 import type { ClassTalentData, TalentEntry } from "../data/talents";
@@ -15,6 +16,7 @@ import {
   encodeTalentBuild,
   mergeTalentRankDescriptions,
   normalizeTalentRanks,
+  rankDescriptionsForTooltip,
   resetTalentTabRanks,
   prerequisiteArrowPolylinePoints,
   prerequisiteArrowPathData,
@@ -32,6 +34,22 @@ function renderTalentTree(data: ClassTalentData, path = "/talents/test") {
   const context = resolveServerContext("turtle");
   if (!context) throw new Error("missing turtle context");
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return renderToStaticMarkup(
+    createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      createElement(MemoryRouter, { initialEntries: [path] }, createElement(TalentTreeViewer, { data, context })),
+    ),
+  );
+}
+
+function renderTalentTreeWithCachedSpellNotes(data: ClassTalentData, path: string, spellNotes: Record<number, string>) {
+  const context = resolveServerContext("turtle");
+  if (!context) throw new Error("missing turtle context");
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  for (const [spellId, notes] of Object.entries(spellNotes)) {
+    queryClient.setQueryData(talentTooltipSpellQueryKey(context, Number(spellId)), { id: Number(spellId), name: `Spell ${spellId}`, notes });
+  }
   return renderToStaticMarkup(
     createElement(
       QueryClientProvider,
@@ -156,6 +174,38 @@ describe("TalentTreeViewer talent locking", () => {
 });
 
 describe("TalentTreeViewer rank description merging", () => {
+  it("builds mergeable tooltip descriptions from fetched spell rank notes when talent data omits rank text", () => {
+    expect(rankDescriptionsForTooltip([], 0, undefined, "Reduces the casting time of your Fireball spell by 0.1 sec.", [
+      "Reduces the casting time of your Fireball spell by 0.1 sec.",
+      "Reduces the casting time of your Fireball spell by 0.2 sec.",
+      "Reduces the casting time of your Fireball spell by 0.3 sec.",
+      "Reduces the casting time of your Fireball spell by 0.4 sec.",
+      "Reduces the casting time of your Fireball spell by 0.5 sec.",
+    ])).toEqual([
+      "Reduces the casting time of your Fireball spell by 0.1 sec.",
+      "Reduces the casting time of your Fireball spell by 0.2 sec.",
+      "Reduces the casting time of your Fireball spell by 0.3 sec.",
+      "Reduces the casting time of your Fireball spell by 0.4 sec.",
+      "Reduces the casting time of your Fireball spell by 0.5 sec.",
+    ]);
+  });
+
+  it("overlays selected middle-rank fetched spell notes before merging real tooltip text", () => {
+    const descriptions = rankDescriptionsForTooltip([], 3, "Reduces the casting time of your Fireball spell by 0.3 sec.", "Reduces the casting time of your Fireball spell by 0.4 sec.", [
+      "Reduces the casting time of your Fireball spell by 0.1 sec.",
+      "Reduces the casting time of your Fireball spell by 0.2 sec.",
+      "Reduces the casting time of your Fireball spell by 0.3 sec.",
+      "Reduces the casting time of your Fireball spell by 0.4 sec.",
+      "Reduces the casting time of your Fireball spell by 0.5 sec.",
+    ]);
+
+    expect(mergeTalentRankDescriptions(descriptions, 3)).toEqual([
+      { type: "text", text: "Reduces the casting time of your Fireball spell by " },
+      { type: "ladder", values: ["0.1", "0.2", "0.3", "0.4", "0.5"], activeIndex: 2 },
+      { type: "text", text: " sec." },
+    ]);
+  });
+
   it("collapses one changing percent value into an inline ladder", () => {
     expect(mergeTalentRankDescriptions([
       "Gives your Fireball 2% chance to stun for 2 sec.",
@@ -245,6 +295,40 @@ describe("TalentTreeViewer tooltips", () => {
     expect(html).toContain("Reduces the casting time of your Fireball spell by ");
     expect(html).toContain("0.1</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">0.3</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.4</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.5</span>");
     expect(html).toContain(" sec.");
+  });
+
+  it("renders a compact ladder from cached real spell rank tooltip notes when remote talent data omits rank descriptions", () => {
+    const improvedFireball = talent({
+      id: 6,
+      name: "Improved Fireball",
+      tierID: 0,
+      columnIndex: 1,
+      maxRank: 5,
+      tabIndex: 1,
+      spellRanks: [11069, 12338, 12339, 12340, 12341],
+      iconTexture: "spell_fire_flamebolt",
+      description: "Reduces the casting time of your Fireball spell.",
+    });
+    const data: ClassTalentData = {
+      id: 8,
+      name: "Mage",
+      tabs: [{ id: 41, name: "Fire", backgroundFile: "MageFire", orderIndex: 1, iconTexture: "spell_fire_firebolt02", talents: [improvedFireball] }],
+    };
+
+    const html = renderTalentTreeWithCachedSpellNotes(data, `/talents/mage?build=${encodeTalentBuild({ 6: 3 })}`, {
+      11069: "Reduces the casting time of your Fireball spell by 0.1 sec.",
+      12338: "Reduces the casting time of your Fireball spell by 0.2 sec.",
+      12339: "Reduces the casting time of your Fireball spell by 0.3 sec.",
+      12340: "Reduces the casting time of your Fireball spell by 0.4 sec.",
+      12341: "Reduces the casting time of your Fireball spell by 0.5 sec.",
+    });
+
+    expect(html).toContain("Improved Fireball");
+    expect(html).toContain("Rank 3/5");
+    expect(html).toContain("Reduces the casting time of your Fireball spell by ");
+    expect(html).toContain("0.1</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">0.3</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.4</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.5</span>");
+    expect(html).not.toContain("Current rank:");
+    expect(html).not.toContain("Next rank:");
   });
 
   it("renders a keyboard-focusable tooltip with rank, description, current rank, and next rank text", () => {
