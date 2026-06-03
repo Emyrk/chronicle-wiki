@@ -21,7 +21,7 @@ export function BossGuidePage() {
             <h1 className="mt-2 text-5xl font-bold text-white">{guide.title}</h1>
             <p className="mt-3 max-w-4xl text-lg text-zinc-300">{guide.summary}</p>
           </div>
-          <a href={`${context.server.chronicleBaseUrl}/wowdb/creatures`} className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground hover:text-white">
+          <a href={`${context.chronicle.baseUrl}/wowdb/creatures`} className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground hover:text-white">
             Chronicle WoWDB <ExternalLink className="h-4 w-4" />
           </a>
         </div>

@@ -1,6 +1,6 @@
 import type { CreatureGuideEntry, GuidePage, GuidePatch } from "@/types";
 import { getRaidInstance } from "./instances";
-import { flavors, getServer } from "./servers";
+import { resolveWikiMetadata } from "./servers";
 
 const garrCreatures: CreatureGuideEntry[] = [
   {
@@ -204,17 +204,15 @@ export function applyPatch(guide: GuidePage, patch: GuidePatch): GuidePage {
 }
 
 export function resolveGuide(serverSlug: string, guideSlug: string): GuidePage | undefined {
-  const server = getServer(serverSlug);
-  if (!server) return undefined;
-  const flavor = flavors[server.flavor];
-  const baseFlavor = flavor.fallbackFlavor ?? flavor.slug;
-  const base = baseGuides[`${baseFlavor}/${guideSlug}`] ?? baseGuides[`legacy/${guideSlug}`];
+  const context = resolveWikiMetadata(serverSlug);
+  if (!context) return undefined;
+  const base = baseGuides[`${context.guideBaseFlavorSlug}/${guideSlug}`] ?? baseGuides[`legacy/${guideSlug}`];
   if (!base) return undefined;
 
   let guide = cloneGuide(base);
-  const flavorPatch = flavorPatches[flavor.slug]?.[guideSlug];
+  const flavorPatch = flavorPatches[context.flavor.slug]?.[guideSlug];
   if (flavorPatch) guide = applyPatch(guide, flavorPatch);
-  const serverPatch = serverPatches[server.slug]?.[guideSlug];
+  const serverPatch = serverPatches[context.server.slug]?.[guideSlug];
   if (serverPatch) guide = applyPatch(guide, serverPatch);
   return guide;
 }

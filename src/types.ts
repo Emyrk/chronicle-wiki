@@ -1,41 +1,10 @@
-export type Expansion = "vanilla" | "tbc" | "wotlk";
+export type {
+  Expansion,
+  ResolvedWikiMetadata as ResolvedServerContext,
+  WikiFlavorMetadata as WikiFlavor,
+  WikiServerMetadata as WikiServer,
+} from "@/data/metadata";
 
-export interface WikiServer {
-  slug: string;
-  name: string;
-  shortName: string;
-  subtitle: string;
-  description: string;
-  status?: "open" | "closed" | "archived";
-  tags: string[];
-  chronicleBaseUrl: string;
-  websiteUrl?: string;
-  logoUrl: string;
-  bannerUrl: string;
-  faviconUrl?: string;
-  flavor: string;
-  iconBucket: string;
-  theme: {
-    primary: string;
-    accent: string;
-  };
-}
-
-export interface WikiFlavor {
-  slug: string;
-  name: string;
-  expansion: Expansion;
-  clientVersion: string;
-  maxLevel: number;
-  maxTalentPoints: number;
-  faviconUrl?: string;
-  fallbackFlavor?: string;
-}
-
-export interface ResolvedServerContext {
-  server: WikiServer;
-  flavor: WikiFlavor;
-}
 
 export interface SpellRef {
   id: number;

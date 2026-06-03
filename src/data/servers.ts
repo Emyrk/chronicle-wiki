@@ -1,6 +1,6 @@
-import type { WikiFlavor, WikiServer } from "@/types";
+import { resolveWikiMetadataFromCatalog, type WikiFlavorMetadata, type WikiServerMetadata } from "./metadata";
 
-export const flavors: Record<string, WikiFlavor> = {
+export const flavors: Record<string, WikiFlavorMetadata> = {
   legacy: {
     slug: "legacy",
     name: "Legacy Vanilla",
@@ -55,7 +55,7 @@ export const flavors: Record<string, WikiFlavor> = {
   },
 };
 
-export const servers: Record<string, WikiServer> = {
+export const servers: Record<string, WikiServerMetadata> = {
   legacy: {
     slug: "legacy",
     name: "Legacy Vanilla",
@@ -211,12 +211,10 @@ export function getServer(slug: string | undefined) {
   return servers[slug.toLowerCase()];
 }
 
-export function resolveServerContext(slug: string | undefined) {
-  const server = getServer(slug);
-  if (!server) return undefined;
-  const flavor = flavors[server.flavor];
-  if (!flavor) throw new Error(`Server ${server.slug} references unknown flavor ${server.flavor}`);
-  return { server, flavor };
+export function resolveWikiMetadata(slug: string | undefined) {
+  return resolveWikiMetadataFromCatalog(slug, { flavors, servers });
 }
+
+export const resolveServerContext = resolveWikiMetadata;
 
 export const serverList = Object.values(servers);

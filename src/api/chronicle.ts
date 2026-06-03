@@ -3,7 +3,7 @@ import type { ResolvedServerContext, SpellRef } from "../types";
 
 export function apiUrl(context: ResolvedServerContext, path: string) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  return `${context.server.chronicleBaseUrl}${cleanPath}`;
+  return `${context.chronicle.baseUrl}${cleanPath}`;
 }
 
 function normalizeTalentTreeData(data: TalentTreeJSON): TalentTreeJSON {

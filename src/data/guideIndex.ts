@@ -1,4 +1,5 @@
 import { allRaidInstances } from "./instances";
+import { resolveInstanceMetadata } from "./metadata";
 
 export type GuideSectionSlug = "raids" | "dungeons";
 
@@ -29,15 +30,18 @@ export const guideSections: GuideIndexSection[] = [
     slug: "raids",
     title: "Raids",
     description: "Raid hubs, boss guides, and log-backed mechanics by server.",
-    entries: allRaidInstances().map((instance) => ({
-      slug: instance.slug,
-      title: instance.title,
-      description: instance.description,
-      status: instance.status,
-      href: (serverSlug) => `/${serverSlug}/raids/${instance.slug}`,
-      keywords: instance.keywords,
-      backgroundImageUrl: chronicleAssetUrl(instance.backgroundImagePath),
-    })),
+    entries: allRaidInstances().map((instance) => {
+      const metadata = resolveInstanceMetadata(instance);
+      return {
+        slug: metadata.slug,
+        title: metadata.title,
+        description: instance.description,
+        status: metadata.status,
+        href: (serverSlug) => `/${serverSlug}/raids/${metadata.slug}`,
+        keywords: instance.keywords,
+        backgroundImageUrl: chronicleAssetUrl(metadata.backgroundImagePath),
+      };
+    }),
   },
   {
     slug: "dungeons",

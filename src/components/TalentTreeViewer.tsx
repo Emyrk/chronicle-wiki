@@ -368,7 +368,7 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
   const tabTalentLists = useMemo(() => data.tabs.map((tab) => tab.talents), [data.tabs]);
   const deepestTabRows = useMemo(() => Math.max(...data.tabs.map((tab) => talentGridRows(tab.talents)), 0), [data.tabs]);
   const tabGridClassName = deepestTabRows > 7 ? "grid gap-4 xl:grid-cols-2 2xl:grid-cols-3" : "grid gap-4 xl:grid-cols-3";
-  const maxPoints = context.flavor.maxTalentPoints;
+  const maxPoints = context.talents.maxTalentPoints;
   const [ranks, setRanks] = useState<TalentRanks>(() => normalizeTalentRanks(tabTalentLists, decodeTalentBuild(searchParams.get(TALENT_BUILD_PARAM)), maxPoints));
   const total = useMemo(() => totalTalentPoints(ranks), [ranks]);
   const requiredLevel = useMemo(() => calculateRequiredPlayerLevel(total, context.flavor), [context.flavor, total]);

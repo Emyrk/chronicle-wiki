@@ -34,14 +34,14 @@ export function Layout() {
     <div
       className="min-h-screen"
       style={{
-        "--primary": server.theme.primary,
-        "--ring": server.theme.accent,
+        "--primary": context.branding.theme.primary,
+        "--ring": context.branding.theme.accent,
       } as React.CSSProperties}
     >
       <header className="border-b border-border/60 bg-black/70 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
           <Link to={`/${server.slug}`} className="flex items-center gap-3">
-            <img src={server.logoUrl} alt="" className="h-11 w-11 rounded-lg border border-border/60 bg-black/70 object-cover" />
+            <img src={context.branding.logoUrl} alt="" className="h-11 w-11 rounded-lg border border-border/60 bg-black/70 object-cover" />
             <div>
               <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Chronicle Wiki</div>
               <h1 className="text-2xl font-bold tracking-tight text-white">{server.name}</h1>
@@ -69,7 +69,7 @@ export function Layout() {
             })}
             <IssueQuicklink context={context} />
             <a
-              href={server.chronicleBaseUrl}
+              href={context.chronicle.baseUrl}
               className="wiki-action"
             >
               Chronicle <ExternalLink className="h-4 w-4" />

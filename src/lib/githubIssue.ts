@@ -55,7 +55,7 @@ export function buildGithubIssueUrl(options: BuildGithubIssueUrlOptions) {
   if (options.context) {
     const { server, flavor } = options.context;
     addContextLine(contextLines, "Server", `${server.name} (${server.slug})`);
-    addContextLine(contextLines, "Chronicle API", server.chronicleBaseUrl);
+    addContextLine(contextLines, "Chronicle API", options.context.chronicle.baseUrl);
     addContextLine(contextLines, "Flavor", `${flavor.name} (${flavor.slug})`);
   }
 

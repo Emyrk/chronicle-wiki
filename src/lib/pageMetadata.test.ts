@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { resolveServerContext } from "../data/servers";
-import type { ResolvedServerContext } from "@/types";
+import { flavors, resolveServerContext, servers } from "../data/servers";
+import { resolveWikiMetadataFromCatalog } from "../data/metadata";
 import { defaultPageMetadata, pageMetadataForContext, renderFaviconLinks } from "./pageMetadata";
 
 function context(slug: string) {
@@ -22,11 +22,11 @@ describe("server page metadata", () => {
   });
 
   it("treats empty server and flavor favicon metadata as missing", () => {
-    const legacy = context("legacy");
-    const emptyFaviconContext: ResolvedServerContext = {
-      server: { ...legacy.server, faviconUrl: "" },
-      flavor: { ...legacy.flavor, faviconUrl: "" },
-    };
+    const emptyFaviconContext = resolveWikiMetadataFromCatalog("legacy", {
+      flavors: { legacy: { ...flavors.legacy, faviconUrl: "" } },
+      servers: { legacy: { ...servers.legacy, faviconUrl: "" } },
+    });
+    if (!emptyFaviconContext) throw new Error("missing legacy context");
 
     expect(pageMetadataForContext(emptyFaviconContext).faviconHref).toBe(defaultPageMetadata.faviconHref);
     expect(renderFaviconLinks(pageMetadataForContext(emptyFaviconContext)).every((link) => link.href.length > 0)).toBe(true);

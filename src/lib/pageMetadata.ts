@@ -1,3 +1,4 @@
+import { DEFAULT_CHRONICLE_FAVICON_HREF, resolveAgnosticWikiMetadata } from "@/data/metadata";
 import type { ResolvedServerContext } from "@/types";
 
 export interface PageMetadata {
@@ -11,26 +12,20 @@ export interface FaviconLinkDescriptor {
   href: string;
 }
 
-const chronicleFaviconHref = "https://chronicleclassic.com/favicon.ico";
+const agnosticMetadata = resolveAgnosticWikiMetadata();
 
 export const defaultPageMetadata: PageMetadata = {
-  title: "Chronicle Wiki",
-  description: "Chronicle Wiki, server-scoped Classic WoW knowledgebase powered by Chronicle data.",
-  faviconHref: chronicleFaviconHref,
+  title: agnosticMetadata.branding.title,
+  description: agnosticMetadata.branding.description,
+  faviconHref: DEFAULT_CHRONICLE_FAVICON_HREF,
 };
 
 export function pageMetadataForContext(context: ResolvedServerContext): PageMetadata {
-  const { server, flavor } = context;
   return {
-    title: `${server.name} - Chronicle Wiki`,
-    description: `${server.name} wiki guides and tools for ${flavor.name}.`,
-    faviconHref: resolveFaviconHref(server.faviconUrl),
+    title: context.branding.title,
+    description: context.branding.description,
+    faviconHref: context.branding.faviconHref,
   };
-}
-
-function resolveFaviconHref(faviconUrl: string | undefined): string {
-  const trimmed = faviconUrl?.trim();
-  return trimmed || chronicleFaviconHref;
 }
 
 export function renderFaviconLinks(metadata: PageMetadata): FaviconLinkDescriptor[] {
