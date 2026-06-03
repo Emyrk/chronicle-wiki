@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
@@ -340,6 +340,85 @@ function talentRankTexts(talent: TalentEntry) {
   return [];
 }
 
+type TalentRankDescriptionPart =
+  | { type: "text"; text: string }
+  | { type: "ladder"; values: string[]; activeIndex: number };
+
+function tokenizeRankDescription(description: string) {
+  const tokens: Array<{ type: "text" | "number"; value: string }> = [];
+  const numberPattern = /\d+(?:\.\d+)?/g;
+  let lastIndex = 0;
+  for (const match of description.matchAll(numberPattern)) {
+    const index = match.index ?? 0;
+    if (index > lastIndex) tokens.push({ type: "text", value: description.slice(lastIndex, index) });
+    tokens.push({ type: "number", value: match[0] });
+    lastIndex = index + match[0].length;
+  }
+  if (lastIndex < description.length) tokens.push({ type: "text", value: description.slice(lastIndex) });
+  return tokens;
+}
+
+export function mergeTalentRankDescriptions(descriptions: string[], activeRank: number): TalentRankDescriptionPart[] | null {
+  const usableDescriptions = descriptions.map((description) => description.trim()).filter(Boolean);
+  if (usableDescriptions.length < 2) return null;
+
+  const tokenizedDescriptions = usableDescriptions.map(tokenizeRankDescription);
+  const [firstTokens] = tokenizedDescriptions;
+  if (firstTokens.length === 0 || !firstTokens.some((token) => token.type === "number")) return null;
+
+  const sameTemplate = tokenizedDescriptions.every((tokens) =>
+    tokens.length === firstTokens.length
+    && tokens.every((token, index) => token.type === firstTokens[index].type && (token.type === "number" || token.value === firstTokens[index].value)),
+  );
+  if (!sameTemplate) return null;
+
+  const changingNumberIndexes = firstTokens
+    .map((token, index) => ({ token, index }))
+    .filter(({ token, index }) => token.type === "number" && new Set(tokenizedDescriptions.map((tokens) => tokens[index].value)).size > 1)
+    .map(({ index }) => index);
+  if (changingNumberIndexes.length === 0) return null;
+
+  const activeIndex = activeRank > 0 && activeRank <= usableDescriptions.length ? activeRank - 1 : -1;
+  return firstTokens.reduce<TalentRankDescriptionPart[]>((parts, token, index) => {
+    const nextPart = token.type === "number" && changingNumberIndexes.includes(index)
+      ? { type: "ladder" as const, values: tokenizedDescriptions.map((tokens) => tokens[index].value), activeIndex }
+      : { type: "text" as const, text: token.value };
+    const previousPart = parts.at(-1);
+    if (previousPart?.type === "text" && nextPart.type === "text") previousPart.text += nextPart.text;
+    else parts.push(nextPart);
+    return parts;
+  }, []);
+}
+
+function rankDescriptionsForTooltip(rankTexts: string[], rank: number, currentRankText?: string, nextRankText?: string) {
+  const descriptions = [...rankTexts];
+  if (rank > 0 && currentRankText) descriptions[rank - 1] = currentRankText;
+  if (rank < descriptions.length && nextRankText) descriptions[rank] = nextRankText;
+  return descriptions;
+}
+
+function TalentRankDescription({ parts }: { parts: TalentRankDescriptionPart[] }) {
+  return (
+    <span className="mt-2 block leading-5 text-zinc-300">
+      {parts.map((part, partIndex) => {
+        if (part.type === "text") return <Fragment key={partIndex}>{part.text}</Fragment>;
+        return (
+          <span key={partIndex} className="whitespace-nowrap text-zinc-300">
+            [
+            {part.values.map((value, valueIndex) => (
+              <Fragment key={`${value}-${valueIndex}`}>
+                {valueIndex > 0 && <span className="text-zinc-500">/</span>}
+                {valueIndex === part.activeIndex ? <strong className="rank-ladder-value-active text-amber-100">{value}</strong> : <span className="text-zinc-300">{value}</span>}
+              </Fragment>
+            ))}
+            ]
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 function lockedTalentReasons(talent: TalentEntry, talents: TalentEntry[], ranks: TalentRanks) {
   const reasons: string[] = [];
   const requiredPoints = rowPointRequirement(talent);
@@ -364,6 +443,7 @@ function TalentTooltipCard({
   rank,
   locked,
   description,
+  rankDescriptionParts,
   currentRankText,
   nextRankText,
   loadingSpellDetails,
@@ -376,6 +456,7 @@ function TalentTooltipCard({
   rank: number;
   locked: boolean;
   description: string;
+  rankDescriptionParts?: TalentRankDescriptionPart[] | null;
   currentRankText?: string;
   nextRankText?: string;
   loadingSpellDetails?: boolean;
@@ -395,15 +476,18 @@ function TalentTooltipCard({
       <span className="mt-1 block font-semibold text-amber-200">Rank {rank}/{talent.maxRank}{locked ? " · Locked" : ""}</span>
       <span className="mt-2 block text-zinc-300">{description}</span>
       {loadingSpellDetails && <span className="mt-2 block animate-pulse text-muted-foreground">Loading spell details…</span>}
-      {currentRankText && <span className="mt-2 block text-emerald-200">Current rank: {currentRankText}</span>}
-      {nextRankText && <span className="mt-1 block text-sky-200">Next rank: {nextRankText}</span>}
+      {rankDescriptionParts ? <TalentRankDescription parts={rankDescriptionParts} /> : (
+        <>
+          {currentRankText && <span className="mt-2 block text-emerald-200">Current rank: {currentRankText}</span>}
+          {nextRankText && <span className="mt-1 block text-sky-200">Next rank: {nextRankText}</span>}
+        </>
+      )}
       {locked && (
         <span className="mt-2 block space-y-1 text-red-200">
           <span className="block font-semibold">Locked</span>
           {lockReasons.map((reason) => <span key={reason} className="block">{reason}</span>)}
         </span>
       )}
-      <span className="mt-2 block text-muted-foreground">Spell ranks: {talent.spellRanks.join(", ")}</span>
     </span>
   );
 }
@@ -446,6 +530,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
   const description = primarySpell?.notes ?? talentDescription(talent);
   const currentRankText = rank > 0 ? currentRankQuery.data?.notes ?? rankTexts[rank - 1] : undefined;
   const nextRankText = rank < talent.maxRank ? nextRankQuery.data?.notes ?? rankTexts[rank] ?? rankTexts[rank === 0 ? 0 : rank] : undefined;
+  const rankDescriptionParts = mergeTalentRankDescriptions(rankDescriptionsForTooltip(rankTexts, rank, currentRankText, nextRankText), rank);
   const loadingSpellDetails = Boolean(tooltipPosition && primarySpellId && ((currentSpellId && currentRankQuery.isPending) || (nextSpellId && nextRankQuery.isPending)));
   const lockReasons = locked ? lockedTalentReasons(talent, talents, ranks) : [];
   const title = locked ? `${talent.name} locked. ${lockReasons.join(" ")}` : `${talent.name} (${rank}/${talent.maxRank})`;
@@ -490,6 +575,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
       rank={rank}
       locked={locked}
       description={description}
+      rankDescriptionParts={rankDescriptionParts}
       currentRankText={currentRankText}
       nextRankText={nextRankText}
       loadingSpellDetails={loadingSpellDetails}
@@ -547,6 +633,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
           rank={rank}
           locked={locked}
           description={description}
+          rankDescriptionParts={rankDescriptionParts}
           currentRankText={currentRankText}
           nextRankText={nextRankText}
           loadingSpellDetails={loadingSpellDetails}

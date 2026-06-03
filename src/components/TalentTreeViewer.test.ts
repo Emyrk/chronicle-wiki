@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { resolveServerContext } from "../data/servers";
+import { fallbackTalentTrees } from "../data/talents";
 import type { ClassTalentData, TalentEntry } from "../data/talents";
 import {
   calculateRequiredPlayerLevel,
@@ -12,6 +13,7 @@ import {
   copyTalentBuildUrl,
   decodeTalentBuild,
   encodeTalentBuild,
+  mergeTalentRankDescriptions,
   normalizeTalentRanks,
   resetTalentTabRanks,
   prerequisiteArrowPolylinePoints,
@@ -152,7 +154,98 @@ describe("TalentTreeViewer talent locking", () => {
   });
 });
 
+describe("TalentTreeViewer rank description merging", () => {
+  it("collapses one changing percent value into an inline ladder", () => {
+    expect(mergeTalentRankDescriptions([
+      "Gives your Fireball 2% chance to stun for 2 sec.",
+      "Gives your Fireball 4% chance to stun for 2 sec.",
+      "Gives your Fireball 6% chance to stun for 2 sec.",
+    ], 1)).toEqual([
+      { type: "text", text: "Gives your Fireball " },
+      { type: "ladder", values: ["2", "4", "6"], activeIndex: 0 },
+      { type: "text", text: "% chance to stun for 2 sec." },
+    ]);
+  });
+
+  it("highlights the current rank in the middle of the ladder", () => {
+    expect(mergeTalentRankDescriptions([
+      "Increases your chance to hit by 1%.",
+      "Increases your chance to hit by 2%.",
+      "Increases your chance to hit by 3%.",
+    ], 2)?.[1]).toEqual({ type: "ladder", values: ["1", "2", "3"], activeIndex: 1 });
+  });
+
+  it("does not merge structurally different descriptions", () => {
+    expect(mergeTalentRankDescriptions([
+      "+1% hit.",
+      "Causes 28 to 35 Holy damage within 10 yards.",
+      "+3% hit.",
+    ], 1)).toBeNull();
+  });
+
+  it("merges descriptions after WoW spell variables have already resolved", () => {
+    expect(mergeTalentRankDescriptions([
+      "Reduces the casting time of your Fireball spell by 0.1 sec.",
+      "Reduces the casting time of your Fireball spell by 0.2 sec.",
+      "Reduces the casting time of your Fireball spell by 0.3 sec.",
+    ], 3)).toEqual([
+      { type: "text", text: "Reduces the casting time of your Fireball spell by " },
+      { type: "ladder", values: ["0.1", "0.2", "0.3"], activeIndex: 2 },
+      { type: "text", text: " sec." },
+    ]);
+  });
+});
+
 describe("TalentTreeViewer tooltips", () => {
+  it("renders a compact inline rank ladder for repeated numeric rank text", () => {
+    const described = talent({
+      id: 90,
+      name: "Impact",
+      tierID: 0,
+      columnIndex: 0,
+      maxRank: 3,
+      spellRanks: [1001, 1002, 1003],
+      description: "Gives your Fire spells a chance to stun the target.",
+      rankDescriptions: [
+        "Gives your Fireball 2% chance to stun for 2 sec.",
+        "Gives your Fireball 4% chance to stun for 2 sec.",
+        "Gives your Fireball 6% chance to stun for 2 sec.",
+      ],
+    } as Partial<TalentEntry> & Pick<TalentEntry, "id" | "tierID" | "columnIndex"> & { description: string; rankDescriptions: string[] });
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Mage",
+      tabs: [{ id: 261, name: "Fire", backgroundFile: "MageFire", orderIndex: 0, iconTexture: "spell_fire_flamebolt", talents: [described] }],
+    };
+
+    const html = renderTalentTree(data, `/talents/mage?build=${encodeTalentBuild({ 90: 2 })}`);
+
+    expect(html).toContain("Impact");
+    expect(html).toContain("Rank 2/3");
+    expect(html).toContain("Gives your Fireball ");
+    expect(html).toContain("rank-ladder-value-active");
+    expect(html).toContain("2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">4</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">6</span>");
+    expect(html).toContain("% chance to stun for 2 sec.");
+    expect(html).not.toContain("Current rank:");
+    expect(html).not.toContain("Next rank:");
+    expect(html).not.toContain("Tooltip");
+  });
+
+  it("renders fallback Mage Improved Fireball as a mergeable tooltip ladder for local visual checks", () => {
+    const context = resolveServerContext("turtle");
+    if (!context) throw new Error("missing turtle context");
+    const mage = fallbackTalentTrees.classes["8"];
+    if (!mage) throw new Error("missing fallback mage talents");
+
+    const html = renderTalentTree(mage, `/talents/mage?build=${encodeTalentBuild({ 6: 3 })}`);
+
+    expect(html).toContain("Improved Fireball");
+    expect(html).toContain("Rank 3/5");
+    expect(html).toContain("Reduces the casting time of your Fireball spell by ");
+    expect(html).toContain("0.1</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">0.3</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.4</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.5</span>");
+    expect(html).toContain(" sec.");
+  });
+
   it("renders a keyboard-focusable tooltip with rank, description, current rank, and next rank text", () => {
     const described = talent({
       id: 90,
@@ -182,7 +275,7 @@ describe("TalentTreeViewer tooltips", () => {
     expect(html).toContain("Current rank: +1% hit");
     expect(html).toContain("Next rank: Causes 28 to 35 Holy damage within 10 yards.");
     expect(html).not.toMatch(/\$s1|\$o2|\$d|\$23455s1|\$23455a1|\$lpoint:points;/);
-    expect(html).toContain("Spell ranks: 1001, 1002, 1003");
+    expect(html).not.toContain("Spell ranks:");
   });
 
   it("explains row and prerequisite blockers for locked talents", () => {
