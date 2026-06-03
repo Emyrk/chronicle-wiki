@@ -51,6 +51,16 @@ export function RaidPage() {
             </section>
           ))}
 
+          <section id="recent-raids" className="wiki-card prose-wiki scroll-mt-24 p-4 sm:p-6">
+            <h2>Recent raids</h2>
+            <p>
+              Check recent {instance.title} raids on {context.server.shortName} Chronicle before raid night for current clears, wipes, and roster context.
+            </p>
+            <a href={`${context.chronicle.baseUrl}/raids?instance=${instance.slug}`} className="text-sm font-semibold text-primary underline">
+              Open recent {instance.title} raids
+            </a>
+          </section>
+
           <section className="space-y-4" aria-labelledby="instance-encounter-list">
             <h2 id="instance-encounter-list" className="sr-only">Encounter list</h2>
             {instance.encounters.map((encounter) => {

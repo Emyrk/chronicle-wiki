@@ -75,4 +75,26 @@ describe("player-facing copy", () => {
       expectNoImplementationCopy(html);
     }
   });
+
+  it("renders the trimmed Molten Core raid MVP with all boss guide links and recent raids", () => {
+    const html = renderRoute("/turtle/raids/molten-core", "/:serverSlug/raids/:instanceSlug", createElement(RaidPage));
+
+    expect(html).toContain("Recent raids");
+    expect(html).toContain("https://turtle.chronicleclassic.com");
+    for (const boss of [
+      "Lucifron",
+      "Magmadar",
+      "Gehennas",
+      "Garr",
+      "Shazzrah",
+      "Baron Geddon",
+      "Golemagg the Incinerator",
+      "Sulfuron Harbinger",
+      "Majordomo Executus",
+      "Ragnaros",
+    ]) {
+      expect(html).toContain(`Open ${boss} guide`);
+    }
+    expect(html).not.toMatch(/loot|recommended raid comp|consumes|resistance prep|attunement|raid prep checklist/i);
+  });
 });

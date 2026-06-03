@@ -79,7 +79,7 @@ describe("route page metadata", () => {
   it("builds route-specific instance, boss, talents, and explorer metadata", () => {
     expect(routeMetadataForPathname("/turtle/raids/molten-core")).toMatchObject({
       title: "Molten Core - Turtle WoW - Chronicle Wiki",
-      description: "A ten-encounter elemental raid below Blackrock Mountain, organized by boss order with server-specific guides linked from each encounter.",
+      description: "A ten-boss level 60 raid below Blackrock Mountain, built for quick boss lookup and server-scoped Chronicle context.",
       canonicalUrl: "https://wiki.chronicleclassic.com/turtle/raids/molten-core",
       imageUrl: "https://wiki.chronicleclassic.com/assets/instances/molten-core/background.jpg",
     });

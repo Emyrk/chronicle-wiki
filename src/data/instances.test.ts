@@ -11,9 +11,14 @@ describe("instance overview data", () => {
       "Magmadar",
       "Gehennas",
       "Garr",
+      "Shazzrah",
       "Baron Geddon",
+      "Golemagg the Incinerator",
+      "Sulfuron Harbinger",
+      "Majordomo Executus",
       "Ragnaros",
     ]);
+    expect(moltenCore?.encounters.every((encounter) => encounter.status === "available")).toBe(true);
   });
 
   it("builds left table-of-contents anchors for overview sections and each encounter", () => {
@@ -29,7 +34,11 @@ describe("instance overview data", () => {
       ["Magmadar", "#encounter-magmadar"],
       ["Gehennas", "#encounter-gehennas"],
       ["Garr", "#encounter-garr"],
+      ["Shazzrah", "#encounter-shazzrah"],
       ["Baron Geddon", "#encounter-baron-geddon"],
+      ["Golemagg the Incinerator", "#encounter-golemagg-the-incinerator"],
+      ["Sulfuron Harbinger", "#encounter-sulfuron-harbinger"],
+      ["Majordomo Executus", "#encounter-majordomo-executus"],
       ["Ragnaros", "#encounter-ragnaros"],
     ]);
     expect(instanceAnchorId("Garr")).toBe("encounter-garr");

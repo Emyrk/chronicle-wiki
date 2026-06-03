@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveGuide } from "./guides";
+import { getRaidInstance } from "./instances";
 import { resolveServerContext } from "./servers";
 
 describe("server and guide resolution", () => {
@@ -19,5 +20,22 @@ describe("server and guide resolution", () => {
     expect(guide?.summary).toContain("Turtle-style servers");
     expect(guide?.callouts?.map((c) => c.title)).toContain("Check your realm");
     expect(guide?.callouts?.map((c) => c.title)).toContain("Turtle WoW notes");
+  });
+
+  it("provides concise player-ready guides for every Molten Core boss without removed MVP sections", () => {
+    const bosses = getRaidInstance("molten-core")?.encounters ?? [];
+    expect(bosses).toHaveLength(10);
+
+    for (const boss of bosses) {
+      const guide = resolveGuide("legacy", `raids/molten-core/${boss.slug}`);
+      expect(guide?.title).toBe(boss.name);
+      expect(guide?.sections.map((section) => section.title)).toEqual([
+        "Quick plan",
+        "Important abilities",
+        "Role notes",
+        "Common wipe risks",
+      ]);
+      expect(guide?.summary).not.toMatch(/loot|attunement|composition|consume|resistance|map|positioning/i);
+    }
   });
 });
