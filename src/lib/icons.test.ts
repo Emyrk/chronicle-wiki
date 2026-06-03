@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { iconBucketForContext, iconUrl } from "./icons";
+import { iconBucketForContext, iconUrl, talentBackgroundUrl } from "./icons";
 import { resolveServerContext, serverList } from "../data/servers";
 
 function context(slug: string) {
@@ -33,5 +33,19 @@ describe("icon buckets", () => {
     expect(iconUrl("Ability_MeleeDamage", context("turtle"))).toBe(
       "https://icons.chronicleclassic.com/turtle/ability_meleedamage.webp",
     );
+  });
+
+  it("builds talent background URLs from TalentTab backgroundFile values in the contextual bucket", () => {
+    expect(talentBackgroundUrl("MageFire", context("turtle"))).toBe(
+      "https://icons.chronicleclassic.com/turtle/magefire.webp",
+    );
+    expect(talentBackgroundUrl("WarriorArms", context("vanillaplus"))).toBe(
+      "https://icons.chronicleclassic.com/vanillaplus/warriorarms.webp",
+    );
+    expect(talentBackgroundUrl("", context("turtle"))).toBeNull();
+  });
+
+  it("keeps talent background URLs out of the removed flat /icons path", () => {
+    expect(talentBackgroundUrl("MageFire", context("turtle"))).not.toContain("/icons/");
   });
 });

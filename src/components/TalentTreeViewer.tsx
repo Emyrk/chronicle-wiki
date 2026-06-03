@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { fetchTalentTooltipSpell, prefetchTalentTooltipSpell, talentTooltipSpellQueryKey } from "../api/chronicle";
 import type { ClassTalentData, TalentEntry, TalentTabData } from "../data/talents";
-import { iconUrl } from "../lib/icons";
+import { iconUrl, talentBackgroundUrl } from "../lib/icons";
 import { cn } from "../lib/utils";
 import type { ResolvedServerContext } from "../types";
 
@@ -676,6 +676,10 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
   );
 }
 
+export function isTalentBackgroundVisible(backgroundUrl: string | null, failedBackgroundUrl: string | null) {
+  return Boolean(backgroundUrl && backgroundUrl !== failedBackgroundUrl);
+}
+
 function TalentTab({
   tab,
   ranks,
@@ -693,8 +697,28 @@ function TalentTab({
   const arrows = useMemo(() => prerequisiteArrows(tab.talents), [tab.talents]);
   const rows = useMemo(() => talentGridRows(tab.talents), [tab.talents]);
   const height = talentGridHeight(rows);
+  const backgroundUrl = talentBackgroundUrl(tab.backgroundFile, context);
+  const [failedBackgroundUrl, setFailedBackgroundUrl] = useState<string | null>(null);
+  const showBackground = isTalentBackgroundVisible(backgroundUrl, failedBackgroundUrl);
+
+  useEffect(() => {
+    setFailedBackgroundUrl(null);
+  }, [backgroundUrl]);
+
   return (
     <section className="talent-tree-card wiki-card relative max-w-full self-start overflow-hidden border-amber-400/20 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),linear-gradient(180deg,rgba(120,83,38,0.16),rgba(9,9,11,0.58))] p-4 shadow-2xl shadow-black/30" aria-label={`${tab.name} talent tree`}>
+      {showBackground && backgroundUrl && (
+        <img
+          src={backgroundUrl}
+          alt=""
+          aria-hidden="true"
+          data-talent-background-image="true"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-35 mix-blend-screen"
+          loading="lazy"
+          onError={() => setFailedBackgroundUrl(backgroundUrl)}
+        />
+      )}
+      <div className="pointer-events-none absolute inset-0 bg-black/45" aria-hidden="true" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/40 to-transparent" aria-hidden="true" />
       <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/30 p-2 shadow-inner shadow-black/30">
         <div className="flex min-w-0 items-center gap-3">

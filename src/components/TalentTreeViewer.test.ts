@@ -24,6 +24,7 @@ import {
   talentTooltipPosition,
   totalTalentPoints,
   updateTalentRank,
+  isTalentBackgroundVisible,
   TalentTreeViewer,
 } from "./TalentTreeViewer";
 
@@ -349,6 +350,46 @@ describe("TalentTreeViewer visual talent states", () => {
 });
 
 describe("TalentTreeViewer tree reset and framing", () => {
+  it("renders proper talent background images from backgroundFile in each tab's CDN bucket", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Mage",
+      tabs: [
+        {
+          id: 81,
+          name: "Arcane",
+          backgroundFile: "MageArcane",
+          orderIndex: 0,
+          iconTexture: "spell_holy_magicalsentry",
+          talents: [talent({ id: 301, tierID: 0, columnIndex: 0, maxRank: 5 })],
+        },
+        {
+          id: 82,
+          name: "Fire",
+          backgroundFile: "MageFire",
+          orderIndex: 1,
+          iconTexture: "spell_fire_flamebolt",
+          talents: [talent({ id: 302, tierID: 0, columnIndex: 0, maxRank: 5 })],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data, `/talents/mage?build=${encodeTalentBuild({ 301: 3, 302: 2 })}`);
+
+    expect(html).toContain('data-talent-background-image="true"');
+    expect(html).toContain('src="https://icons.chronicleclassic.com/turtle/magearcane.webp"');
+    expect(html).toContain('src="https://icons.chronicleclassic.com/turtle/magefire.webp"');
+    expect(html).not.toContain("https://icons.chronicleclassic.com/icons/");
+  });
+
+  it("treats a failed talent background load as hidden while keeping fallback styling", () => {
+    const backgroundUrl = "https://icons.chronicleclassic.com/turtle/magefire.webp";
+
+    expect(isTalentBackgroundVisible(backgroundUrl, null)).toBe(true);
+    expect(isTalentBackgroundVisible(backgroundUrl, backgroundUrl)).toBe(false);
+    expect(isTalentBackgroundVisible(null, backgroundUrl)).toBe(false);
+  });
+
   it("renders a per-tree reset control beside each visible tree header", () => {
     const data: ClassTalentData = {
       id: 1,
