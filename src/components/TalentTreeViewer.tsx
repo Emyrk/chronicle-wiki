@@ -439,7 +439,7 @@ function TalentRankDescription({ parts }: { parts: TalentRankDescriptionPart[] }
             {part.values.map((value, valueIndex) => (
               <Fragment key={`${value}-${valueIndex}`}>
                 {valueIndex > 0 && <span className="text-zinc-500">/</span>}
-                {valueIndex === part.activeIndex ? <strong className="rank-ladder-value-active text-amber-100">{value}</strong> : <span className="text-zinc-300">{value}</span>}
+                {valueIndex === part.activeIndex ? <strong className="rank-ladder-value-active text-amber-100">{value}</strong> : <span className="text-zinc-500">{value}</span>}
               </Fragment>
             ))}
             ]

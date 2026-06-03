@@ -276,7 +276,7 @@ describe("TalentTreeViewer tooltips", () => {
     expect(html).not.toContain("Gives your Fire spells a chance to stun the target.");
     expect(html).toContain("Gives your Fireball ");
     expect(html).toContain("rank-ladder-value-active");
-    expect(html).toContain("2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">4</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">6</span>");
+    expect(html).toContain("2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">4</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-500\">6</span>");
     expect(html).toContain("% chance to stun for 2 sec.");
     expect(html).not.toContain("Current rank:");
     expect(html).not.toContain("Next rank:");
@@ -294,7 +294,7 @@ describe("TalentTreeViewer tooltips", () => {
     expect(html).toContain("Improved Fireball");
     expect(html).toContain("Rank 3/5");
     expect(html).toContain("Reduces the casting time of your Fireball spell by ");
-    expect(html).toContain("0.1</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">0.3</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.4</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.5</span>");
+    expect(html).toContain("0.1</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-500\">0.2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">0.3</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-500\">0.4</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-500\">0.5</span>");
     expect(html).toContain(" sec.");
   });
 
@@ -327,7 +327,7 @@ describe("TalentTreeViewer tooltips", () => {
     expect(html).toContain("Improved Fireball");
     expect(html).toContain("Rank 3/5");
     expect(html).toContain("Reduces the casting time of your Fireball spell by ");
-    expect(html).toContain("0.1</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">0.3</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.4</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-300\">0.5</span>");
+    expect(html).toContain("0.1</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-500\">0.2</span><span class=\"text-zinc-500\">/</span><strong class=\"rank-ladder-value-active text-amber-100\">0.3</strong><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-500\">0.4</span><span class=\"text-zinc-500\">/</span><span class=\"text-zinc-500\">0.5</span>");
     expect(html).not.toContain("Current rank:");
     expect(html).not.toContain("Next rank:");
   });
