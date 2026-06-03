@@ -24,6 +24,27 @@ describe("Chronicle API URLs", () => {
     expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/talent-trees");
   });
 
+  it("normalizes remote talent classes with class metadata and order-sorted tabs", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        classes: {
+          "1": {
+            tabs: [
+              { id: 164, name: "Fury", orderIndex: 1, talents: [] },
+              { id: 161, name: "Arms", orderIndex: 0, talents: [] },
+            ],
+          },
+        },
+      }),
+    } as Response);
+
+    const result = await fetchTalentTrees(context("turtle"));
+
+    expect(result.data.classes["1"]).toMatchObject({ id: 1, name: "Warrior" });
+    expect(result.data.classes["1"]?.tabs.map((tab) => tab.name)).toEqual(["Arms", "Fury"]);
+  });
+
   it("does not append dataset_id to spell lookups", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,

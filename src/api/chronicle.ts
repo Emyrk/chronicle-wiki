@@ -1,9 +1,27 @@
-import { fallbackTalentTrees, type TalentTreeJSON } from "../data/talents";
+import { classList, fallbackTalentTrees, type ClassTalentData, type TalentTreeJSON } from "../data/talents";
 import type { ResolvedServerContext, SpellRef } from "../types";
 
 export function apiUrl(context: ResolvedServerContext, path: string) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   return `${context.server.chronicleBaseUrl}${cleanPath}`;
+}
+
+function normalizeTalentTreeData(data: TalentTreeJSON): TalentTreeJSON {
+  return {
+    classes: Object.fromEntries(
+      Object.entries(data.classes).map(([classId, classData]) => {
+        const numericClassId = Number(classId);
+        const knownClass = classList.find((cls) => cls.id === numericClassId);
+        const normalizedClass: ClassTalentData = {
+          ...classData,
+          id: classData.id ?? numericClassId,
+          name: classData.name ?? knownClass?.name ?? `Class ${classId}`,
+          tabs: [...(classData.tabs ?? [])].sort((left, right) => left.orderIndex - right.orderIndex),
+        };
+        return [classId, normalizedClass];
+      }),
+    ),
+  };
 }
 
 export async function fetchTalentTrees(context: ResolvedServerContext): Promise<{ data: TalentTreeJSON; source: "remote" | "fallback" }> {
@@ -13,7 +31,7 @@ export async function fetchTalentTrees(context: ResolvedServerContext): Promise<
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = (await response.json()) as TalentTreeJSON;
     if (!data.classes || Object.keys(data.classes).length === 0) throw new Error("empty talent tree response");
-    return { data, source: "remote" };
+    return { data: normalizeTalentTreeData(data), source: "remote" };
   } catch {
     return { data: fallbackTalentTrees, source: "fallback" };
   }

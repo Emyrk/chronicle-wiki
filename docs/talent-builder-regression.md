@@ -36,6 +36,9 @@ The talent builder must preserve these behaviors:
 - A remote response with a non-empty `classes` object wins over fallback fixtures.
 - Fallback fixtures keep the UI and tests usable when the remote API is unavailable.
 - Talent positions are read from `tierID` and `columnIndex` inside the active tab.
+- Remote class entries may only contain `tabs`; normalize the selected class id/name from the numeric `classes` map key and the local class registry before rendering so headings do not become `undefined talents`.
+- Tabs are displayed in ascending `orderIndex` order.
+- The grid geometry matches the live ChronicleClassic renderer: four columns, 40px icons, 48px row cells, 8px gaps, `max(tierID) + 1` rendered rows, and a 192px overlay coordinate width.
 - Prerequisite arrows are derived from `prereqTalent` entries that resolve to talents in the same active tab.
 - Missing prerequisite sources outside the current tab are ignored by the arrow renderer and must not crash the page.
 

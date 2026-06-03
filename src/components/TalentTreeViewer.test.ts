@@ -1,5 +1,9 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
-import type { TalentEntry } from "../data/talents";
+import { resolveServerContext } from "../data/servers";
+import type { ClassTalentData, TalentEntry } from "../data/talents";
 import {
   canUseTalent,
   decodeTalentBuild,
@@ -9,7 +13,16 @@ import {
   rowPointRequirement,
   searchParamsWithTalentBuild,
   updateTalentRank,
+  TalentTreeViewer,
 } from "./TalentTreeViewer";
+
+function renderTalentTree(data: ClassTalentData) {
+  const context = resolveServerContext("turtle");
+  if (!context) throw new Error("missing turtle context");
+  return renderToStaticMarkup(
+    createElement(MemoryRouter, null, createElement(TalentTreeViewer, { data, context })),
+  );
+}
 
 function talent(partial: Partial<TalentEntry> & Pick<TalentEntry, "id" | "tierID" | "columnIndex">): TalentEntry {
   return {
@@ -74,6 +87,36 @@ describe("TalentTreeViewer talent locking", () => {
 
     expect(updateTalentRank(second, 1, tabTalents, { 50: 5 }, { maxPoints: 5 })).toEqual({ 50: 5 });
     expect(updateTalentRank(second, 1, tabTalents, { 50: 4 }, { maxPoints: 5 })).toEqual({ 50: 4, 51: 1 });
+  });
+});
+
+describe("TalentTreeViewer render geometry", () => {
+  it("matches ChronicleClassic's compact 4-column talent grid geometry", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Warrior",
+      tabs: [
+        {
+          id: 161,
+          name: "Arms",
+          backgroundFile: "WarriorArms",
+          orderIndex: 0,
+          iconTexture: "ability_warrior_savageblow",
+          talents: [
+            talent({ id: 1, tierID: 0, columnIndex: 0 }),
+            talent({ id: 2, tierID: 2, columnIndex: 3 }),
+          ],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data);
+
+    expect(html).toContain("width:192px;height:168px");
+    expect(html).toContain("grid-template-columns:repeat(4, 40px)");
+    expect(html).toContain("grid-auto-rows:48px");
+    expect(html).toContain("gap:8px");
+    expect(html).toContain("h-10 w-10");
   });
 });
 
