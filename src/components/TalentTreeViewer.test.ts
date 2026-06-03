@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { resolveServerContext } from "../data/servers";
 import type { ClassTalentData, TalentEntry } from "../data/talents";
 import {
+  calculateRequiredPlayerLevel,
   canUseTalent,
   decodeTalentBuild,
   encodeTalentBuild,
@@ -12,15 +13,16 @@ import {
   prerequisiteArrows,
   rowPointRequirement,
   searchParamsWithTalentBuild,
+  totalTalentPoints,
   updateTalentRank,
   TalentTreeViewer,
 } from "./TalentTreeViewer";
 
-function renderTalentTree(data: ClassTalentData) {
+function renderTalentTree(data: ClassTalentData, path = "/talents/test") {
   const context = resolveServerContext("turtle");
   if (!context) throw new Error("missing turtle context");
   return renderToStaticMarkup(
-    createElement(MemoryRouter, null, createElement(TalentTreeViewer, { data, context })),
+    createElement(MemoryRouter, { initialEntries: [path] }, createElement(TalentTreeViewer, { data, context })),
   );
 }
 
@@ -34,6 +36,54 @@ function talent(partial: Partial<TalentEntry> & Pick<TalentEntry, "id" | "tierID
     ...partial,
   };
 }
+
+describe("TalentTreeViewer required player level", () => {
+  it("derives level from max level, max talent points, and current spend", () => {
+    expect(calculateRequiredPlayerLevel(0, { maxLevel: 60, maxTalentPoints: 51 })).toBe(1);
+    expect(calculateRequiredPlayerLevel(1, { maxLevel: 60, maxTalentPoints: 51 })).toBe(10);
+    expect(calculateRequiredPlayerLevel(31, { maxLevel: 60, maxTalentPoints: 51 })).toBe(40);
+    expect(calculateRequiredPlayerLevel(51, { maxLevel: 60, maxTalentPoints: 51 })).toBe(60);
+    expect(calculateRequiredPlayerLevel(999, { maxLevel: 60, maxTalentPoints: 51 })).toBe(60);
+    expect(calculateRequiredPlayerLevel(71, { maxLevel: 80, maxTalentPoints: 71 })).toBe(80);
+  });
+
+  it("tracks required level as ranks are added and removed through builder rules", () => {
+    const first = talent({ id: 1, tierID: 0, columnIndex: 0, maxRank: 5 });
+    const second = talent({ id: 2, tierID: 0, columnIndex: 1, maxRank: 5 });
+    const tabTalents = [first, second];
+    const flavor = { maxLevel: 60, maxTalentPoints: 51 };
+
+    const onePoint = updateTalentRank(first, 1, tabTalents, {}, { maxPoints: 5 });
+    const capped = updateTalentRank(second, 1, tabTalents, { 1: 5 }, { maxPoints: 5 });
+    const removed = updateTalentRank(first, 4, tabTalents, { 1: 5 }, { maxPoints: 5 });
+
+    expect(calculateRequiredPlayerLevel(totalTalentPoints(onePoint), flavor)).toBe(10);
+    expect(calculateRequiredPlayerLevel(totalTalentPoints(capped), flavor)).toBe(14);
+    expect(calculateRequiredPlayerLevel(totalTalentPoints(removed), flavor)).toBe(13);
+  });
+
+  it("renders spent points and required level restored from URL build state", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Mage",
+      tabs: [
+        {
+          id: 81,
+          name: "Arcane",
+          backgroundFile: "MageArcane",
+          orderIndex: 0,
+          iconTexture: "spell_holy_magicalsentry",
+          talents: [talent({ id: 10, tierID: 0, columnIndex: 0, maxRank: 5 })],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data, `/talents/mage?build=${encodeTalentBuild({ 10: 3 })}`);
+
+    expect(html).toContain("Reset 3/51 points");
+    expect(html).toContain("Requires level 12");
+  });
+});
 
 describe("TalentTreeViewer talent locking", () => {
   it("requires five points per talent row before a row can be used", () => {

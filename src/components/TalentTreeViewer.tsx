@@ -74,6 +74,16 @@ export function totalTalentPoints(ranks: TalentRanks) {
   return Object.values(ranks).reduce((sum, rank) => sum + rank, 0);
 }
 
+export function calculateRequiredPlayerLevel(spentPoints: number, flavor: Pick<ResolvedServerContext["flavor"], "maxLevel" | "maxTalentPoints">) {
+  const cappedPoints = Math.max(0, Math.min(flavor.maxTalentPoints, spentPoints));
+  if (cappedPoints === 0) return 1;
+
+  // Current metadata exposes max level and max talent points, not a first-talent-level field.
+  // Vanilla/TBC/WotLK rules imply first talent point at maxLevel - maxTalentPoints + 1.
+  const firstTalentLevel = flavor.maxLevel - flavor.maxTalentPoints + 1;
+  return Math.min(flavor.maxLevel, firstTalentLevel + cappedPoints - 1);
+}
+
 function cleanRanks(ranks: TalentRanks): TalentRanks {
   return Object.fromEntries(Object.entries(ranks).filter(([, rank]) => rank > 0).map(([id, rank]) => [Number(id), rank]));
 }
@@ -306,6 +316,7 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
   const maxPoints = context.flavor.maxTalentPoints;
   const [ranks, setRanks] = useState<TalentRanks>(() => normalizeTalentRanks(tabTalentLists, decodeTalentBuild(searchParams.get(TALENT_BUILD_PARAM)), maxPoints));
   const total = useMemo(() => totalTalentPoints(ranks), [ranks]);
+  const requiredLevel = useMemo(() => calculateRequiredPlayerLevel(total, context.flavor), [context.flavor, total]);
 
   useEffect(() => {
     setRanks(normalizeTalentRanks(tabTalentLists, decodeTalentBuild(searchParams.get(TALENT_BUILD_PARAM)), maxPoints));
@@ -322,7 +333,12 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
           <h2 className="font-serif text-3xl font-bold text-white">{data.name} talents</h2>
           <p className="text-sm text-muted-foreground">Click to add a point. Right-click, shift-click, or command-click to remove one. Shareable builds are stored in the URL.</p>
         </div>
-        <button className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => commitRanks({})}>Reset {total}/{maxPoints} points</button>
+        <div className="flex flex-col items-start gap-2 sm:items-end">
+          <div className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm font-bold text-white">
+            Requires level {requiredLevel}
+          </div>
+          <button className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => commitRanks({})}>Reset {total}/{maxPoints} points</button>
+        </div>
       </div>
       <div className="grid gap-4 xl:grid-cols-3">
         {data.tabs.map((tab) => (
