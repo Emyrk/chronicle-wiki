@@ -13,7 +13,7 @@ The suite captures desktop and mobile screenshots for:
 - `/turtle/raids/molten-core/garr`
 - `/turtle/talents/mage`
 
-Each case also asserts that the expected H1 is visible and that the page has no horizontal overflow. That keeps the suite useful for mobile regressions without turning it into a brittle pixel-perfect wall.
+Each case also asserts that the expected H1 is visible and that the page has no horizontal overflow. Screenshots are viewport-sized rather than full-page so the suite catches obvious layout/style regressions without failing on tiny cross-host text-flow height changes.
 
 ## Run locally
 

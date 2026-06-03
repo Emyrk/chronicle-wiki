@@ -45,7 +45,7 @@ for (const routeCase of routeCases) {
     });
     await expect(page.getByRole("main").getByRole("heading", { name: routeCase.heading, level: 1 })).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    await expect(page).toHaveScreenshot(`${routeCase.slug}-${testInfo.project.name}.png`, { fullPage: true });
+    await expect(page).toHaveScreenshot(`${routeCase.slug}-${testInfo.project.name}.png`);
   });
 }
 
