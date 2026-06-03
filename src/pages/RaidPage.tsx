@@ -82,6 +82,5 @@ export function RaidPage() {
 
 function statusLabel(status: "available" | "guide-pending" | "planned") {
   if (status === "available") return "Available";
-  if (status === "guide-pending") return "Guide pending";
-  return "Planned";
+  return "Coming soon";
 }

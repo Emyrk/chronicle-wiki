@@ -104,7 +104,7 @@ export const flavorPatches: Record<string, Record<string, GuidePatch>> = {
   vanillaplus: {
     "raids/molten-core/garr": {
       sourceLabel: "Vanilla+",
-      summary: "Vanilla+ Garr starts from the Legacy guide, with room for server-specific mechanics as raids confirm them.",
+      summary: "Vanilla+ Garr starts from the Legacy guide while raids confirm server-specific mechanics.",
       callouts: [
         {
           title: "Vanilla+ custom content expected",

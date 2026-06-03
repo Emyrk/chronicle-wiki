@@ -19,6 +19,17 @@ const entryWithoutBackground: Pick<GuideIndexEntry, "backgroundImageUrl"> = {
   backgroundImageUrl: undefined,
 };
 
+describe("guide empty states", () => {
+  it("shows player-facing dungeon empty copy instead of publication progress language", () => {
+    const html = renderGuidesPage();
+
+    expect(html).toContain("Dungeons");
+    expect(html).toContain("Coming soon");
+    expect(html).toContain("No dungeon guides are available yet.");
+    expect(html).not.toMatch(/published yet|enough confirmed mechanics|will live here/i);
+  });
+});
+
 describe("guide cards", () => {
   it("renders instance cards with the Chronicle instance background image and readable overlay", () => {
     const html = renderGuidesPage();

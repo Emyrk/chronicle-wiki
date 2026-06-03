@@ -69,7 +69,7 @@ export function BossGuidePage() {
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <h2 className="text-3xl font-bold text-white">Units and spells cast</h2>
-            <p className="text-sm text-muted-foreground">Basic explorer for the spell lists you can pull from current logs.</p>
+            <p className="text-sm text-muted-foreground">Spell and creature reference for preparing assignments from current logs.</p>
           </div>
           <Link to={`/${context.server.slug}/explorer`} className="text-sm text-primary underline">Open full explorer</Link>
         </div>

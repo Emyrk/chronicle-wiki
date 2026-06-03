@@ -22,7 +22,7 @@ export function GuidesPage() {
         <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name}</p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight text-white md:text-5xl">Guides</h1>
         <p className="mt-3 max-w-3xl text-zinc-300">
-          Raid and dungeon guides organized by instance type. Molten Core is the first raid guide; dungeons get their own lane instead of being buried under vague navigation.
+          Raid and dungeon guides organized by instance type. Open available raid guides, browse boss notes, or check back soon for more instance coverage.
         </p>
         <label className="mt-5 flex max-w-xl items-center gap-3 rounded-lg border border-border/60 bg-black/50 px-3 py-2 text-sm text-muted-foreground focus-within:border-primary/70 focus-within:text-white">
           <Search className="h-4 w-4" />
@@ -62,7 +62,7 @@ export function GuidesPage() {
                 ))}
               </div>
             ) : (
-              <div className="wiki-card p-5 text-sm text-muted-foreground">No {section.title.toLowerCase()} published yet.</div>
+              <div className="wiki-card p-5 text-sm text-muted-foreground">Coming soon. No {section.slug === "dungeons" ? "dungeon" : section.title.toLowerCase()} guides are available yet.</div>
             )}
           </section>
         ))
@@ -108,7 +108,6 @@ function GuideCard({ serverSlug, entry, section }: { serverSlug: string; entry: 
 }
 
 function guideStatusLabel(status: GuideIndexEntry["status"]) {
-  if (status === "available") return "Available";
-  if (status === "guide-pending") return "Guide pending";
-  return "Planned";
+  if (status === "available") return "Open guide";
+  return "Coming soon";
 }

@@ -31,6 +31,14 @@ const forbiddenPlayerFacingCopy = [
   /log-derived/i,
   /structured guide patches/i,
   /server override hooks/i,
+  /guide pending/i,
+  /\bplanned\b/i,
+  /published yet/i,
+  /first raid guide/i,
+  /first Chronicle raid guide/i,
+  /enough confirmed mechanics/i,
+  /completed guide/i,
+  /basic explorer/i,
 ];
 
 function renderRoute(path: string, routePath: string, element: React.ReactNode) {

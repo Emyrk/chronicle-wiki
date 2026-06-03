@@ -51,8 +51,8 @@ export const raidInstances: InstanceDefinition[] = [
         id: "overview",
         title: "Overview",
         body: [
-          "Molten Core is the first Chronicle raid guide hub. The page keeps the full encounter order visible and links directly to available boss guides.",
-          "Use the encounter list to jump directly to each boss, then open a completed guide for detailed mechanics and unit evidence.",
+          "Molten Core keeps the full encounter order visible and links directly to available boss guides.",
+          "Use the encounter list to jump directly to each boss, then open available guides for detailed mechanics and unit evidence.",
         ],
       },
       {
@@ -90,7 +90,7 @@ export const raidInstances: InstanceDefinition[] = [
         name: "Garr",
         status: "available",
         role: "Boss with adds",
-        summary: "Add-control encounter with a completed baseline guide and room for realm-specific notes.",
+        summary: "Add-control encounter with a baseline guide and space for realm-specific notes.",
       },
       {
         slug: "ragnaros",

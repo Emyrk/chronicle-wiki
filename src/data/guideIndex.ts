@@ -42,7 +42,7 @@ export const guideSections: GuideIndexSection[] = [
   {
     slug: "dungeons",
     title: "Dungeons",
-    description: "Dungeon guides will live here as encounters get enough confirmed mechanics for useful player notes.",
+    description: "Coming soon. Dungeon guides will appear here when player-ready notes are added.",
     entries: [],
   },
 ];
