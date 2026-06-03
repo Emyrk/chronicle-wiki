@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { TalentEntry } from "../data/talents";
-import { canUseTalent, prerequisiteArrows, rowPointRequirement, updateTalentRank } from "./TalentTreeViewer";
+import {
+  canUseTalent,
+  decodeTalentBuild,
+  encodeTalentBuild,
+  normalizeTalentRanks,
+  prerequisiteArrows,
+  rowPointRequirement,
+  searchParamsWithTalentBuild,
+  updateTalentRank,
+} from "./TalentTreeViewer";
 
 function talent(partial: Partial<TalentEntry> & Pick<TalentEntry, "id" | "tierID" | "columnIndex">): TalentEntry {
   return {
@@ -32,7 +41,7 @@ describe("TalentTreeViewer talent locking", () => {
   it("requires prerequisite arrow sources to be full before the target can be used", () => {
     const source = talent({ id: 10, tierID: 0, columnIndex: 1, maxRank: 3 });
     const filler = talent({ id: 12, tierID: 0, columnIndex: 2, maxRank: 5 });
-    const target = talent({ id: 11, tierID: 1, columnIndex: 1, prereqTalent: [10] });
+    const target = talent({ id: 11, tierID: 1, columnIndex: 1, prereqTalent: [10], prereqRank: [1] });
     const tabTalents = [source, filler, target];
 
     expect(canUseTalent(target, tabTalents, { 10: 2, 12: 5 })).toBe(false);
@@ -57,12 +66,30 @@ describe("TalentTreeViewer talent locking", () => {
     expect(updateTalentRank(first, 4, tabTalents, { 40: 5, 41: 1 })).toEqual({ 40: 5, 41: 1 });
     expect(updateTalentRank(first, 4, tabTalents, { 40: 5, 41: 0 })).toEqual({ 40: 4, 41: 0 });
   });
+
+  it("enforces a total point cap while adding ranks", () => {
+    const first = talent({ id: 50, tierID: 0, columnIndex: 0, maxRank: 5 });
+    const second = talent({ id: 51, tierID: 0, columnIndex: 1, maxRank: 5 });
+    const tabTalents = [first, second];
+
+    expect(updateTalentRank(second, 1, tabTalents, { 50: 5 }, { maxPoints: 5 })).toEqual({ 50: 5 });
+    expect(updateTalentRank(second, 1, tabTalents, { 50: 4 }, { maxPoints: 5 })).toEqual({ 50: 4, 51: 1 });
+  });
 });
 
 describe("TalentTreeViewer prerequisite arrows", () => {
   it("maps prerequisite talent metadata into arrows", () => {
     const source = talent({ id: 1, tierID: 1, columnIndex: 2, maxRank: 2 });
     const target = talent({ id: 2, tierID: 3, columnIndex: 2, prereqTalent: [1], prereqRank: [2] });
+
+    expect(prerequisiteArrows([source, target])).toEqual([
+      { from: source, to: target, requiredRank: 2 },
+    ]);
+  });
+
+  it("uses the source max rank for arrow state even when prereqRank says less", () => {
+    const source = talent({ id: 1, tierID: 1, columnIndex: 2, maxRank: 2 });
+    const target = talent({ id: 2, tierID: 3, columnIndex: 2, prereqTalent: [1], prereqRank: [1] });
 
     expect(prerequisiteArrows([source, target])).toEqual([
       { from: source, to: target, requiredRank: 2 },
@@ -80,5 +107,30 @@ describe("TalentTreeViewer prerequisite arrows", () => {
     const target = talent({ id: 3, tierID: 2, columnIndex: 1, prereqTalent: [999], prereqRank: [1] });
 
     expect(prerequisiteArrows([target])).toEqual([]);
+  });
+});
+
+describe("TalentTreeViewer URL build state", () => {
+  it("encodes and decodes nonzero ranks in a stable order", () => {
+    expect(encodeTalentBuild({ 20: 2, 10: 0, 30: 1 })).toBe("20:2,30:1");
+    expect(decodeTalentBuild("20:2,30:1,wat:2,40:0")).toEqual({ 20: 2, 30: 1 });
+  });
+
+  it("normalizes shared ranks through row, arrow, max-rank, and point-cap rules", () => {
+    const source = talent({ id: 1, tierID: 0, columnIndex: 0, maxRank: 2 });
+    const filler = talent({ id: 2, tierID: 0, columnIndex: 1, maxRank: 5 });
+    const target = talent({ id: 3, tierID: 1, columnIndex: 0, maxRank: 3, prereqTalent: [1], prereqRank: [1] });
+    const tabTalents = [source, filler, target];
+
+    expect(normalizeTalentRanks([tabTalents], { 1: 1, 2: 5, 3: 9 }, 6)).toEqual({ 1: 1, 2: 5 });
+    expect(normalizeTalentRanks([tabTalents], { 1: 2, 2: 5, 3: 9 }, 8)).toEqual({ 1: 2, 2: 5, 3: 1 });
+  });
+
+  it("writes build state into URL search params without dropping other params", () => {
+    const params = searchParamsWithTalentBuild(new URLSearchParams("foo=bar"), { 12: 2, 30: 1 });
+    expect(params.toString()).toBe("foo=bar&build=12%3A2%2C30%3A1");
+
+    const cleared = searchParamsWithTalentBuild(params, {});
+    expect(cleared.toString()).toBe("foo=bar");
   });
 });

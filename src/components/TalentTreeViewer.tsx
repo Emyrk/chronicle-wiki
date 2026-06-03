@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { ClassTalentData, TalentEntry, TalentTabData } from "../data/talents";
 import { iconUrl } from "../lib/icons";
 import { cn } from "../lib/utils";
@@ -17,6 +18,7 @@ const TALENT_GRID_GAP = 16;
 const TALENT_BUTTON_SIZE = 44;
 const TALENT_GRID_COLUMNS = 4;
 const TALENT_GRID_ROWS = 7;
+const TALENT_BUILD_PARAM = "build";
 
 const TALENT_GRID_WIDTH = TALENT_GRID_COLUMNS * TALENT_CELL_SIZE + (TALENT_GRID_COLUMNS - 1) * TALENT_GRID_GAP;
 const TALENT_GRID_HEIGHT = TALENT_GRID_ROWS * TALENT_CELL_SIZE + (TALENT_GRID_ROWS - 1) * TALENT_GRID_GAP;
@@ -24,10 +26,10 @@ const TALENT_GRID_HEIGHT = TALENT_GRID_ROWS * TALENT_CELL_SIZE + (TALENT_GRID_RO
 export function prerequisiteArrows(talents: TalentEntry[]): TalentPrereqArrow[] {
   const byId = new Map(talents.map((talent) => [talent.id, talent]));
   return talents.flatMap((talent) =>
-    (talent.prereqTalent ?? []).flatMap((prereqId, index) => {
+    (talent.prereqTalent ?? []).flatMap((prereqId) => {
       const from = byId.get(prereqId);
       if (!from) return [];
-      return [{ from, to: talent, requiredRank: talent.prereqRank?.[index] ?? from.maxRank }];
+      return [{ from, to: talent, requiredRank: from.maxRank }];
     }),
   );
 }
@@ -45,11 +47,10 @@ function pointsSpentBeforeRow(talents: TalentEntry[], ranks: TalentRanks, tierID
 
 function prerequisitesMet(talent: TalentEntry, talents: TalentEntry[], ranks: TalentRanks) {
   const byId = new Map(talents.map((candidate) => [candidate.id, candidate]));
-  return (talent.prereqTalent ?? []).every((prereqId, index) => {
+  return (talent.prereqTalent ?? []).every((prereqId) => {
     const prereq = byId.get(prereqId);
     if (!prereq) return true;
-    const requiredRank = talent.prereqRank?.[index] ?? prereq.maxRank;
-    return (ranks[prereq.id] ?? 0) >= requiredRank;
+    return (ranks[prereq.id] ?? 0) >= prereq.maxRank;
   });
 }
 
@@ -61,15 +62,73 @@ function spentTalentsStillValid(talents: TalentEntry[], ranks: TalentRanks) {
   return talents.every((talent) => (ranks[talent.id] ?? 0) === 0 || canUseTalent(talent, talents, ranks));
 }
 
-export function updateTalentRank(talent: TalentEntry, requestedRank: number, talents: TalentEntry[], ranks: TalentRanks): TalentRanks {
+export function totalTalentPoints(ranks: TalentRanks) {
+  return Object.values(ranks).reduce((sum, rank) => sum + rank, 0);
+}
+
+function cleanRanks(ranks: TalentRanks): TalentRanks {
+  return Object.fromEntries(Object.entries(ranks).filter(([, rank]) => rank > 0).map(([id, rank]) => [Number(id), rank]));
+}
+
+export function updateTalentRank(
+  talent: TalentEntry,
+  requestedRank: number,
+  talents: TalentEntry[],
+  ranks: TalentRanks,
+  options: { maxPoints?: number } = {},
+): TalentRanks {
   const currentRank = ranks[talent.id] ?? 0;
   const nextRank = Math.max(0, Math.min(talent.maxRank, requestedRank));
   if (nextRank === currentRank) return ranks;
   if (nextRank > currentRank && !canUseTalent(talent, talents, ranks)) return ranks;
 
   const nextRanks = { ...ranks, [talent.id]: nextRank };
+  if (options.maxPoints !== undefined && totalTalentPoints(nextRanks) > options.maxPoints) return ranks;
   if (nextRank < currentRank && !spentTalentsStillValid(talents, nextRanks)) return ranks;
   return nextRanks;
+}
+
+export function encodeTalentBuild(ranks: TalentRanks) {
+  return Object.entries(ranks)
+    .map(([id, rank]) => [Number(id), rank] as const)
+    .filter(([id, rank]) => Number.isFinite(id) && rank > 0)
+    .sort(([left], [right]) => left - right)
+    .map(([id, rank]) => `${id}:${rank}`)
+    .join(",");
+}
+
+export function decodeTalentBuild(value: string | null | undefined): TalentRanks {
+  if (!value) return {};
+  const ranks: TalentRanks = {};
+  for (const part of value.split(",")) {
+    const [idText, rankText] = part.split(":");
+    const id = Number(idText);
+    const rank = Number(rankText);
+    if (Number.isInteger(id) && Number.isInteger(rank) && id > 0 && rank > 0) ranks[id] = rank;
+  }
+  return ranks;
+}
+
+export function normalizeTalentRanks(tabs: TalentEntry[][], rawRanks: TalentRanks, maxPoints = Number.POSITIVE_INFINITY): TalentRanks {
+  let ranks: TalentRanks = {};
+  for (const talents of tabs) {
+    const ordered = [...talents].sort((left, right) => left.tierID - right.tierID || left.columnIndex - right.columnIndex || left.id - right.id);
+    for (const talent of ordered) {
+      const requested = Math.min(rawRanks[talent.id] ?? 0, talent.maxRank);
+      for (let rank = 1; rank <= requested; rank += 1) {
+        ranks = updateTalentRank(talent, rank, talents, ranks, { maxPoints });
+      }
+    }
+  }
+  return cleanRanks(ranks);
+}
+
+export function searchParamsWithTalentBuild(params: URLSearchParams, ranks: TalentRanks) {
+  const next = new URLSearchParams(params);
+  const build = encodeTalentBuild(ranks);
+  if (build) next.set(TALENT_BUILD_PARAM, build);
+  else next.delete(TALENT_BUILD_PARAM);
+  return next;
 }
 
 function talentCenter(talent: Pick<TalentEntry, "tierID" | "columnIndex">) {
@@ -209,16 +268,28 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
 }
 
 export function TalentTreeViewer({ data, context }: { data: ClassTalentData; context: ResolvedServerContext }) {
-  const [ranks, setRanks] = useState<TalentRanks>({});
-  const total = useMemo(() => Object.values(ranks).reduce((sum, rank) => sum + rank, 0), [ranks]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabTalentLists = useMemo(() => data.tabs.map((tab) => tab.talents), [data.tabs]);
+  const maxPoints = context.flavor.maxTalentPoints;
+  const [ranks, setRanks] = useState<TalentRanks>(() => normalizeTalentRanks(tabTalentLists, decodeTalentBuild(searchParams.get(TALENT_BUILD_PARAM)), maxPoints));
+  const total = useMemo(() => totalTalentPoints(ranks), [ranks]);
+
+  useEffect(() => {
+    setRanks(normalizeTalentRanks(tabTalentLists, decodeTalentBuild(searchParams.get(TALENT_BUILD_PARAM)), maxPoints));
+  }, [data.id, maxPoints, searchParams, tabTalentLists]);
+
+  function commitRanks(nextRanks: TalentRanks) {
+    setRanks(nextRanks);
+    setSearchParams(searchParamsWithTalentBuild(searchParams, nextRanks), { replace: true });
+  }
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-serif text-3xl font-bold text-white">{data.name} talents</h2>
-          <p className="text-sm text-muted-foreground">Click to add a point. Right-click, shift-click, or command-click to remove one.</p>
+          <p className="text-sm text-muted-foreground">Click to add a point. Right-click, shift-click, or command-click to remove one. Shareable builds are stored in the URL.</p>
         </div>
-        <button className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => setRanks({})}>Reset {total} points</button>
+        <button className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => commitRanks({})}>Reset {total}/{maxPoints} points</button>
       </div>
       <div className="grid gap-4 xl:grid-cols-3">
         {data.tabs.map((tab) => (
@@ -227,7 +298,7 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
             tab={tab}
             ranks={ranks}
             context={context}
-            onRankChange={(talent, rank) => setRanks((current) => updateTalentRank(talent, rank, tab.talents, current))}
+            onRankChange={(talent, rank) => commitRanks(updateTalentRank(talent, rank, tab.talents, ranks, { maxPoints }))}
           />
         ))}
       </div>
