@@ -23,7 +23,7 @@ describe("guide cards", () => {
   it("renders instance cards with the Chronicle instance background image and readable overlay", () => {
     const html = renderGuidesPage();
 
-    expect(html).toContain("background-image:url(https://chronicleclassic.com/assets/instances/molten-core/background.jpg)");
+    expect(html).toContain("background-image:url(/assets/instances/molten-core/background.jpg)");
     expect(html).toContain("absolute inset-0 bg-gradient-to-t from-black/95 via-black/75 to-black/35");
     expect(html).toContain("relative z-10");
     expect(html).toContain("Molten Core");

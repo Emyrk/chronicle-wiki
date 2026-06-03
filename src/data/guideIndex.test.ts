@@ -12,7 +12,7 @@ describe("guide index", () => {
   it("carries Chronicle instance background images into raid guide cards", () => {
     const moltenCore = guideSections.find((section) => section.slug === "raids")?.entries[0];
 
-    expect(moltenCore?.backgroundImageUrl).toBe("https://chronicleclassic.com/assets/instances/molten-core/background.jpg");
+    expect(moltenCore?.backgroundImageUrl).toBe("/assets/instances/molten-core/background.jpg");
   });
 
   it("finds Molten Core from raid and boss search terms", () => {

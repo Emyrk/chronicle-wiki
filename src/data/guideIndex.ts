@@ -19,11 +19,9 @@ export interface GuideIndexSection {
   entries: GuideIndexEntry[];
 }
 
-const chronicleAssetBaseUrl = "https://chronicleclassic.com";
-
 function chronicleAssetUrl(path: string | undefined) {
   if (!path) return undefined;
-  return `${chronicleAssetBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  return path.startsWith("/") ? path : `/${path}`;
 }
 
 export const guideSections: GuideIndexSection[] = [
