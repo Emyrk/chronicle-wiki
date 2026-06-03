@@ -342,6 +342,11 @@ describe("TalentTreeViewer visual talent states", () => {
     expect(html).toContain("talent-state-selected");
     expect(html).toContain("talent-state-maxed");
     expect(html).toContain("talent-state-locked");
+    expect(html).toContain("talent-locked-icon-readable grayscale opacity-70 contrast-110");
+    expect(html).toContain("talent-locked-icon-veil absolute inset-0 rounded bg-black/25");
+    expect(html).toContain("border-zinc-500/70 bg-zinc-900 text-zinc-100");
+    expect(html).not.toContain("grayscale opacity-35");
+    expect(html).not.toContain("absolute inset-0 rounded bg-black/45");
     expect(html).toContain("Available Focus");
     expect(html).toContain("Selected Focus");
     expect(html).toContain("Maxed Focus");
