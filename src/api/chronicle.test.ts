@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiUrl, fetchSpell, fetchTalentTrees, fetchTalentTooltipSpell, spellRecordQueryKey } from "./chronicle";
+import { apiUrl, fetchSpell, fetchTalentTrees, fetchTalentTooltipSpell, prefetchTalentTooltipSpell, spellRecordQueryKey } from "./chronicle";
 import { resolveServerContext } from "../data/servers";
 
 function context(slug: string) {
@@ -279,6 +279,103 @@ describe("Chronicle API URLs", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/15237");
     expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/23455");
+  });
+
+  it("prefetches only the direct tooltip spell and leaves referenced spells until tooltip resolution", async () => {
+    const queryClient = new QueryClient();
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+      if (String(url).endsWith("/15237")) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 15237,
+            name: { "0": "Holy Nova" },
+            description: { "0": "Causes $23455s1 Holy damage within $23455a1 yards." },
+            spell_level: 1,
+            effect_base_points: [0, 0, 0],
+            effect_die_sides: [1, 1, 1],
+            effect_base_dice: [1, 1, 1],
+          }),
+        } as Response;
+      }
+
+      if (String(url).endsWith("/23455")) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 23455,
+            name: { "0": "Holy Nova Trigger" },
+            spell_level: 1,
+            effect_base_points: [27, 0, 0],
+            effect_die_sides: [8, 1, 1],
+            effect_base_dice: [1, 1, 1],
+            effect_radius: [{ ID: 13, Radius: 10, RadiusPerLevel: 0, RadiusMin: 0, RadiusMax: 10 }],
+          }),
+        } as Response;
+      }
+
+      throw new Error(`unexpected URL ${String(url)}`);
+    });
+
+    await prefetchTalentTooltipSpell(queryClient, context("turtle"), 15237);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/15237");
+    expect(fetchMock).not.toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/23455");
+
+    await expect(fetchTalentTooltipSpell(queryClient, context("turtle"), 15237)).resolves.toMatchObject({
+      notes: "Causes 28 to 35 Holy damage within 10 yards.",
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/23455");
+  });
+
+  it("bounds concurrent referenced spell requests when resolving one tooltip", async () => {
+    const queryClient = new QueryClient();
+    let activeReferencedRequests = 0;
+    let maxActiveReferencedRequests = 0;
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+      const urlText = String(url);
+      if (urlText.endsWith("/5000")) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 5000,
+            name: { "0": "Reference Swarm" },
+            description: { "0": "$5001s1 $5002s1 $5003s1 $5004s1 $5005s1 $5006s1" },
+            spell_level: 1,
+            effect_base_points: [0, 0, 0],
+            effect_die_sides: [1, 1, 1],
+            effect_base_dice: [1, 1, 1],
+          }),
+        } as Response;
+      }
+
+      const match = urlText.match(/\/(500[1-6])$/);
+      if (!match) throw new Error(`unexpected URL ${urlText}`);
+      activeReferencedRequests += 1;
+      maxActiveReferencedRequests = Math.max(maxActiveReferencedRequests, activeReferencedRequests);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      activeReferencedRequests -= 1;
+      return {
+        ok: true,
+        json: async () => ({
+          id: Number(match[1]),
+          name: { "0": `Referenced ${match[1]}` },
+          description: { "0": "" },
+          spell_level: 1,
+          effect_base_points: [10, 0, 0],
+          effect_die_sides: [1, 1, 1],
+          effect_base_dice: [1, 1, 1],
+        }),
+      } as Response;
+    });
+
+    await fetchTalentTooltipSpell(queryClient, context("turtle"), 5000);
+
+    expect(fetchMock).toHaveBeenCalledTimes(7);
+    expect(maxActiveReferencedRequests).toBeLessThanOrEqual(4);
   });
 
   it("does not reuse same spell ID cache entries across servers", async () => {

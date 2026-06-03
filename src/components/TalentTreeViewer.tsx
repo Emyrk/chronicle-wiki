@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { fetchTalentTooltipSpell, talentTooltipSpellQueryKey } from "../api/chronicle";
+import { fetchTalentTooltipSpell, prefetchTalentTooltipSpell, talentTooltipSpellQueryKey } from "../api/chronicle";
 import type { ClassTalentData, TalentEntry, TalentTabData } from "../data/talents";
 import { iconUrl } from "../lib/icons";
 import { cn } from "../lib/utils";
@@ -452,12 +452,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
   const prefetchTooltipSpells = () => {
     for (const spellId of [currentSpellId, nextSpellId]) {
       if (!spellId) continue;
-      void queryClient.prefetchQuery({
-        queryKey: talentTooltipSpellQueryKey(context, spellId),
-        queryFn: () => fetchTalentTooltipSpell(queryClient, context, spellId),
-        staleTime: Infinity,
-        gcTime: 30 * 60 * 1000,
-      });
+      void prefetchTalentTooltipSpell(queryClient, context, spellId);
     }
   };
   const showTooltip = () => {

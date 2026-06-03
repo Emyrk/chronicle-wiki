@@ -4,6 +4,7 @@ import type { ResolvedServerContext, SpellRef } from "../types";
 import { extractReferencedSpellIds, getEnglishText, resolvedSpellNotes, type WoWSpell } from "./wowdb";
 
 const SPELL_CACHE_TIME = 30 * 60 * 1000;
+const REFERENCED_SPELL_FETCH_CONCURRENCY = 4;
 
 export function spellRecordQueryKey(context: ResolvedServerContext, spellId: number) {
   return ["chronicle", context.chronicle.baseUrl, "wowdb", "spell", spellId] as const;
@@ -72,10 +73,29 @@ export async function fetchSpellRaw(context: ResolvedServerContext, spellId: num
   }
 }
 
+async function mapWithConcurrency<T, U>(items: T[], limit: number, mapper: (item: T) => Promise<U>): Promise<U[]> {
+  const results: U[] = [];
+  let nextIndex = 0;
+  async function worker() {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      results[currentIndex] = await mapper(items[currentIndex]);
+    }
+  }
+  const workerCount = Math.min(Math.max(1, limit), items.length);
+  await Promise.all(Array.from({ length: workerCount }, worker));
+  return results;
+}
+
 async function fetchReferencedSpells(context: ResolvedServerContext, spell: WoWSpell): Promise<Map<number, WoWSpell>> {
   const templates = [getEnglishText(spell.description), getEnglishText(spell.aura_description)];
   const referencedIds = Array.from(new Set(templates.flatMap(extractReferencedSpellIds))).filter((id) => id !== spell.id);
-  const entries = await Promise.all(referencedIds.map(async (spellId) => [spellId, await fetchSpellRaw(context, spellId)] as const));
+  const entries = await mapWithConcurrency(
+    referencedIds,
+    REFERENCED_SPELL_FETCH_CONCURRENCY,
+    async (spellId) => [spellId, await fetchSpellRaw(context, spellId)] as const,
+  );
   return new Map(entries.filter((entry): entry is readonly [number, WoWSpell] => Boolean(entry[1])));
 }
 
@@ -92,7 +112,11 @@ async function fetchCachedSpellRaw(queryClient: QueryClient, context: ResolvedSe
 async function fetchCachedReferencedSpells(queryClient: QueryClient, context: ResolvedServerContext, spell: WoWSpell): Promise<Map<number, WoWSpell>> {
   const templates = [getEnglishText(spell.description), getEnglishText(spell.aura_description)];
   const referencedIds = Array.from(new Set(templates.flatMap(extractReferencedSpellIds))).filter((id) => id !== spell.id);
-  const entries = await Promise.all(referencedIds.map(async (spellId) => [spellId, await fetchCachedSpellRaw(queryClient, context, spellId)] as const));
+  const entries = await mapWithConcurrency(
+    referencedIds,
+    REFERENCED_SPELL_FETCH_CONCURRENCY,
+    async (spellId) => [spellId, await fetchCachedSpellRaw(queryClient, context, spellId)] as const,
+  );
   return new Map(entries.filter((entry): entry is readonly [number, WoWSpell] => Boolean(entry[1])));
 }
 
@@ -114,4 +138,8 @@ export async function fetchTalentTooltipSpell(queryClient: QueryClient, context:
   if (!spell) return undefined;
   const referencedSpells = await fetchCachedReferencedSpells(queryClient, context, spell);
   return spellRefFromRecord(spell, spellId, referencedSpells);
+}
+
+export async function prefetchTalentTooltipSpell(queryClient: QueryClient, context: ResolvedServerContext, spellId: number): Promise<void> {
+  await fetchCachedSpellRaw(queryClient, context, spellId);
 }
