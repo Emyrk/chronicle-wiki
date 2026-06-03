@@ -37,10 +37,10 @@ describe("icon buckets", () => {
 
   it("builds talent background URLs from TalentTab backgroundFile values in the contextual bucket", () => {
     expect(talentBackgroundUrl("MageFire", context("turtle"))).toBe(
-      "https://icons.chronicleclassic.com/turtle/magefire.webp",
+      "https://icons.chronicleclassic.com/turtle/talent-backgrounds/magefire.webp",
     );
     expect(talentBackgroundUrl("WarriorArms", context("vanillaplus"))).toBe(
-      "https://icons.chronicleclassic.com/vanillaplus/warriorarms.webp",
+      "https://icons.chronicleclassic.com/vanillaplus/talent-backgrounds/warriorarms.webp",
     );
     expect(talentBackgroundUrl("", context("turtle"))).toBeNull();
   });
