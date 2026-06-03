@@ -203,6 +203,55 @@ describe("TalentTreeViewer tooltips", () => {
 });
 
 describe("TalentTreeViewer render geometry", () => {
+  it("isolates talent-grid horizontal scrolling for narrow mobile screens", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Warrior",
+      tabs: [
+        {
+          id: 161,
+          name: "Arms",
+          backgroundFile: "WarriorArms",
+          orderIndex: 0,
+          iconTexture: "ability_warrior_savageblow",
+          talents: [talent({ id: 1, tierID: 0, columnIndex: 0 })],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data);
+
+    expect(html).toContain('aria-label="Scrollable talent tree grid"');
+    expect(html).toContain("overflow-x-auto");
+    expect(html).toContain("min-w-max");
+    expect(html).toContain("overscroll-x-contain");
+    expect(html).toContain("touch-pan-x");
+  });
+
+  it("keeps talent buttons and tooltips usable on touch screens", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Warrior",
+      tabs: [
+        {
+          id: 161,
+          name: "Arms",
+          backgroundFile: "WarriorArms",
+          orderIndex: 0,
+          iconTexture: "ability_warrior_savageblow",
+          talents: [talent({ id: 1, tierID: 0, columnIndex: 0 })],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data);
+
+    expect(html).toContain("before:absolute before:-inset-0.5");
+    expect(html).toContain("w-[min(18rem,calc(100vw-2rem))]");
+    expect(html).toContain("sm:left-1/2");
+    expect(html).toContain("sm:-translate-x-1/2");
+  });
+
   it("matches ChronicleClassic's compact 4-column talent grid geometry", () => {
     const data: ClassTalentData = {
       id: 1,
@@ -229,7 +278,7 @@ describe("TalentTreeViewer render geometry", () => {
     expect(html).toContain("grid-auto-rows:48px");
     expect(html).toContain("gap:8px");
     expect(html).toContain("h-10 w-10");
-    expect(html).toContain("grid gap-4 xl:grid-cols-3");
+    expect(html).toContain("grid min-w-0 gap-4 xl:grid-cols-3");
   });
 
   it("expands the tab layout and grid height for Wrath-depth talent rows", () => {
@@ -270,7 +319,7 @@ describe("TalentTreeViewer render geometry", () => {
 
     const html = renderTalentTree(data);
 
-    expect(html).toContain("grid gap-4 xl:grid-cols-2 2xl:grid-cols-3");
+    expect(html).toContain("grid min-w-0 gap-4 xl:grid-cols-2 2xl:grid-cols-3");
     expect(html).toContain("width:192px;height:616px");
     expect(html).toContain('viewBox="0 0 192 616"');
     expect(html).toContain("Talent 102");

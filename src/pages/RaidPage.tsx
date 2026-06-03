@@ -14,9 +14,9 @@ export function RaidPage() {
 
   return (
     <div className="space-y-6">
-      <div className="wiki-card p-6">
+      <div className="wiki-card p-4 sm:p-6">
         <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name} · Raid overview</p>
-        <h1 className="mt-2 text-5xl font-bold text-white">{instance.title}</h1>
+        <h1 className="mt-2 text-3xl font-bold text-white sm:text-5xl">{instance.title}</h1>
         <p className="mt-3 max-w-3xl text-zinc-300">{instance.description}</p>
         <div className="mt-5 flex flex-wrap gap-2">
           <span className="wiki-pill">{context.flavor.name}</span>
@@ -26,16 +26,16 @@ export function RaidPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start">
-        <aside className="wiki-card p-4 lg:sticky lg:top-24">
+        <aside className="wiki-card max-w-full overflow-hidden p-4 lg:sticky lg:top-24">
           <h2 className="text-xl font-bold text-white">Contents</h2>
-          <nav aria-label={`${instance.title} contents`} className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
+          <nav aria-label={`${instance.title} contents`} className="mt-3 flex snap-x gap-2 overflow-x-auto overscroll-x-contain pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
             {overview.tableOfContents.map((entry) => (
               <a
                 key={entry.href}
                 href={entry.href}
                 className={entry.depth === 1
-                  ? "block shrink-0 rounded-lg px-3 py-2 text-sm font-semibold text-zinc-200 hover:bg-white/10 hover:text-white"
-                  : "block shrink-0 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-white/10 hover:text-white lg:ml-3"}
+                  ? "block shrink-0 snap-start rounded-lg px-3 py-2 text-sm font-semibold text-zinc-200 hover:bg-white/10 hover:text-white"
+                  : "block shrink-0 snap-start rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-white/10 hover:text-white lg:ml-3"}
               >
                 {entry.label}
               </a>
@@ -45,7 +45,7 @@ export function RaidPage() {
 
         <main className="space-y-6">
           {instance.overviewSections.map((section) => (
-            <section key={section.id} id={section.id} className="wiki-card prose-wiki scroll-mt-24 p-6">
+            <section key={section.id} id={section.id} className="wiki-card prose-wiki scroll-mt-24 p-4 sm:p-6">
               <h2>{section.title}</h2>
               {section.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             </section>
@@ -56,7 +56,7 @@ export function RaidPage() {
             {instance.encounters.map((encounter) => {
               const guide = resolveGuide(context.server.slug, `raids/${instance.slug}/${encounter.slug}`);
               return (
-                <article key={encounter.slug} id={instanceAnchorId(encounter.slug)} className="wiki-card scroll-mt-24 p-5">
+                <article key={encounter.slug} id={instanceAnchorId(encounter.slug)} className="wiki-card scroll-mt-24 p-4 sm:p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{encounter.role ?? "Encounter"}</p>

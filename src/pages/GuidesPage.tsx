@@ -18,9 +18,9 @@ export function GuidesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="wiki-card p-6">
+      <div className="wiki-card p-4 sm:p-6">
         <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name}</p>
-        <h1 className="mt-2 text-4xl font-bold tracking-tight text-white md:text-5xl">Guides</h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">Guides</h1>
         <p className="mt-3 max-w-3xl text-zinc-300">
           Raid and dungeon guides organized by instance type. Open available raid guides, browse boss notes, or check back soon for more instance coverage.
         </p>
@@ -39,7 +39,7 @@ export function GuidesPage() {
         <section className="space-y-3">
           <h2 className="text-2xl font-bold text-white">Search results</h2>
           {matchingEntries.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {matchingEntries.map((entry) => (
                 <GuideCard key={`${entry.sectionSlug}/${entry.slug}`} serverSlug={context.server.slug} entry={entry} section={entry.section} />
               ))}
@@ -56,7 +56,7 @@ export function GuidesPage() {
               <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
             </div>
             {section.entries.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {section.entries.map((entry) => (
                   <GuideCard key={entry.slug} serverSlug={context.server.slug} entry={entry} section={section.title} />
                 ))}

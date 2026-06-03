@@ -271,7 +271,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
         onChange(Math.max(0, rank - 1));
       }}
       className={cn(
-        "group relative h-10 w-10 rounded-sm border bg-zinc-950 shadow-lg transition",
+        "group relative h-10 w-10 rounded-sm border bg-zinc-950 shadow-lg transition before:absolute before:-inset-0.5 before:content-['']",
         locked ? "cursor-not-allowed border-zinc-800 opacity-45" : "border-zinc-600 hover:scale-105 hover:border-primary",
       )}
     >
@@ -286,7 +286,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
       <span
         id={tooltipId}
         role="tooltip"
-        className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-lg border border-amber-400/25 bg-zinc-950 p-3 text-left text-xs text-zinc-200 shadow-2xl group-hover:block group-focus-visible:block"
+        className="pointer-events-none absolute left-0 top-full z-20 mt-2 hidden w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-amber-400/25 bg-zinc-950 p-3 text-left text-xs text-zinc-200 shadow-2xl group-hover:block group-focus-visible:block sm:left-1/2 sm:-translate-x-1/2"
       >
         <strong className="block text-sm text-white">{talent.name}</strong>
         <span className="mt-1 block font-semibold text-amber-200">Rank {rank}/{talent.maxRank}{locked ? " · Locked" : ""}</span>
@@ -311,7 +311,7 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
   const rows = useMemo(() => talentGridRows(tab.talents), [tab.talents]);
   const height = talentGridHeight(rows);
   return (
-    <section className="wiki-card self-start p-4">
+    <section className="wiki-card max-w-full self-start p-4">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src={iconUrl(tab.iconTexture, context)} alt="" className="h-10 w-10 rounded border border-border/60" />
@@ -321,41 +321,43 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
           </div>
         </div>
       </div>
-      <div
-        className="relative mx-auto overflow-visible rounded-lg border border-white/5 bg-black/25 p-3"
-        style={{ width: `${TALENT_GRID_WIDTH + TALENT_GRID_GAP * 2}px` }}
-      >
-        <div className="relative" style={{ width: `${TALENT_GRID_WIDTH}px`, height: `${height}px` }}>
-          <TalentPrereqArrows arrows={arrows} ranks={ranks} height={height} />
-          <div
-            className="relative z-10 grid justify-items-center"
-            style={{
-              width: `${TALENT_GRID_WIDTH}px`,
-              gridTemplateColumns: `repeat(${TALENT_GRID_COLUMNS}, ${TALENT_CELL_WIDTH}px)`,
-              gridAutoRows: `${TALENT_CELL_HEIGHT}px`,
-              gap: `${TALENT_GRID_GAP}px`,
-            }}
-          >
-            {Array.from({ length: rows }).map((_, tier) =>
-              Array.from({ length: TALENT_GRID_COLUMNS }).map((__, col) => {
-                const talent = tab.talents.find((candidate) => candidate.tierID === tier && candidate.columnIndex === col);
-                return (
-                  <div key={`${tier}-${col}`} className="flex h-12 w-10 items-start justify-center">
-                    {talent && (
-                      <TalentButton
-                        talent={talent}
-                        rank={ranks[talent.id] ?? 0}
-                        locked={(ranks[talent.id] ?? 0) === 0 && !canUseTalent(talent, tab.talents, ranks)}
-                        talents={tab.talents}
-                        ranks={ranks}
-                        context={context}
-                        onChange={(rank) => onRankChange(talent, rank)}
-                      />
-                    )}
-                  </div>
-                );
-              }),
-            )}
+      <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 pb-3 touch-pan-x sm:mx-0 sm:px-0" aria-label="Scrollable talent tree grid">
+        <div
+          className="relative mx-auto min-w-max rounded-lg border border-white/5 bg-black/25 p-3"
+          style={{ width: `${TALENT_GRID_WIDTH + TALENT_GRID_GAP * 2}px` }}
+        >
+          <div className="relative" style={{ width: `${TALENT_GRID_WIDTH}px`, height: `${height}px` }}>
+            <TalentPrereqArrows arrows={arrows} ranks={ranks} height={height} />
+            <div
+              className="relative z-10 grid justify-items-center"
+              style={{
+                width: `${TALENT_GRID_WIDTH}px`,
+                gridTemplateColumns: `repeat(${TALENT_GRID_COLUMNS}, ${TALENT_CELL_WIDTH}px)`,
+                gridAutoRows: `${TALENT_CELL_HEIGHT}px`,
+                gap: `${TALENT_GRID_GAP}px`,
+              }}
+            >
+              {Array.from({ length: rows }).map((_, tier) =>
+                Array.from({ length: TALENT_GRID_COLUMNS }).map((__, col) => {
+                  const talent = tab.talents.find((candidate) => candidate.tierID === tier && candidate.columnIndex === col);
+                  return (
+                    <div key={`${tier}-${col}`} className="flex h-12 w-10 items-start justify-center">
+                      {talent && (
+                        <TalentButton
+                          talent={talent}
+                          rank={ranks[talent.id] ?? 0}
+                          locked={(ranks[talent.id] ?? 0) === 0 && !canUseTalent(talent, tab.talents, ranks)}
+                          talents={tab.talents}
+                          ranks={ranks}
+                          context={context}
+                          onChange={(rank) => onRankChange(talent, rank)}
+                        />
+                      )}
+                    </div>
+                  );
+                }),
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -367,7 +369,7 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
   const [searchParams, setSearchParams] = useSearchParams();
   const tabTalentLists = useMemo(() => data.tabs.map((tab) => tab.talents), [data.tabs]);
   const deepestTabRows = useMemo(() => Math.max(...data.tabs.map((tab) => talentGridRows(tab.talents)), 0), [data.tabs]);
-  const tabGridClassName = deepestTabRows > 7 ? "grid gap-4 xl:grid-cols-2 2xl:grid-cols-3" : "grid gap-4 xl:grid-cols-3";
+  const tabGridClassName = deepestTabRows > 7 ? "grid min-w-0 gap-4 xl:grid-cols-2 2xl:grid-cols-3" : "grid min-w-0 gap-4 xl:grid-cols-3";
   const maxPoints = context.talents.maxTalentPoints;
   const [ranks, setRanks] = useState<TalentRanks>(() => normalizeTalentRanks(tabTalentLists, decodeTalentBuild(searchParams.get(TALENT_BUILD_PARAM)), maxPoints));
   const total = useMemo(() => totalTalentPoints(ranks), [ranks]);

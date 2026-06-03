@@ -24,23 +24,23 @@ export function Layout() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen overflow-x-hidden"
       style={{
         "--primary": context.branding.theme.primary,
         "--ring": context.branding.theme.accent,
       } as React.CSSProperties}
     >
       <header className="border-b border-border/60 bg-black/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <Link to={`/${server.slug}`} className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-3 py-4 sm:px-4 lg:flex-row lg:items-center lg:justify-between">
+          <Link to={`/${server.slug}`} className="flex min-w-0 items-center gap-3">
             <img src={context.branding.logoUrl} alt="" className="h-11 w-11 rounded-lg border border-border/60 bg-black/70 object-cover" />
-            <div>
+            <div className="min-w-0">
               <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Chronicle Wiki</div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">{server.name}</h1>
+              <h1 className="truncate text-2xl font-bold tracking-tight text-white">{server.name}</h1>
               <div className="text-sm text-muted-foreground">{flavor.name} · {flavor.clientVersion}</div>
             </div>
           </Link>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="-mx-3 flex gap-2 overflow-x-auto overscroll-x-contain px-3 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
             <SiteSearch />
             {nav.map((item) => {
               const Icon = item.icon;
@@ -50,7 +50,7 @@ export function Layout() {
                   to={item.to}
                   end={item.to === `/${server.slug}`}
                   className={({ isActive }) => cn(
-                    "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition",
+                    "inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm transition",
                     isActive ? "border-primary/70 bg-primary/15 text-white" : "border-border/60 bg-black/40 text-muted-foreground hover:border-primary/50 hover:text-white",
                   )}
                 >
@@ -69,7 +69,7 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-8">
+      <main className="mx-auto max-w-7xl px-3 py-5 sm:px-4 sm:py-8">
         <Outlet />
       </main>
       <SiteFooter />

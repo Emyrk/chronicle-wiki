@@ -17,13 +17,13 @@ export function ServerHomePage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <ServerHero context={context} />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => {
           const Icon = card.icon;
           return (
-            <Link key={card.to} to={card.to} className="wiki-card p-5 transition hover:border-primary/50 hover:bg-black/70">
+            <Link key={card.to} to={card.to} className="wiki-card p-4 transition hover:border-primary/50 hover:bg-black/70 sm:p-5">
               <Icon className="mb-4 h-8 w-8 text-primary" />
               <h2 className="text-2xl font-bold text-white">{card.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{card.body}</p>

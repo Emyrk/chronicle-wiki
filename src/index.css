@@ -66,7 +66,7 @@ body {
 a { color: inherit; }
 
 .wiki-card {
-  @apply rounded-lg border border-border/60 bg-card shadow-xl shadow-black/20 backdrop-blur;
+  @apply max-w-full rounded-lg border border-border/60 bg-card shadow-xl shadow-black/20 backdrop-blur;
 }
 
 .wiki-pill {
@@ -74,7 +74,7 @@ a { color: inherit; }
 }
 
 .wiki-action {
-  @apply inline-flex items-center gap-2 rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60;
+  @apply inline-flex shrink-0 items-center gap-2 rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60;
 }
 
 .prose-wiki {

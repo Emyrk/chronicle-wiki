@@ -14,11 +14,11 @@ export function BossGuidePage() {
 
   return (
     <article className="space-y-6">
-      <div className="wiki-card p-6">
+      <div className="wiki-card p-4 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name} · {guide.raid}</p>
-            <h1 className="mt-2 text-5xl font-bold text-white">{guide.title}</h1>
+            <h1 className="mt-2 text-3xl font-bold text-white sm:text-5xl">{guide.title}</h1>
             <p className="mt-3 max-w-4xl text-lg text-zinc-300">{guide.summary}</p>
           </div>
           <a href={`${context.chronicle.baseUrl}/wowdb/creatures`} className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground hover:text-white">
@@ -41,7 +41,7 @@ export function BossGuidePage() {
       ))}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="wiki-card prose-wiki p-6">
+        <div className="wiki-card prose-wiki p-4 sm:p-6">
           {guide.sections.map((section) => (
             <section key={section.title}>
               <h2>{section.title}</h2>
@@ -49,7 +49,7 @@ export function BossGuidePage() {
             </section>
           ))}
         </div>
-        <aside className="space-y-4">
+        <aside className="space-y-4 lg:sticky lg:top-24">
           <div className="wiki-card p-5">
             <h2 className="text-2xl font-bold text-white">Fight evidence</h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -66,7 +66,7 @@ export function BossGuidePage() {
       </div>
 
       <section>
-        <div className="mb-3 flex items-end justify-between gap-3">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-3xl font-bold text-white">Units and spells cast</h2>
             <p className="text-sm text-muted-foreground">Spell and creature reference for preparing assignments from current logs.</p>
