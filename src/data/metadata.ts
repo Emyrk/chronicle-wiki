@@ -32,6 +32,7 @@ export interface WikiServerMetadata {
   tags: string[];
   chronicleBaseUrl: string;
   websiteUrl?: string;
+  donationUrl?: string;
   logoUrl: string;
   bannerUrl: string;
   faviconUrl?: string;

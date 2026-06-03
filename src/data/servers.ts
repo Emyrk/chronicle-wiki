@@ -85,6 +85,7 @@ export const servers: Record<string, WikiServerMetadata> = {
     faviconUrl: "https://chronicleclassic.com/servers/turtle/logo.png",
     flavor: "nightmares-of-ursol",
     iconBucket: "turtle",
+    donationUrl: "https://turtlecraft.gg/#/donate",
     theme: {
       primary: "#5f9bb8",
       accent: "#c8a45c",
@@ -110,6 +111,7 @@ export const servers: Record<string, WikiServerMetadata> = {
     faviconUrl: "https://chronicleclassic.com/servers/octowow/logo.webp",
     flavor: "nightmares-of-ursol",
     iconBucket: "octowow",
+    donationUrl: "https://octowow.st/donate",
     theme: { primary: "#0891b2", accent: "#67e8f9" },
   },
   kronos: {
@@ -125,6 +127,7 @@ export const servers: Record<string, WikiServerMetadata> = {
     bannerUrl: "https://chronicleclassic.com/servers/kronos/banner.jpg",
     flavor: "kronos",
     iconBucket: "kronos",
+    donationUrl: "https://manager.twinstar-wow.com/",
     theme: { primary: "#b45309", accent: "#fbbf24" },
   },
   vanillaplus: {
@@ -140,6 +143,7 @@ export const servers: Record<string, WikiServerMetadata> = {
     bannerUrl: "https://chronicleclassic.com/servers/vanillaplus/banner.png",
     flavor: "vanillaplus",
     iconBucket: "vanillaplus",
+    donationUrl: "https://www.patreon.com/VanillaPlus",
     theme: { primary: "#7c3aed", accent: "#c4b5fd" },
   },
   chromie: {
@@ -154,6 +158,7 @@ export const servers: Record<string, WikiServerMetadata> = {
     bannerUrl: "https://icons.chronicleclassic.com/servers/chromiecraft/chromie-banner.png",
     flavor: "wotlk",
     iconBucket: "azerothcore",
+    donationUrl: "https://chromiecraft.com/en/donations-info/",
     theme: { primary: "#d946ef", accent: "#f0abfc" },
   },
   oldmanwarcraft: {
@@ -169,6 +174,7 @@ export const servers: Record<string, WikiServerMetadata> = {
     bannerUrl: "https://chronicleclassic.com/servers/oldmanwarcraft/banner.webp",
     flavor: "wotlk",
     iconBucket: "azerothcore",
+    donationUrl: "https://oldmanwarcraft.com/donate",
     theme: { primary: "#64748b", accent: "#cbd5e1" },
   },
   faebright: {
@@ -211,6 +217,7 @@ export const servers: Record<string, WikiServerMetadata> = {
     bannerUrl: "https://icons.chronicleclassic.com/servers/warmane/warmane-banner.png",
     flavor: "wotlk",
     iconBucket: "warmane",
+    donationUrl: "https://www.warmane.com/account/donate",
     theme: { primary: "#f97316", accent: "#fed7aa" },
   },
 };

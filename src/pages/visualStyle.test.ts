@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "@/components/Layout";
+import { SiteFooter } from "@/components/SiteFooter";
+import { serverList } from "@/data/servers";
 import { describe, expect, it } from "vitest";
 import { BossGuidePage } from "./BossGuidePage";
 import { GuidesPage } from "./GuidesPage";
@@ -122,11 +124,21 @@ describe("ChronicleClassic visual language", () => {
     expect(notFound).toContain("Back to servers");
   });
 
-  it("keeps footer community links from borrowing GitHub iconography", () => {
+  it("keeps the wiki footer on server-specific donation links", () => {
     const footerSource = readFileSync("src/components/SiteFooter.tsx", "utf8");
+    const html = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteFooter)));
+    const donationLinks = serverList.filter((server) => server.donationUrl);
 
-    expect(footerSource).toContain("Community");
-    expect(footerSource).toContain("Discord");
+    expect(footerSource).toContain("serverList.filter((server) => server.donationUrl)");
+    expect(html).toContain("Server selector");
+    expect(html).toContain("https://chronicleclassic.com/");
+    expect(donationLinks.length).toBeGreaterThan(0);
+    expect(donationLinks.find((server) => server.slug === "turtle")?.donationUrl).toBe("https://turtlecraft.gg/#/donate");
+    expect(html).toContain("https://turtlecraft.gg/#/donate");
+    expect(html).toContain("Turtle");
+    expect(html).not.toContain("https://github.com/sponsors/Emyrk");
+    expect(html).not.toContain("https://www.patreon.com/cw/ChronicleClassic");
+    expect(html).not.toContain("https://buymeacoffee.com/chronicleclassic");
     expect(footerSource).not.toContain("import { Github");
   });
 });
