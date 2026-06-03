@@ -29,9 +29,6 @@ export function Layout() {
       className="chronicle-site-shell wiki-tenant-shell min-h-screen overflow-x-hidden"
       style={resolveChronicleSiteStyle(theme)}
     >
-      <div className="chronicle-beta-banner wiki-site-beta px-4 py-2 text-center text-sm text-muted-foreground">
-        🧪 <span className="font-medium text-primary">Beta</span> Chronicle is currently in beta. Bugs and feedback can be reported from any wiki page.
-      </div>
       <header className="chronicle-site-nav wiki-tenant-nav border-b border-border/60">
         <div className="relative mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:min-h-16 lg:flex-row lg:items-center lg:justify-between">
           <Link to={`/${server.slug}`} className="flex min-w-0 items-center gap-3 lg:w-64">

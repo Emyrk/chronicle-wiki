@@ -23,36 +23,34 @@ function renderRoute(path: string, element: React.ReactNode, routePath = path) {
 }
 
 describe("ChronicleClassic visual language", () => {
-  it("anchors global CSS to the tenant Chronicle token family instead of the playful blue-black dashboard theme", () => {
+  it("anchors global CSS to chronicleclassic.com tokens instead of a Turtle tenant or blue-black dashboard theme", () => {
     const css = readFileSync("src/index.css", "utf8");
 
-    expect(css).toContain("Libre+Baskerville");
-    expect(css).toContain("font-family: Friz Quadrata");
-    expect(css).toContain("--background: #2b2b2b");
+    expect(css).toContain("--background: oklch(28.91% 0 0)");
+    expect(css).toContain("--card: oklch(26.86% 0 0)");
     expect(css).toContain("--primary: #5f8fa6");
-    expect(css).toContain("--secondary: #89744d");
-    expect(css).toContain("--link: #26a9f1");
-    expect(css).toContain("--radius: 0.2rem");
-    expect(css).not.toContain("radial-gradient(circle at 15% 0%");
+    expect(css).toContain("--muted-foreground: oklch(75.93% 0.0073 67.7161)");
+    expect(css).toContain("--border: oklch(34.07% 0 0)");
+    expect(css).toContain("--radius: 0.5rem");
+    expect(css).toContain("radial-gradient(circle at 50% 0%");
+    expect(css).not.toContain("turtle.chronicleclassic.com/c/fonts");
+    expect(css).not.toContain("#020617");
   });
 
   it("uses the shared Chronicle shell on the server selector instead of a standalone wiki dashboard", () => {
     const html = renderRoute("/", createElement(HomePage));
 
     expect(html).toContain("chronicle-site-shell");
-    expect(html).toContain("chronicle-beta-banner");
-    expect(html).toContain("chronicle-site-nav");
-    expect(html).toContain("Chronicle is currently in beta");
     expect(html).toContain("chronicle-logo.svg");
-    expect(html).toContain("wiki-section");
     expect(html).toContain("wiki-server-card");
+    expect(html).not.toContain("Chronicle is currently in beta");
   });
 
-  it("applies tenant brand tokens and main-site chrome to Turtle wiki routes", () => {
-    const html = renderToStaticMarkup(
+  it("applies global Chronicle home tokens to Turtle and non-Turtle routes", () => {
+    const renderServerHome = (path: string) => renderToStaticMarkup(
       createElement(
         MemoryRouter,
-        { initialEntries: ["/turtle"] },
+        { initialEntries: [path] },
         createElement(
           Routes,
           null,
@@ -65,24 +63,33 @@ describe("ChronicleClassic visual language", () => {
       ),
     );
 
-    expect(html).toContain("--primary:#5f9bb8");
-    expect(html).toContain("--brand-accent:#c8a45c");
-    expect(html).toContain("--brand-background:#242424");
-    expect(html).toContain("herobackground.avif");
-    expect(html).toContain("wiki-tenant-shell");
-    expect(html).toContain("wiki-tenant-nav");
-    expect(html).toContain("wiki-main-site-hero");
-    expect(html).toContain("wiki-primary-button");
-    expect(html).not.toContain("debug");
+    const turtle = renderServerHome("/turtle");
+    const vanillaplus = renderServerHome("/vanillaplus");
+
+    expect(turtle).toContain("--primary:#5f8fa6");
+    expect(turtle).toContain("--brand-background:oklch(28.91% 0 0)");
+    expect(turtle).toContain("--brand-surface:oklch(26.86% 0 0)");
+    expect(turtle).not.toContain("--primary:#5f9bb8");
+    expect(turtle).not.toContain("herobackground.avif");
+    expect(vanillaplus).toContain("--primary:#5f8fa6");
+    expect(vanillaplus).not.toContain("--primary:#7c3aed");
+    expect(turtle).toContain("wiki-tenant-shell");
+    expect(turtle).toContain("wiki-tenant-nav");
+    expect(turtle).toContain("wiki-main-site-hero");
+    expect(turtle).toContain("wiki-primary-button");
+    expect(turtle).not.toContain("debug");
   });
 
-  it("renders the server selector with Chronicle-style compact cards instead of oversized fantasy panels", () => {
+  it("renders the server selector with Chronicle home server-card structure and footer actions", () => {
     const html = renderRoute("/", createElement(HomePage));
 
-    expect(html).toContain("max-w-6xl");
-    expect(html).toContain("text-4xl font-bold tracking-tight text-white");
-    expect(html).toContain("h-20");
+    expect(html).toContain("mx-auto max-w-6xl px-4 pt-8 pb-12");
+    expect(html).toContain("text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl");
+    expect(html).toContain("h-28");
     expect(html).toContain("wiki-server-card");
+    expect(html).toContain("wiki-server-card-body");
+    expect(html).toContain("wiki-server-card-footer");
+    expect(html).toContain("Open wiki");
     expect(html).toContain("border-border/60 bg-card");
     expect(html).not.toContain("font-serif text-5xl");
     expect(html).toContain("Legacy Vanilla");
@@ -113,6 +120,14 @@ describe("ChronicleClassic visual language", () => {
     expect(notFound).toContain("wiki-card p-8");
     expect(notFound).toContain("text-4xl font-bold tracking-tight text-white");
     expect(notFound).toContain("Back to servers");
+  });
+
+  it("keeps footer community links from borrowing GitHub iconography", () => {
+    const footerSource = readFileSync("src/components/SiteFooter.tsx", "utf8");
+
+    expect(footerSource).toContain("Community");
+    expect(footerSource).toContain("Discord");
+    expect(footerSource).not.toContain("import { Github");
   });
 });
 

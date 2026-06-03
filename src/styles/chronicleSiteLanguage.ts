@@ -1,58 +1,67 @@
 import type { CSSProperties } from "react";
 import type { WikiServerMetadata } from "@/data/metadata";
 
-export const turtleHomepageStyleSignals = {
-  sourceUrl: "https://turtle.chronicleclassic.com/",
-  betaBanner: "muted blue banner above the nav shell",
-  navigation: "centered Chronicle mark with subdued text links and a square primary sign-in button",
-  background: "flat charcoal page with cinematic hero imagery as content, not a blue-black app gradient",
-  typography: "Inter sans, bold tight headings, regular readable body copy",
-  buttons: "square-corner primary filled button plus quiet bordered secondary button",
-  links: "muted text that brightens on hover, blue only for explicit inline links",
-  surfaces: "low-contrast charcoal sections/cards with thin low-alpha borders",
-  radius: "small 0.2rem radius, not large playful rounded cards or pills",
-  spacing: "restrained full-width sections with 4rem to 6rem vertical rhythm",
-  footer: "border-top muted footer with compact column lists and small version/legal rhythm",
+export const chronicleHomeStyleSignals = {
+  sourceUrl: "https://chronicleclassic.com/",
+  background: "flat oklch charcoal page with only a subtle teal/green radial halo behind the centered hero",
+  hero: "centered compact hero anchored by the Chronicle logo, not a left-heavy dashboard masthead",
+  typography: "Inter sans, tight bold headings, muted readable body copy, modest type scale",
+  serverCards: "dark restrained card, 8px radius, 1px low-alpha border, 112px banner, overlapping 40px logo, content rhythm, divider, footer actions",
+  buttons: "primary filled Chronicle blue rounded-md 6px, secondary quiet bordered rounded-md 6px, no pill action buttons",
+  chips: "small rounded-md low-contrast chips with thin borders",
+  footer: "border-top muted footer with Chronicle and Community columns plus compact legal copy",
 } as const;
 
 export const chronicleSiteDefaults = {
-  background: "#242424",
-  surface: "#2b2b2b",
-  nav: "#222222",
-  muted: "#c7c7c7",
-  border: "rgb(255 255 255 / 0.10)",
-  radius: "0.2rem",
-  sectionY: "4rem",
+  background: "oklch(28.91% 0 0)",
+  foreground: "oklch(93% 0.0035 247.86)",
+  card: "oklch(26.86% 0 0)",
+  primary: "#5f8fa6",
+  primaryForeground: "oklch(89.14% 0 0)",
+  secondary: "oklch(56.92% 0.0609 82.3871)",
+  muted: "oklch(26.86% 0 0)",
+  mutedForeground: "oklch(75.93% 0.0073 67.7161)",
+  border: "oklch(34.07% 0 0)",
+  ring: "oklch(52.04% 0.0833 232.633)",
+  radius: "0.5rem",
+  buttonRadius: "calc(0.5rem - 2px)",
+  sectionY: "3rem",
 } as const;
 
 export const rootChronicleWikiTheme: WikiServerMetadata["theme"] = {
-  primary: "#5f8fa6",
-  accent: "#89744d",
-  background: "#2b2b2b",
-  surface: "#262626",
-  nav: "#222222",
-  muted: "#b4b0ac",
-  border: "#383838",
+  primary: chronicleSiteDefaults.primary,
+  accent: chronicleSiteDefaults.secondary,
+  background: chronicleSiteDefaults.background,
+  surface: chronicleSiteDefaults.card,
+  nav: chronicleSiteDefaults.card,
+  muted: chronicleSiteDefaults.mutedForeground,
+  border: chronicleSiteDefaults.border,
 };
 
-export function resolveChronicleSiteStyle(theme: WikiServerMetadata["theme"]) {
-  const muted = theme.muted ?? chronicleSiteDefaults.muted;
-  const surface = theme.surface ?? chronicleSiteDefaults.surface;
-  const border = theme.border ?? chronicleSiteDefaults.border;
-
+export function resolveChronicleSiteStyle(_theme: WikiServerMetadata["theme"]) {
   return {
-    "--primary": theme.primary,
-    "--ring": theme.accent,
-    "--brand-accent": theme.accent,
-    "--brand-background": theme.background ?? chronicleSiteDefaults.background,
-    "--brand-surface": surface,
-    "--brand-nav": theme.nav ?? chronicleSiteDefaults.nav,
-    "--brand-muted": muted,
-    "--brand-border": border,
+    "--background": chronicleSiteDefaults.background,
+    "--foreground": chronicleSiteDefaults.foreground,
+    "--card": chronicleSiteDefaults.card,
+    "--card-foreground": chronicleSiteDefaults.foreground,
+    "--primary": chronicleSiteDefaults.primary,
+    "--primary-foreground": chronicleSiteDefaults.primaryForeground,
+    "--secondary": chronicleSiteDefaults.secondary,
+    "--secondary-foreground": chronicleSiteDefaults.foreground,
+    "--muted": chronicleSiteDefaults.muted,
+    "--muted-foreground": chronicleSiteDefaults.mutedForeground,
+    "--accent": chronicleSiteDefaults.secondary,
+    "--accent-foreground": chronicleSiteDefaults.foreground,
+    "--border": chronicleSiteDefaults.border,
+    "--input": chronicleSiteDefaults.border,
+    "--ring": chronicleSiteDefaults.ring,
+    "--brand-background": chronicleSiteDefaults.background,
+    "--brand-surface": chronicleSiteDefaults.card,
+    "--brand-nav": chronicleSiteDefaults.card,
+    "--brand-muted": chronicleSiteDefaults.mutedForeground,
+    "--brand-border": chronicleSiteDefaults.border,
     "--brand-radius": chronicleSiteDefaults.radius,
+    "--brand-button-radius": chronicleSiteDefaults.buttonRadius,
     "--brand-section-y": chronicleSiteDefaults.sectionY,
-    "--muted-foreground": muted,
-    "--card": surface,
-    "--border": border,
   } as CSSProperties;
 }

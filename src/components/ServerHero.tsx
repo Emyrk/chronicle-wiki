@@ -2,7 +2,7 @@ import type { ResolvedServerContext } from "@/types";
 
 export function ServerHero({ context, eyebrow }: { context: ResolvedServerContext; eyebrow?: string }) {
   const { server, flavor } = context;
-  const heroBackgroundUrl = context.branding.theme.heroBackgroundUrl ?? context.branding.bannerUrl;
+  const heroBackgroundUrl = context.branding.bannerUrl;
   return (
     <section className="wiki-card wiki-main-site-hero overflow-hidden">
       <div className="relative min-h-[22rem]">
