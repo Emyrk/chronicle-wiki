@@ -16,7 +16,7 @@ type TalentPrereqArrow = {
   requiredRank: number;
 };
 
-const TALENT_BUTTON_SIZE = 40;
+const TALENT_BUTTON_SIZE = 44;
 const TALENT_GRID_COLUMNS = 4;
 const TALENT_CELL_WIDTH = 52;
 const TALENT_CELL_HEIGHT = 58;
@@ -639,7 +639,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
         onChange(Math.max(0, rank - 1));
       }}
       className={cn(
-        "group relative h-10 w-10 rounded-sm border bg-zinc-950 shadow-lg transition before:absolute before:-inset-0.5 before:rounded-sm before:content-['']",
+        "group relative h-11 w-11 rounded-sm border bg-zinc-950 shadow-lg transition before:absolute before:-inset-0.5 before:rounded-sm before:content-['']",
         visualState === "locked" && "talent-state-locked cursor-not-allowed border-zinc-700 opacity-75 before:bg-black/10",
         visualState === "available" && "talent-state-available border-primary/70 shadow-primary/20 before:border before:border-primary/35 hover:scale-105 hover:border-primary hover:shadow-primary/30",
         visualState === "selected" && "talent-state-selected border-emerald-300/80 shadow-emerald-500/20 ring-1 ring-emerald-300/45 before:border before:border-emerald-300/35 hover:scale-105 hover:border-emerald-200",

@@ -476,7 +476,7 @@ describe("TalentTreeViewer render geometry", () => {
 
   it("keeps touch tooltip positions inside a phone viewport", () => {
     const position = talentTooltipPosition(
-      { left: 292, top: 160, right: 332, bottom: 200, width: 40, height: 40 },
+      { left: 288, top: 160, right: 332, bottom: 204, width: 44, height: 44 },
       { innerWidth: 360, innerHeight: 320 },
     );
 
@@ -536,7 +536,7 @@ describe("TalentTreeViewer render geometry", () => {
     expect(html).toContain("grid-template-columns:repeat(4, 52px)");
     expect(html).toContain("grid-auto-rows:58px");
     expect(html).toContain("gap:16px");
-    expect(html).toContain("h-10 w-10");
+    expect(html).toContain("h-11 w-11");
     expect(html).toContain("grid min-w-0 gap-4 xl:grid-cols-3");
   });
 
@@ -621,21 +621,21 @@ describe("TalentTreeViewer prerequisite arrows", () => {
     const source = talent({ id: 20, tierID: 2, columnIndex: 1 });
     const target = talent({ id: 21, tierID: 2, columnIndex: 2, prereqTalent: [20] });
 
-    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("112,168 130,168");
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("116,170 130,170");
   });
 
   it("keeps one-row vertical prerequisites compact instead of arrowhead dominated", () => {
     const source = talent({ id: 22, tierID: 0, columnIndex: 1 });
     const target = talent({ id: 23, tierID: 1, columnIndex: 1, prereqTalent: [22] });
 
-    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,44 88,68");
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("90,48 90,68");
   });
 
   it("routes one-column-right and two-row-down prerequisites through the gap above the target row", () => {
     const source = talent({ id: 30, tierID: 0, columnIndex: 1 });
     const target = talent({ id: 31, tierID: 2, columnIndex: 2, prereqTalent: [30] });
 
-    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,44 88,128 156,128 156,142");
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("90,48 90,128 158,128 158,142");
   });
 
   it("routes VanillaPlus Fire Mage prerequisite arrows around intervening talent icons", () => {
@@ -643,7 +643,7 @@ describe("TalentTreeViewer prerequisite arrows", () => {
     const blocker = talent({ id: 31, tierID: 3, columnIndex: 1, tabIndex: 10, spellRanks: [33897, 33898] });
     const target = talent({ id: 1766, tierID: 4, columnIndex: 2, tabIndex: 14, spellRanks: [34125], prereqTalent: [32], prereqRank: [0] });
 
-    expect(prerequisiteArrowPolylinePoints(source, target, [source, blocker, target])).toBe("88,192 126,192 126,276 156,276 156,290");
+    expect(prerequisiteArrowPolylinePoints(source, target, [source, blocker, target])).toBe("90,196 130,196 130,276 158,276 158,290");
   });
 
   it("softens kinked prerequisite paths so turns do not read like flowchart elbows", () => {
