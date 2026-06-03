@@ -199,7 +199,8 @@ describe("TalentTreeViewer tooltips", () => {
 
     const html = renderTalentTree(data);
 
-    expect(html).toContain("No description data available yet.");
+    expect(html).not.toContain("No description data available yet.");
+    expect(html).toContain("Talent details unavailable.");
     expect(html).toContain("Rank 0/5");
   });
 });
@@ -250,8 +251,9 @@ describe("TalentTreeViewer render geometry", () => {
 
     expect(html).toContain("before:absolute before:-inset-0.5");
     expect(html).toContain("w-[min(18rem,calc(100vw-2rem))]");
-    expect(html).toContain("sm:left-1/2");
-    expect(html).toContain("sm:-translate-x-1/2");
+    expect(html).toContain("fixed z-[100]");
+    expect(html).toContain("max-h-[min(24rem,calc(100vh-2rem))]");
+    expect(html).toContain("data-talent-tooltip-trigger");
   });
 
   it("keeps an airy 4-column talent grid with room for short prerequisite arrows", () => {

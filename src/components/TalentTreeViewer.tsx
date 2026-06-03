@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import type { ClassTalentData, TalentEntry, TalentTabData } from "../data/talents";
 import { iconUrl } from "../lib/icons";
@@ -25,6 +26,17 @@ const TALENT_ARROW_TARGET_CLEARANCE = 6;
 const TALENT_ARROW_ELBOW_CLEARANCE = 14;
 
 const TALENT_GRID_WIDTH = TALENT_GRID_COLUMNS * (TALENT_CELL_WIDTH + TALENT_GRID_GAP);
+const TALENT_TOOLTIP_WIDTH = 288;
+const TALENT_TOOLTIP_MARGIN = 16;
+const TALENT_TOOLTIP_GAP = 8;
+const TALENT_TOOLTIP_ESTIMATED_HEIGHT = 224;
+const TALENT_TOOLTIP_CLASS_NAME = "pointer-events-none fixed z-[100] w-[min(18rem,calc(100vw-2rem))] max-h-[min(24rem,calc(100vh-2rem))] overflow-y-auto rounded-lg border border-amber-400/25 bg-zinc-950 p-3 text-left text-xs text-zinc-200 shadow-2xl shadow-black/60";
+const TALENT_TOOLTIP_SSR_CLASS_NAME = `${TALENT_TOOLTIP_CLASS_NAME} hidden group-hover:block group-focus-visible:block`;
+
+type TalentTooltipPosition = {
+  left: number;
+  top: number;
+};
 
 function talentGridRows(talents: TalentEntry[]) {
   return Math.max(...talents.map((talent) => talent.tierID), 0) + 1;
@@ -279,7 +291,22 @@ function talentDescription(talent: TalentEntry) {
   if (talent.description) return talent.description;
   if (talent.effect) return talent.effect;
   if (typeof talent.effects === "string") return talent.effects;
-  return "No description data available yet.";
+  return "Talent details unavailable.";
+}
+
+function talentTooltipPosition(rect: DOMRect): TalentTooltipPosition {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const left = Math.min(
+    Math.max(rect.left + rect.width / 2 - TALENT_TOOLTIP_WIDTH / 2, TALENT_TOOLTIP_MARGIN),
+    Math.max(TALENT_TOOLTIP_MARGIN, viewportWidth - TALENT_TOOLTIP_WIDTH - TALENT_TOOLTIP_MARGIN),
+  );
+  const belowTop = rect.bottom + TALENT_TOOLTIP_GAP;
+  const aboveTop = rect.top - TALENT_TOOLTIP_GAP - TALENT_TOOLTIP_ESTIMATED_HEIGHT;
+  const top = belowTop + TALENT_TOOLTIP_ESTIMATED_HEIGHT > viewportHeight - TALENT_TOOLTIP_MARGIN && aboveTop > TALENT_TOOLTIP_MARGIN
+    ? aboveTop
+    : Math.min(belowTop, Math.max(TALENT_TOOLTIP_MARGIN, viewportHeight - TALENT_TOOLTIP_MARGIN));
+  return { left, top };
 }
 
 function talentRankTexts(talent: TalentEntry) {
@@ -308,20 +335,90 @@ function lockedTalentReasons(talent: TalentEntry, talents: TalentEntry[], ranks:
   return reasons.length > 0 ? reasons : ["Complete prerequisite requirements to unlock this talent."];
 }
 
+function TalentTooltipCard({
+  talent,
+  rank,
+  locked,
+  currentRankText,
+  nextRankText,
+  lockReasons,
+  id,
+  className,
+  position,
+}: {
+  talent: TalentEntry;
+  rank: number;
+  locked: boolean;
+  currentRankText?: string;
+  nextRankText?: string;
+  lockReasons: string[];
+  id: string;
+  className: string;
+  position?: TalentTooltipPosition;
+}) {
+  return (
+    <span
+      id={id}
+      role="tooltip"
+      className={className}
+      style={position ? { left: `${position.left}px`, top: `${position.top}px` } : undefined}
+    >
+      <strong className="block text-sm text-white">{talent.name}</strong>
+      <span className="mt-1 block font-semibold text-amber-200">Rank {rank}/{talent.maxRank}{locked ? " · Locked" : ""}</span>
+      <span className="mt-2 block text-zinc-300">{talentDescription(talent)}</span>
+      {currentRankText && <span className="mt-2 block text-emerald-200">Current rank: {currentRankText}</span>}
+      {nextRankText && <span className="mt-1 block text-sky-200">Next rank: {nextRankText}</span>}
+      {locked && (
+        <span className="mt-2 block space-y-1 text-red-200">
+          <span className="block font-semibold">Locked</span>
+          {lockReasons.map((reason) => <span key={reason} className="block">{reason}</span>)}
+        </span>
+      )}
+      <span className="mt-2 block text-muted-foreground">Spell ranks: {talent.spellRanks.join(", ")}</span>
+    </span>
+  );
+}
+
 function TalentButton({ talent, rank, locked, talents, ranks, context, onChange }: { talent: TalentEntry; rank: number; locked: boolean; talents: TalentEntry[]; ranks: TalentRanks; context: ResolvedServerContext; onChange: (rank: number) => void }) {
   const maxed = rank >= talent.maxRank;
   const tooltipId = `talent-tooltip-${talent.id}`;
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<TalentTooltipPosition | undefined>();
   const rankTexts = talentRankTexts(talent);
   const currentRankText = rank > 0 ? rankTexts[rank - 1] : undefined;
   const nextRankText = rank < talent.maxRank ? rankTexts[rank] ?? rankTexts[rank === 0 ? 0 : rank] : undefined;
   const lockReasons = locked ? lockedTalentReasons(talent, talents, ranks) : [];
   const title = locked ? `${talent.name} locked. ${lockReasons.join(" ")}` : `${talent.name} (${rank}/${talent.maxRank})`;
+  const showTooltip = () => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) setTooltipPosition(talentTooltipPosition(rect));
+  };
+  const hideTooltip = () => setTooltipPosition(undefined);
+  const tooltip = (
+    <TalentTooltipCard
+      id={tooltipId}
+      talent={talent}
+      rank={rank}
+      locked={locked}
+      currentRankText={currentRankText}
+      nextRankText={nextRankText}
+      lockReasons={lockReasons}
+      className={TALENT_TOOLTIP_CLASS_NAME}
+      position={tooltipPosition}
+    />
+  );
   return (
     <button
+      ref={buttonRef}
       type="button"
       title={title}
       aria-disabled={locked}
       aria-describedby={tooltipId}
+      data-talent-tooltip-trigger="true"
+      onMouseEnter={showTooltip}
+      onMouseLeave={hideTooltip}
+      onFocus={showTooltip}
+      onBlur={hideTooltip}
       onClick={(event) => {
         if (event.shiftKey || event.metaKey) onChange(Math.max(0, rank - 1));
         else onChange(Math.min(talent.maxRank, rank + 1));
@@ -343,24 +440,18 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
       )}>
         {rank}/{talent.maxRank}
       </span>
-      <span
-        id={tooltipId}
-        role="tooltip"
-        className="pointer-events-none absolute left-0 top-full z-20 mt-2 hidden w-[min(18rem,calc(100vw-2rem))] rounded-lg border border-amber-400/25 bg-zinc-950 p-3 text-left text-xs text-zinc-200 shadow-2xl group-hover:block group-focus-visible:block sm:left-1/2 sm:-translate-x-1/2"
-      >
-        <strong className="block text-sm text-white">{talent.name}</strong>
-        <span className="mt-1 block font-semibold text-amber-200">Rank {rank}/{talent.maxRank}{locked ? " · Locked" : ""}</span>
-        <span className="mt-2 block text-zinc-300">{talentDescription(talent)}</span>
-        {currentRankText && <span className="mt-2 block text-emerald-200">Current rank: {currentRankText}</span>}
-        {nextRankText && <span className="mt-1 block text-sky-200">Next rank: {nextRankText}</span>}
-        {locked && (
-          <span className="mt-2 block space-y-1 text-red-200">
-            <span className="block font-semibold">Locked</span>
-            {lockReasons.map((reason) => <span key={reason} className="block">{reason}</span>)}
-          </span>
-        )}
-        <span className="mt-2 block text-muted-foreground">Spell ranks: {talent.spellRanks.join(", ")}</span>
-      </span>
+      {typeof document === "undefined" ? (
+        <TalentTooltipCard
+          id={tooltipId}
+          talent={talent}
+          rank={rank}
+          locked={locked}
+          currentRankText={currentRankText}
+          nextRankText={nextRankText}
+          lockReasons={lockReasons}
+          className={TALENT_TOOLTIP_SSR_CLASS_NAME}
+        />
+      ) : tooltipPosition ? createPortal(tooltip, document.body) : null}
     </button>
   );
 }

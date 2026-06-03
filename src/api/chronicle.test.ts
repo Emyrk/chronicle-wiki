@@ -45,6 +45,55 @@ describe("Chronicle API URLs", () => {
     expect(result.data.classes["1"]?.tabs.map((tab) => tab.name)).toEqual(["Arms", "Fury"]);
   });
 
+  it("hydrates remote talent names and rank descriptions from spell rank details", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+      if (String(url).endsWith("/talent-trees")) {
+        return {
+          ok: true,
+          json: async () => ({
+            classes: {
+              "1": {
+                tabs: [
+                  {
+                    id: 161,
+                    name: "Arms",
+                    orderIndex: 0,
+                    talents: [
+                      { id: 56, tierID: 0, columnIndex: 0, maxRank: 2, tabIndex: 0, spellRanks: [12282, 12663], iconTexture: "Ability_Rogue_Ambush" },
+                    ],
+                  },
+                ],
+              },
+            },
+          }),
+        } as Response;
+      }
+
+      const urlParts = String(url).split("/");
+      const id = Number(urlParts[urlParts.length - 1]);
+      return {
+        ok: true,
+        json: async () => ({
+          id,
+          name: { "0": "Improved Heroic Strike" },
+          description: { "0": id === 12282 ? "Reduces Heroic Strike cost by 1 rage." : "Reduces Heroic Strike cost by 2 rage." },
+          school: { string: "Physical" },
+        }),
+      } as Response;
+    });
+
+    const result = await fetchTalentTrees(context("turtle"));
+    const talent = result.data.classes["1"]?.tabs[0]?.talents[0];
+
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/12282");
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/spell/12663");
+    expect(talent).toMatchObject({
+      name: "Improved Heroic Strike",
+      description: "Reduces Heroic Strike cost by 1 rage.",
+      rankDescriptions: ["Reduces Heroic Strike cost by 1 rage.", "Reduces Heroic Strike cost by 2 rage."],
+    });
+  });
+
   it("falls back to Death Knight talent data for Wrath servers", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("offline"));
 
