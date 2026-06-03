@@ -12,6 +12,7 @@ import {
   decodeTalentBuild,
   encodeTalentBuild,
   normalizeTalentRanks,
+  resetTalentTabRanks,
   prerequisiteArrowPolylinePoints,
   prerequisiteArrowPathData,
   prerequisiteArrows,
@@ -244,6 +245,60 @@ describe("TalentTreeViewer visual talent states", () => {
     expect(html).toContain("Selected Focus");
     expect(html).toContain("Maxed Focus");
     expect(html).toContain("Locked Focus");
+  });
+});
+
+describe("TalentTreeViewer tree reset and framing", () => {
+  it("renders a per-tree reset control beside each visible tree header", () => {
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Mage",
+      tabs: [
+        {
+          id: 81,
+          name: "Arcane",
+          backgroundFile: "MageArcane",
+          orderIndex: 0,
+          iconTexture: "spell_holy_magicalsentry",
+          talents: [talent({ id: 301, tierID: 0, columnIndex: 0, maxRank: 5 })],
+        },
+        {
+          id: 82,
+          name: "Fire",
+          backgroundFile: "MageFire",
+          orderIndex: 1,
+          iconTexture: "spell_fire_flamebolt",
+          talents: [talent({ id: 302, tierID: 0, columnIndex: 0, maxRank: 5 })],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data, `/talents/mage?build=${encodeTalentBuild({ 301: 3, 302: 2 })}`);
+
+    expect(html).toContain('aria-label="Reset Arcane tree"');
+    expect(html).toContain('aria-label="Reset Fire tree"');
+    expect(html).toContain("Reset tree");
+    expect(html).toContain("Arcane");
+    expect(html).toContain("3 points spent");
+    expect(html).toContain("Fire");
+    expect(html).toContain("2 points spent");
+    expect(html).toContain("talent-tree-card");
+    expect(html).toContain("border-amber-400/20");
+  });
+
+  it("resets one tree through the same normalized build-state path without clearing other trees", () => {
+    const arcane = [talent({ id: 310, tierID: 0, columnIndex: 0, maxRank: 5 })];
+    const fire = [talent({ id: 320, tierID: 0, columnIndex: 0, maxRank: 5 })];
+    const frost = [talent({ id: 330, tierID: 0, columnIndex: 0, maxRank: 5 })];
+
+    const resetArcane = resetTalentTabRanks([arcane, fire, frost], { 310: 3, 320: 2, 330: 1 }, arcane, 51);
+
+    expect(resetArcane).toEqual({ 320: 2, 330: 1 });
+    expect(searchParamsWithTalentBuild(new URLSearchParams("build=old"), resetArcane).toString()).toBe("build=8w.2_96.1");
+  });
+
+  it("reset-all still clears every tree and removes the canonical build param", () => {
+    expect(searchParamsWithTalentBuild(new URLSearchParams("build=8m.3_8w.2"), {}).toString()).toBe("");
   });
 });
 

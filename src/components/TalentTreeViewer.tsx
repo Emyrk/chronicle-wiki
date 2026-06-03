@@ -164,6 +164,12 @@ export function normalizeTalentRanks(tabs: TalentEntry[][], rawRanks: TalentRank
   return cleanRanks(ranks);
 }
 
+export function resetTalentTabRanks(tabs: TalentEntry[][], ranks: TalentRanks, resetTalents: TalentEntry[], maxPoints = Number.POSITIVE_INFINITY): TalentRanks {
+  const resetIds = new Set(resetTalents.map((talent) => talent.id));
+  const nextRanks = Object.fromEntries(Object.entries(ranks).filter(([id]) => !resetIds.has(Number(id))));
+  return normalizeTalentRanks(tabs, nextRanks, maxPoints);
+}
+
 export function searchParamsWithTalentBuild(params: URLSearchParams, ranks: TalentRanks) {
   const next = new URLSearchParams(params);
   const build = encodeTalentBuild(ranks);
@@ -487,21 +493,45 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
   );
 }
 
-function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; ranks: TalentRanks; context: ResolvedServerContext; onRankChange: (talent: TalentEntry, rank: number) => void }) {
+function TalentTab({
+  tab,
+  ranks,
+  context,
+  onRankChange,
+  onReset,
+}: {
+  tab: TalentTabData;
+  ranks: TalentRanks;
+  context: ResolvedServerContext;
+  onRankChange: (talent: TalentEntry, rank: number) => void;
+  onReset: () => void;
+}) {
   const points = useMemo(() => tab.talents.reduce((sum, talent) => sum + (ranks[talent.id] ?? 0), 0), [tab.talents, ranks]);
   const arrows = useMemo(() => prerequisiteArrows(tab.talents), [tab.talents]);
   const rows = useMemo(() => talentGridRows(tab.talents), [tab.talents]);
   const height = talentGridHeight(rows);
   return (
-    <section className="wiki-card max-w-full self-start p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src={iconUrl(tab.iconTexture, context)} alt="" className="h-10 w-10 rounded border border-border/60" />
-          <div>
-            <h3 className="text-xl font-bold text-white">{tab.name}</h3>
-            <p className="text-sm text-muted-foreground">{points} points spent</p>
+    <section className="talent-tree-card wiki-card relative max-w-full self-start overflow-hidden border-amber-400/20 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.14),transparent_32%),linear-gradient(180deg,rgba(120,83,38,0.16),rgba(9,9,11,0.58))] p-4 shadow-2xl shadow-black/30" aria-label={`${tab.name} talent tree`}>
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/40 to-transparent" aria-hidden="true" />
+      <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-black/30 p-2 shadow-inner shadow-black/30">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="rounded-lg border border-amber-300/35 bg-black/45 p-1 shadow-lg shadow-black/35">
+            <img src={iconUrl(tab.iconTexture, context)} alt="" className="h-10 w-10 rounded border border-primary/25 object-cover" />
+          </span>
+          <div className="min-w-0">
+            <h3 className="truncate text-xl font-bold text-white">{tab.name}</h3>
+            <p className="text-sm font-semibold text-amber-100/85">{points} points spent</p>
           </div>
         </div>
+        <button
+          type="button"
+          aria-label={`Reset ${tab.name} tree`}
+          className="shrink-0 rounded-md border border-amber-300/30 bg-zinc-950/60 px-2.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-amber-100/80 transition hover:border-amber-200/60 hover:bg-amber-300/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={points === 0}
+          onClick={onReset}
+        >
+          Reset tree
+        </button>
       </div>
       <div className="-mx-4 overflow-x-auto overscroll-x-contain px-4 pb-3 touch-pan-x sm:mx-0 sm:px-0" aria-label="Scrollable talent tree grid">
         <div
@@ -598,6 +628,7 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
             ranks={ranks}
             context={context}
             onRankChange={(talent, rank) => commitRanks(updateTalentRank(talent, rank, tab.talents, ranks, { maxPoints }))}
+            onReset={() => commitRanks(resetTalentTabRanks(tabTalentLists, ranks, tab.talents, maxPoints))}
           />
         ))}
       </div>
