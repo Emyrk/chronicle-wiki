@@ -20,6 +20,9 @@ const TALENT_CELL_HEIGHT = 58;
 const TALENT_GRID_GAP = 16;
 const TALENT_ROW_STRIDE = TALENT_CELL_HEIGHT + TALENT_GRID_GAP;
 const TALENT_BUILD_PARAM = "build";
+const TALENT_ARROW_SOURCE_CLEARANCE = 4;
+const TALENT_ARROW_TARGET_CLEARANCE = 6;
+const TALENT_ARROW_ELBOW_CLEARANCE = 14;
 
 const TALENT_GRID_WIDTH = TALENT_GRID_COLUMNS * (TALENT_CELL_WIDTH + TALENT_GRID_GAP);
 
@@ -171,15 +174,52 @@ export function prerequisiteArrowPolylinePoints(from: Pick<TalentEntry, "tierID"
 
   if (from.tierID === to.tierID) {
     const direction = toPoint.x >= fromPoint.x ? 1 : -1;
-    return `${fromPoint.x + direction * buttonEdge},${fromPoint.y} ${toPoint.x - direction * buttonEdge},${toPoint.y}`;
+    return `${fromPoint.x + direction * (buttonEdge + TALENT_ARROW_SOURCE_CLEARANCE)},${fromPoint.y} ${toPoint.x - direction * (buttonEdge + TALENT_ARROW_TARGET_CLEARANCE)},${toPoint.y}`;
   }
 
-  const startY = fromPoint.y + buttonEdge;
-  const endY = toPoint.y - buttonEdge;
+  const startY = fromPoint.y + buttonEdge + TALENT_ARROW_SOURCE_CLEARANCE;
+  const endY = toPoint.y - buttonEdge - TALENT_ARROW_TARGET_CLEARANCE;
   if (fromPoint.x === toPoint.x) return `${fromPoint.x},${startY} ${toPoint.x},${endY}`;
 
-  const elbowY = endY > startY ? endY - TALENT_GRID_GAP : startY + TALENT_GRID_GAP;
+  const elbowY = endY > startY ? endY - TALENT_ARROW_ELBOW_CLEARANCE : startY + TALENT_ARROW_ELBOW_CLEARANCE;
   return `${fromPoint.x},${startY} ${fromPoint.x},${elbowY} ${toPoint.x},${elbowY} ${toPoint.x},${endY}`;
+}
+
+function parseArrowPoint(point: string) {
+  const [x = "0", y = "0"] = point.split(",");
+  return { x: Number(x), y: Number(y) };
+}
+
+function formatArrowPoint(point: { x: number; y: number }) {
+  return `${point.x} ${point.y}`;
+}
+
+export function prerequisiteArrowPathData(points: string) {
+  const parsed = points.split(" ").map(parseArrowPoint);
+  if (parsed.length <= 1) return "";
+  if (parsed.length === 2) return `M ${formatArrowPoint(parsed[0])} L ${formatArrowPoint(parsed[1])}`;
+
+  const commands = [`M ${formatArrowPoint(parsed[0])}`];
+  for (let index = 1; index < parsed.length - 1; index += 1) {
+    const previous = parsed[index - 1];
+    const corner = parsed[index];
+    const next = parsed[index + 1];
+    const incomingLength = Math.hypot(corner.x - previous.x, corner.y - previous.y);
+    const outgoingLength = Math.hypot(next.x - corner.x, next.y - corner.y);
+    const radius = Math.min(6, incomingLength / 2, outgoingLength / 2);
+    const incoming = {
+      x: corner.x - ((corner.x - previous.x) / incomingLength) * radius,
+      y: corner.y - ((corner.y - previous.y) / incomingLength) * radius,
+    };
+    const outgoing = {
+      x: corner.x + ((next.x - corner.x) / outgoingLength) * radius,
+      y: corner.y + ((next.y - corner.y) / outgoingLength) * radius,
+    };
+    commands.push(`L ${formatArrowPoint(incoming)}`);
+    commands.push(`Q ${formatArrowPoint(corner)} ${formatArrowPoint(outgoing)}`);
+  }
+  commands.push(`L ${formatArrowPoint(parsed[parsed.length - 1])}`);
+  return commands.join(" ");
 }
 
 function TalentPrereqArrows({ arrows, ranks, height }: { arrows: TalentPrereqArrow[]; ranks: TalentRanks; height: number }) {
@@ -195,30 +235,40 @@ function TalentPrereqArrows({ arrows, ranks, height }: { arrows: TalentPrereqArr
       preserveAspectRatio="none"
     >
       <defs>
-        <marker id="talent-prereq-arrow-active" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0 0 L8 4 L0 8 Z" className="fill-amber-300" />
+        <marker id="talent-prereq-arrow-active" viewBox="0 0 6 6" refX="4.8" refY="3" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse">
+          <path d="M0.5 0.75 L5.5 3 L0.5 5.25 Z" className="fill-[#d8b35f] drop-shadow-[0_0_3px_rgba(216,179,95,0.45)]" />
         </marker>
-        <marker id="talent-prereq-arrow-inactive" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0 0 L8 4 L0 8 Z" className="fill-zinc-600" />
+        <marker id="talent-prereq-arrow-inactive" viewBox="0 0 6 6" refX="4.8" refY="3" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse">
+          <path d="M0.5 0.75 L5.5 3 L0.5 5.25 Z" className="fill-[#8b744f]/70" />
         </marker>
       </defs>
       {arrows.map(({ from, to, requiredRank }) => {
         const active = (ranks[from.id] ?? 0) >= requiredRank;
-        const strokeClass = active ? "stroke-amber-300 drop-shadow-[0_0_6px_rgba(252,211,77,0.55)]" : "stroke-zinc-600";
+        const strokeClass = active ? "stroke-[#d8b35f]/85 drop-shadow-[0_0_4px_rgba(216,179,95,0.35)]" : "stroke-[#6d5a3f]/45";
         const marker = active ? "url(#talent-prereq-arrow-active)" : "url(#talent-prereq-arrow-inactive)";
         const points = prerequisiteArrowPolylinePoints(from, to);
+        const pathData = prerequisiteArrowPathData(points);
 
         return (
-          <polyline
-            key={`${from.id}-${to.id}`}
-            points={points}
-            fill="none"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            markerEnd={marker}
-            className={cn("transition", strokeClass)}
-          />
+          <g key={`${from.id}-${to.id}`} className="transition">
+            <path
+              d={pathData}
+              fill="none"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="stroke-[#2b241a]/80"
+            />
+            <path
+              d={pathData}
+              fill="none"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              markerEnd={marker}
+              className={strokeClass}
+            />
+          </g>
         );
       })}
     </svg>

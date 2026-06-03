@@ -11,6 +11,7 @@ import {
   encodeTalentBuild,
   normalizeTalentRanks,
   prerequisiteArrowPolylinePoints,
+  prerequisiteArrowPathData,
   prerequisiteArrows,
   rowPointRequirement,
   searchParamsWithTalentBuild,
@@ -363,14 +364,45 @@ describe("TalentTreeViewer prerequisite arrows", () => {
     const source = talent({ id: 20, tierID: 2, columnIndex: 1 });
     const target = talent({ id: 21, tierID: 2, columnIndex: 2, prereqTalent: [20] });
 
-    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("108,168 136,168");
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("112,168 130,168");
+  });
+
+  it("keeps one-row vertical prerequisites compact instead of arrowhead dominated", () => {
+    const source = talent({ id: 22, tierID: 0, columnIndex: 1 });
+    const target = talent({ id: 23, tierID: 1, columnIndex: 1, prereqTalent: [22] });
+
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,44 88,68");
   });
 
   it("routes one-column-right and two-row-down prerequisites through the gap above the target row", () => {
     const source = talent({ id: 30, tierID: 0, columnIndex: 1 });
     const target = talent({ id: 31, tierID: 2, columnIndex: 2, prereqTalent: [30] });
 
-    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,40 88,132 156,132 156,148");
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,44 88,128 156,128 156,142");
+  });
+
+  it("softens kinked prerequisite paths so turns do not read like flowchart elbows", () => {
+    expect(prerequisiteArrowPathData("88,44 88,128 156,128 156,142")).toBe(
+      "M 88 44 L 88 122 Q 88 128 94 128 L 150 128 Q 156 128 156 134 L 156 142",
+    );
+  });
+
+  it("renders prerequisite arrows as lower-weight engraved game UI accents", () => {
+    const source = talent({ id: 40, tierID: 0, columnIndex: 1, maxRank: 2 });
+    const target = talent({ id: 41, tierID: 1, columnIndex: 1, prereqTalent: [40] });
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Mage",
+      tabs: [{ id: 81, name: "Fire", backgroundFile: "MageFire", orderIndex: 0, iconTexture: "spell_fire_flamebolt", talents: [source, target] }],
+    };
+
+    const html = renderTalentTree(data);
+
+    expect(html).toContain('markerWidth="4.5"');
+    expect(html).toContain('stroke-width="1.5"');
+    expect(html).toContain("stroke-[#6d5a3f]/45");
+    expect(html).toContain("stroke-[#2b241a]/80");
+    expect(html).toContain("fill-[#8b744f]/70");
   });
 });
 
