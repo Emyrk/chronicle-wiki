@@ -15,6 +15,7 @@ export function Layout() {
   }
 
   const { server, flavor } = context;
+  const theme = context.branding.theme;
   const nav = [
     { to: `/${server.slug}`, label: "Home", icon: Home },
     { to: `/${server.slug}/guides`, label: "Guides", icon: BookOpen },
@@ -24,13 +25,22 @@ export function Layout() {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden"
+      className="wiki-tenant-shell min-h-screen overflow-x-hidden"
       style={{
-        "--primary": context.branding.theme.primary,
-        "--ring": context.branding.theme.accent,
+        "--primary": theme.primary,
+        "--ring": theme.accent,
+        "--brand-accent": theme.accent,
+        "--brand-background": theme.background ?? "#020617",
+        "--brand-surface": theme.surface ?? "rgb(0 0 0 / 0.62)",
+        "--brand-nav": theme.nav ?? "rgb(0 0 0 / 0.70)",
+        "--brand-muted": theme.muted ?? "#93a4b8",
+        "--brand-border": theme.border ?? "rgb(148 163 184 / 0.24)",
+        "--muted-foreground": theme.muted ?? "#93a4b8",
+        "--card": theme.surface ?? "rgb(0 0 0 / 0.62)",
+        "--border": theme.border ?? "rgb(148 163 184 / 0.24)",
       } as React.CSSProperties}
     >
-      <header className="border-b border-border/60 bg-black/70 backdrop-blur">
+      <header className="wiki-tenant-nav border-b border-border/60 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-3 py-4 sm:px-4 lg:flex-row lg:items-center lg:justify-between">
           <Link to={`/${server.slug}`} className="flex min-w-0 items-center gap-3">
             <img src={context.branding.logoUrl} alt="" className="h-11 w-11 rounded-lg border border-border/60 bg-black/70 object-cover" />
@@ -62,7 +72,7 @@ export function Layout() {
             <IssueQuicklink context={context} />
             <a
               href={context.chronicle.baseUrl}
-              className="wiki-action"
+              className="wiki-action wiki-primary-button"
             >
               Chronicle <ExternalLink className="h-4 w-4" />
             </a>

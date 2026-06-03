@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Layout } from "@/components/Layout";
 import { describe, expect, it } from "vitest";
 import { BossGuidePage } from "./BossGuidePage";
 import { GuidesPage } from "./GuidesPage";
@@ -21,6 +22,34 @@ function renderRoute(path: string, element: React.ReactNode, routePath = path) {
 }
 
 describe("ChronicleClassic visual language", () => {
+  it("applies tenant brand tokens and main-site chrome to Turtle wiki routes", () => {
+    const html = renderToStaticMarkup(
+      createElement(
+        MemoryRouter,
+        { initialEntries: ["/turtle"] },
+        createElement(
+          Routes,
+          null,
+          createElement(
+            Route,
+            { path: "/:serverSlug", element: createElement(Layout) },
+            createElement(Route, { index: true, element: createElement(ServerHomePage) }),
+          ),
+        ),
+      ),
+    );
+
+    expect(html).toContain("--primary:#5f9bb8");
+    expect(html).toContain("--brand-accent:#c8a45c");
+    expect(html).toContain("--brand-background:#242424");
+    expect(html).toContain("herobackground.avif");
+    expect(html).toContain("wiki-tenant-shell");
+    expect(html).toContain("wiki-tenant-nav");
+    expect(html).toContain("wiki-main-site-hero");
+    expect(html).toContain("wiki-primary-button");
+    expect(html).not.toContain("debug");
+  });
+
   it("renders the server selector with Chronicle-style compact cards instead of oversized fantasy panels", () => {
     const html = renderRoute("/", createElement(HomePage));
 

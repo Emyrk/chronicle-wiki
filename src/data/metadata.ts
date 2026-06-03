@@ -34,6 +34,12 @@ export interface WikiServerMetadata {
   theme: {
     primary: string;
     accent: string;
+    background?: string;
+    surface?: string;
+    nav?: string;
+    muted?: string;
+    border?: string;
+    heroBackgroundUrl?: string;
   };
 }
 

@@ -2,22 +2,22 @@ import type { ResolvedServerContext } from "@/types";
 
 export function ServerHero({ context, eyebrow }: { context: ResolvedServerContext; eyebrow?: string }) {
   const { server, flavor } = context;
+  const heroBackgroundUrl = context.branding.theme.heroBackgroundUrl ?? context.branding.bannerUrl;
   return (
-    <section className="wiki-card overflow-hidden">
-      <div className="relative min-h-64">
-        <img src={context.branding.bannerUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/20" />
-        <div className="relative flex min-h-64 flex-col justify-end p-6 md:p-8">
-          <div className="mb-4 flex flex-wrap gap-2">
+    <section className="wiki-card overflow-hidden wiki-main-site-hero">
+      <div className="relative min-h-[22rem]">
+        <img src={heroBackgroundUrl} alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" />
+        <div className="absolute inset-0 bg-background/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/30" />
+        <div className="relative flex min-h-[22rem] flex-col items-center justify-center px-6 py-14 text-center md:px-8 md:py-20">
+          <div className="mb-5 flex flex-wrap justify-center gap-2">
             {(eyebrow ? [eyebrow, ...server.tags] : server.tags).map((tag) => <span key={tag} className="wiki-pill">{tag}</span>)}
           </div>
-          <div className="flex flex-col gap-5 md:flex-row md:items-end">
-            <img src={context.branding.logoUrl} alt={`${server.name} logo`} className="h-24 w-24 rounded-2xl border border-white/15 object-cover shadow-2xl" />
-            <div>
-              <h1 className="text-4xl font-bold text-white md:text-6xl">{server.name}</h1>
-              <p className="mt-2 max-w-3xl text-lg text-zinc-200">{server.description}</p>
-              <p className="mt-3 text-sm text-muted-foreground">Flavor: {flavor.name} · Max level {context.talents.maxLevel} · {context.talents.maxTalentPoints} talent points</p>
-            </div>
+          <div className="mx-auto max-w-4xl">
+            <img src={context.branding.logoUrl} alt={`${server.name} logo`} className="mx-auto mb-5 h-20 w-20 rounded-2xl border border-white/15 object-cover shadow-2xl" />
+            <h1 className="text-4xl font-bold tracking-tight text-white md:text-6xl">{server.name}</h1>
+            <p className="mx-auto mt-4 max-w-3xl text-lg text-zinc-200 md:text-xl">{server.description}</p>
+            <p className="mt-4 text-sm text-muted-foreground">{flavor.name} · Level cap {context.talents.maxLevel} · {context.talents.maxTalentPoints} talent points</p>
           </div>
         </div>
       </div>

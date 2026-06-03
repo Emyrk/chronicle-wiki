@@ -85,7 +85,16 @@ export const servers: Record<string, WikiServerMetadata> = {
     faviconUrl: "https://chronicleclassic.com/servers/turtle/logo.png",
     flavor: "nightmares-of-ursol",
     iconBucket: "turtle",
-    theme: { primary: "#2f8f5b", accent: "#a3e635" },
+    theme: {
+      primary: "#5f9bb8",
+      accent: "#c8a45c",
+      background: "#242424",
+      surface: "#2b2b2b",
+      nav: "#222222",
+      muted: "#c7c7c7",
+      border: "rgb(255 255 255 / 0.10)",
+      heroBackgroundUrl: "https://turtle.chronicleclassic.com/c/images/herobackground.avif",
+    },
   },
   octo: {
     slug: "octo",

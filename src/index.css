@@ -65,16 +65,36 @@ body {
 
 a { color: inherit; }
 
+.wiki-tenant-shell {
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--brand-background) 96%, black) 0%, var(--brand-background) 34rem, color-mix(in oklab, var(--brand-background) 92%, black) 100%);
+}
+
+.wiki-tenant-nav {
+  background: color-mix(in oklab, var(--brand-nav) 92%, transparent);
+}
+
 .wiki-card {
-  @apply max-w-full rounded-lg border border-border/60 bg-card shadow-xl shadow-black/20 backdrop-blur;
+  @apply max-w-full rounded-lg border border-border/60 bg-card shadow-xl shadow-black/20;
+}
+
+.wiki-main-site-hero {
+  background: var(--brand-surface);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--brand-accent) 24%, transparent), 0 1.25rem 3rem rgb(0 0 0 / 0.28);
 }
 
 .wiki-pill {
-  @apply inline-flex items-center rounded border border-border/60 bg-black/40 px-2 py-0.5 text-xs font-medium text-muted-foreground;
+  @apply inline-flex items-center rounded border border-border/60 bg-black/40 px-2 py-0.5 text-xs font-medium text-zinc-200 backdrop-blur;
 }
 
 .wiki-action {
   @apply inline-flex shrink-0 items-center gap-2 rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60;
+}
+
+.wiki-primary-button {
+  background: color-mix(in oklab, var(--primary) 72%, black);
+  border-color: color-mix(in oklab, var(--primary) 68%, transparent);
+  color: white;
 }
 
 .prose-wiki {

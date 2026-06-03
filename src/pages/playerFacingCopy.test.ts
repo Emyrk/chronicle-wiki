@@ -39,6 +39,7 @@ const forbiddenPlayerFacingCopy = [
   /enough confirmed mechanics/i,
   /completed guide/i,
   /basic explorer/i,
+  /\bFlavor:/i,
 ];
 
 function renderRoute(path: string, routePath: string, element: React.ReactNode) {

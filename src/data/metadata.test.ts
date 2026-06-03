@@ -20,6 +20,15 @@ describe("canonical wiki metadata contract", () => {
     expect(turtle?.chronicle.baseUrl).toBe("https://turtle.chronicleclassic.com");
     expect(turtle?.branding.logoUrl).toBe("https://chronicleclassic.com/servers/turtle/logo.png");
     expect(turtle?.branding.faviconHref).toBe("https://chronicleclassic.com/servers/turtle/logo.png");
+    expect(turtle?.branding.theme).toMatchObject({
+      primary: "#5f9bb8",
+      accent: "#c8a45c",
+      background: "#242424",
+      surface: "#2b2b2b",
+      nav: "#222222",
+      muted: "#c7c7c7",
+      heroBackgroundUrl: "https://turtle.chronicleclassic.com/c/images/herobackground.avif",
+    });
     expect(turtle?.talents).toEqual({ maxLevel: 60, maxTalentPoints: 51, iconBucket: "turtle" });
   });
 
