@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { classFromSlug, classIdFromSlug, classListForClassIds } from "@/data/talents";
 import { resolveServerContext } from "@/data/servers";
 import { fetchTalentTrees } from "@/api/chronicle";
@@ -7,6 +8,13 @@ import { TalentTreeViewer } from "@/components/TalentTreeViewer";
 import { NotFoundPage } from "./NotFoundPage";
 import { cn } from "@/lib/utils";
 import { iconUrl } from "@/lib/icons";
+
+export function TalentDataState({ children, hasTalentData, isError, isLoading }: { children?: ReactNode; hasTalentData: boolean; isError: boolean; isLoading: boolean }) {
+  if (isLoading) return <div className="wiki-card p-5 text-muted-foreground">Loading talent data…</div>;
+  if (isError) return <div className="wiki-card p-5 text-muted-foreground">Unable to load talent data</div>;
+  if (!hasTalentData) return <div className="wiki-card p-5 text-muted-foreground">No talent build available</div>;
+  return children;
+}
 
 export function TalentPage() {
   const { serverSlug, classSlug } = useParams();
@@ -17,11 +25,12 @@ export function TalentPage() {
   if (classSlug && (!requestedClass || !context.talents.classIds.includes(requestedClass.id))) return <NotFoundPage />;
 
   const selectedClassId = classIdFromSlug(classSlug, context.talents.classIds);
-  const { data, isLoading } = useQuery({
+  const { data, isError, isLoading } = useQuery({
     queryKey: ["talents", context.server.slug],
     queryFn: () => fetchTalentTrees(context),
   });
-  const selected = data?.data.classes[String(selectedClassId)] ?? Object.values(data?.data.classes ?? {})[0];
+  const talentTreeData = data?.data;
+  const selected = talentTreeData?.classes[String(selectedClassId)] ?? Object.values(talentTreeData?.classes ?? {})[0];
 
   return (
     <div className="space-y-6">
@@ -45,8 +54,9 @@ export function TalentPage() {
         </div>
       </div>
 
-      {isLoading && <div className="wiki-card p-5 text-muted-foreground">Loading talent data…</div>}
-      {selected ? <TalentTreeViewer data={selected} context={context} /> : <div className="wiki-card p-5 text-muted-foreground">No talent data for this class yet.</div>}
+      <TalentDataState isLoading={isLoading} isError={isError} hasTalentData={Boolean(talentTreeData)}>
+        {selected ? <TalentTreeViewer data={selected} context={context} /> : <div className="wiki-card p-5 text-muted-foreground">No talent data for this class yet.</div>}
+      </TalentDataState>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { classList, fallbackTalentTrees, type ClassTalentData, type TalentTreeJSON } from "../data/talents";
+import { classList, type ClassTalentData, type TalentTreeJSON } from "../data/talents";
 import type { ResolvedServerContext, SpellRef } from "../types";
 import { extractReferencedSpellIds, getEnglishText, resolvedSpellNotes, type WoWSpell } from "./wowdb";
 
@@ -47,17 +47,14 @@ function normalizeTalentTreeData(data: TalentTreeJSON): TalentTreeJSON {
   };
 }
 
-export async function fetchTalentTrees(context: ResolvedServerContext): Promise<{ data: TalentTreeJSON; source: "remote" | "fallback" }> {
+export async function fetchTalentTrees(context: ResolvedServerContext): Promise<{ data: TalentTreeJSON | null; source: "remote" | "missing" }> {
   const url = apiUrl(context, "/api/v1/wowdb/talent-trees");
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = (await response.json()) as TalentTreeJSON;
-    if (!data.classes || Object.keys(data.classes).length === 0) throw new Error("empty talent tree response");
-    return { data: normalizeTalentTreeData(data), source: "remote" };
-  } catch {
-    return { data: fallbackTalentTrees, source: "fallback" };
-  }
+  const response = await fetch(url);
+  if (response.status === 404) return { data: null, source: "missing" };
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const data = (await response.json()) as TalentTreeJSON;
+  if (!data.classes || Object.keys(data.classes).length === 0) throw new Error("empty talent tree response");
+  return { data: normalizeTalentTreeData(data), source: "remote" };
 }
 
 export async function fetchSpellRaw(context: ResolvedServerContext, spellId: number): Promise<WoWSpell | undefined> {

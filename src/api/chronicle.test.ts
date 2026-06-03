@@ -42,8 +42,8 @@ describe("Chronicle API URLs", () => {
 
     const result = await fetchTalentTrees(context("turtle"));
 
-    expect(result.data.classes["1"]).toMatchObject({ id: 1, name: "Warrior" });
-    expect(result.data.classes["1"]?.tabs.map((tab) => tab.name)).toEqual(["Arms", "Fury"]);
+    expect(result.data?.classes["1"]).toMatchObject({ id: 1, name: "Warrior" });
+    expect(result.data?.classes["1"]?.tabs.map((tab) => tab.name)).toEqual(["Arms", "Fury"]);
   });
 
   it("leaves spell rank hydration to async tooltip queries instead of fetching every spell with talent trees", async () => {
@@ -69,7 +69,7 @@ describe("Chronicle API URLs", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/talent-trees");
-    expect(result.data.classes["1"]?.tabs[0]?.talents[0]).toMatchObject({
+    expect(result.data?.classes["1"]?.tabs[0]?.talents[0]).toMatchObject({
       name: "Improved Heroic Strike",
       spellRanks: [12282, 12663],
     });
@@ -113,7 +113,7 @@ describe("Chronicle API URLs", () => {
     } as Response);
 
     const result = await fetchTalentTrees(context("turtle"));
-    const talent = result.data.classes["1"]?.tabs[0]?.talents[0];
+    const talent = result.data?.classes["1"]?.tabs[0]?.talents[0];
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(talent).toMatchObject({
@@ -163,14 +163,24 @@ describe("Chronicle API URLs", () => {
     expect(spell?.notes).not.toMatch(/\$s1|\$o2|\$d/);
   });
 
-  it("falls back to Death Knight talent data for Wrath servers", async () => {
-    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("offline"));
+  it("returns no talent data instead of fallback trees when the tenant endpoint is missing", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 404,
+    } as Response);
 
     const result = await fetchTalentTrees(context("chromie"));
 
-    expect(result.source).toBe("fallback");
-    expect(result.data.classes["6"]).toMatchObject({ id: 6, name: "Death Knight" });
-    expect(result.data.classes["6"]?.tabs.map((tab) => tab.name)).toEqual(["Blood", "Frost", "Unholy"]);
+    expect(result).toEqual({ data: null, source: "missing" });
+  });
+
+  it("preserves non-404 talent tree failures as errors", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 500,
+    } as Response);
+
+    await expect(fetchTalentTrees(context("chromie"))).rejects.toThrow("HTTP 500");
   });
 
   it("fetches referenced spells needed by cross-spell tooltip variables", async () => {

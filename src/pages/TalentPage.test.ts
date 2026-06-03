@@ -2,16 +2,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, expect, it } from "vitest";
-import { TalentPage } from "./TalentPage";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fetchTalentTrees } from "@/api/chronicle";
+import { resolveServerContext } from "@/data/servers";
+import { TalentDataState, TalentPage } from "./TalentPage";
 
-function renderTalentPage(path = "/legacy/talents/mage") {
-  const queryClient = new QueryClient({
+function createTestQueryClient() {
+  return new QueryClient({
     defaultOptions: {
-      queries: { retry: false },
+      queries: { retry: false, refetchOnMount: false },
     },
   });
+}
 
+function renderTalentPage(path = "/legacy/talents/mage", queryClient = createTestQueryClient()) {
   return renderToStaticMarkup(
     createElement(
       QueryClientProvider,
@@ -29,7 +33,23 @@ function renderTalentPage(path = "/legacy/talents/mage") {
   );
 }
 
+async function renderTalentPageAfterFetch(path = "/legacy/talents/mage", serverSlug = "legacy") {
+  const queryClient = createTestQueryClient();
+  const context = resolveServerContext(serverSlug);
+  if (!context) throw new Error(`missing context for ${serverSlug}`);
+  await queryClient.prefetchQuery({
+    queryKey: ["talents", context.server.slug],
+    queryFn: () => fetchTalentTrees(context),
+  });
+
+  return renderTalentPage(path, queryClient);
+}
+
 describe("TalentPage player-facing header", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("does not render admin data controls above the calculator", () => {
     const html = renderTalentPage();
 
@@ -76,5 +96,51 @@ describe("TalentPage player-facing header", () => {
 
     expect(html).toContain("Page not found");
     expect(html).not.toContain("Talent calculator");
+  });
+
+  it("shows a server-scoped no-build empty state when talent tree data is missing", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 404,
+    } as Response);
+
+    const html = await renderTalentPageAfterFetch("/turtle/talents/mage", "turtle");
+
+    expect(html).toContain("Talent calculator");
+    expect(html).toContain("No talent build available");
+    expect(html).not.toContain("Mage talents");
+    expect(html).not.toContain("Arcane");
+    expect(html).not.toContain("Copy build link");
+    expect(html).not.toContain("Using local fixture data");
+    expect(html).not.toContain("fallback");
+    expect(html).not.toContain("stub");
+  });
+
+  it("keeps non-404 talent tree failures out of the no-build empty state", () => {
+    const html = renderToStaticMarkup(createElement(TalentDataState, { isLoading: false, isError: true, hasTalentData: false }, "Talent tree UI"));
+
+    expect(html).toContain("Unable to load talent data");
+    expect(html).not.toContain("No talent build available");
+    expect(html).not.toContain("Talent tree UI");
+  });
+
+  it("renders normal talent tabs when tenant talent tree data loads", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        classes: {
+          "8": {
+            tabs: [{ id: 81, name: "Arcane", orderIndex: 0, iconTexture: "spell_holy_magicalsentry", talents: [] }],
+          },
+        },
+      }),
+    } as Response);
+
+    const html = await renderTalentPageAfterFetch("/turtle/talents/mage", "turtle");
+
+    expect(html).toContain("Mage talents");
+    expect(html).toContain("Arcane");
+    expect(html).not.toContain("No talent build available");
+    expect(html).not.toContain("Unable to load talent data");
   });
 });
