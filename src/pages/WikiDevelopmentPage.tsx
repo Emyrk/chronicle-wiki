@@ -1,9 +1,13 @@
-import { Bot, ExternalLink, Github, Sparkles } from "lucide-react";
+import { Bot, Bug, ExternalLink, Github, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SiteFooter } from "@/components/SiteFooter";
 import { aiDisclosure, wikiDevelopmentLinks } from "@/data/wikiDevelopment";
+import { buildGithubIssueUrl } from "@/lib/githubIssue";
+import { issueQuicklinkLabel, issueRepoFromGithubUrl } from "@/lib/issueQuicklink";
 
 export function WikiDevelopmentPage() {
+  const issueHref = buildGithubIssueUrl({ repo: issueRepoFromGithubUrl(wikiDevelopmentLinks.githubRepository) });
+
   return (
     <div className="min-h-screen">
       <main className="mx-auto max-w-5xl px-4 py-12">
@@ -30,14 +34,24 @@ export function WikiDevelopmentPage() {
           </div>
 
           <div className="border-t border-white/10 p-6">
-            <a
-              href={wikiDevelopmentLinks.githubIssues}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted-foreground hover:text-white"
-            >
-              <Github className="h-4 w-4" /> Report wiki errors on GitHub <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={issueHref}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-sm text-amber-100 hover:border-amber-300/40 hover:bg-amber-300/15 hover:text-white"
+              >
+                <Bug className="h-4 w-4" /> {issueQuicklinkLabel} <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+              <a
+                href={wikiDevelopmentLinks.githubIssues}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted-foreground hover:text-white"
+              >
+                <Github className="h-4 w-4" /> Browse GitHub issues <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
             <p className="mt-3 max-w-3xl text-xs leading-5 text-muted-foreground">
-              A per-page issue quicklink is tracked separately so reports can include the current URL and page context automatically.
+              The issue quicklink pre-fills this page URL so reports include the current page context automatically.
             </p>
           </div>
         </section>
