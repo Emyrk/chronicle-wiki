@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { issueLocationForRoute, issueRepoFromGithubUrl } from "./issueQuicklink";
+import { buildWikiIssueUrl, issueLocationForRoute, issueRepoFromGithubUrl } from "./issueQuicklink";
 
 describe("issue quicklink helpers", () => {
   it("derives the GitHub issue repository from the configured repository URL", () => {
@@ -17,5 +17,20 @@ describe("issue quicklink helpers", () => {
       host: "wiki.chronicleclassic.com",
       pathname: "/turtle/raids/molten-core/lucifron",
     });
+  });
+
+  it("builds a per-page issue URL for non-server pages", () => {
+    const href = buildWikiIssueUrl(undefined, "/wiki-development", {
+      href: "https://wiki.chronicleclassic.com/",
+      host: "wiki.chronicleclassic.com",
+      pathname: "/",
+    });
+    const url = new URL(href);
+
+    expect(url.origin + url.pathname).toBe("https://github.com/Emyrk/chronicle-wiki/issues/new");
+    expect(url.searchParams.get("title")).toBe("Wiki error report");
+    expect(url.searchParams.get("body")).toContain("Page URL: https://wiki.chronicleclassic.com/wiki-development");
+    expect(url.searchParams.get("body")).toContain("Host: wiki.chronicleclassic.com");
+    expect(url.searchParams.get("body")).toContain("Path: /wiki-development");
   });
 });

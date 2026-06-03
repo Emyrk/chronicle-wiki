@@ -38,7 +38,7 @@ export function issueLocationForRoute(currentLocation: CurrentLocation | undefin
   };
 }
 
-export function buildWikiIssueUrl(context: ResolvedServerContext, routePath: string, currentLocation = browserLocation()) {
+export function buildWikiIssueUrl(context: ResolvedServerContext | undefined, routePath: string, currentLocation = browserLocation()) {
   return buildGithubIssueUrl({
     repo: issueRepoFromGithubUrl(wikiDevelopmentLinks.githubRepository),
     context,

@@ -1,14 +1,13 @@
-import { Link, NavLink, Outlet, useLocation, useParams } from "react-router-dom";
-import { BookOpen, Bug, ExternalLink, Home, Search, TreePine } from "lucide-react";
+import { Link, NavLink, Outlet, useParams } from "react-router-dom";
+import { BookOpen, ExternalLink, Home, Search, TreePine } from "lucide-react";
 import { resolveServerContext } from "@/data/servers";
+import { IssueQuicklink } from "@/components/IssueQuicklink";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteSearch } from "@/components/SiteSearch";
-import { buildWikiIssueUrl, issueQuicklinkLabel } from "@/lib/issueQuicklink";
 import { cn } from "@/lib/utils";
 
 export function Layout() {
   const { serverSlug } = useParams();
-  const location = useLocation();
   const context = resolveServerContext(serverSlug);
 
   if (!context) {
@@ -16,7 +15,6 @@ export function Layout() {
   }
 
   const { server, flavor } = context;
-  const issueHref = buildWikiIssueUrl(context, `${location.pathname}${location.search}${location.hash}`);
   const nav = [
     { to: `/${server.slug}`, label: "Home", icon: Home },
     { to: `/${server.slug}/guides`, label: "Guides", icon: BookOpen },
@@ -61,15 +59,7 @@ export function Layout() {
                 </NavLink>
               );
             })}
-            <a
-              href={issueHref}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-sm text-amber-100 transition hover:border-amber-300/40 hover:bg-amber-300/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/70"
-            >
-              <Bug className="h-4 w-4" />
-              {issueQuicklinkLabel}
-            </a>
+            <IssueQuicklink context={context} />
             <a
               href={server.chronicleBaseUrl}
               className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-muted-foreground hover:text-white"

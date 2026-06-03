@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Github } from "lucide-react";
+import { IssueQuicklink } from "@/components/IssueQuicklink";
 import { SiteFooter } from "@/components/SiteFooter";
 import { serverList } from "@/data/servers";
 
@@ -14,9 +15,12 @@ export function HomePage() {
           <p className="mx-auto mt-4 max-w-3xl text-lg text-zinc-300">
             Server-scoped guides and tools powered by Chronicle datasets. Pick the server you play on; shared flavors inherit baseline content underneath.
           </p>
-          <a href="https://github.com/Emyrk/chronicle-wiki" className="mt-6 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted-foreground hover:text-white">
-            <Github className="h-4 w-4" /> chronicle-wiki
-          </a>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <IssueQuicklink />
+            <a href="https://github.com/Emyrk/chronicle-wiki" className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-muted-foreground hover:text-white">
+              <Github className="h-4 w-4" /> chronicle-wiki
+            </a>
+          </div>
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
