@@ -11,12 +11,12 @@ describe("global search tool descriptions", () => {
   it("finds server-scoped raid and boss pages from common aliases", () => {
     expect(globalSearchResults("turtle", "rag")[0]).toMatchObject({
       title: "Ragnaros",
-      href: "/turtle/raids/molten-core#encounter-ragnaros",
+      href: "/turtle/raids/molten-core?boss=ragnaros",
       category: "Bosses",
     });
     expect(globalSearchResults("turtle", "geddon")[0]).toMatchObject({
       title: "Baron Geddon",
-      href: "/turtle/raids/molten-core#encounter-baron-geddon",
+      href: "/turtle/raids/molten-core?boss=baron-geddon",
       category: "Bosses",
     });
     expect(globalSearchResults("turtle", "mc")[0]).toMatchObject({

@@ -84,9 +84,9 @@ describe("route page metadata", () => {
       imageUrl: "https://wiki.chronicleclassic.com/assets/instances/molten-core/background.jpg",
     });
     expect(routeMetadataForPathname("/turtle/raids/molten-core/garr")).toMatchObject({
-      title: "Garr Guide - Turtle WoW - Chronicle Wiki",
-      description: "Turtle-style servers start from the Legacy Garr plan, then add Nightmares of Ursol differences where the fight diverges.",
-      canonicalUrl: "https://wiki.chronicleclassic.com/turtle/raids/molten-core/garr",
+      title: "Molten Core - Turtle WoW - Chronicle Wiki",
+      description: "A ten-boss level 60 raid below Blackrock Mountain, built for quick boss lookup and server-scoped Chronicle context.",
+      canonicalUrl: "https://wiki.chronicleclassic.com/turtle/raids/molten-core",
     });
     expect(routeMetadataForPathname("/turtle/talents/mage")).toMatchObject({
       title: "Mage Talent Calculator - Turtle WoW - Chronicle Wiki",

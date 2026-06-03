@@ -1,5 +1,5 @@
 import { allGuideEntries } from "./guideIndex";
-import { allInstances, instanceAnchorId } from "./instances";
+import { allInstances } from "./instances";
 import { baseGuides, flavorPatches, serverPatches } from "./guides";
 import { resolveServerContext, serverList } from "./servers";
 import { classList, classListForClassIds, fallbackTalentTrees } from "./talents";
@@ -96,7 +96,7 @@ function searchCandidates(serverSlug: string): SearchCandidate[] {
     instance.encounters.map((encounter) => ({
       title: encounter.name,
       description: encounter.summary,
-      href: `/${serverSlug}/raids/${instance.slug}#${instanceAnchorId(encounter.slug)}`,
+      href: `/${serverSlug}/raids/${instance.slug}?boss=${encounter.slug}`,
       category: "Bosses",
       keywords: [instance.title, instance.slug, encounter.name, encounter.slug, encounter.role ?? "boss", encounter.summary, ...bossAliases(encounter.name)],
       priority: 100,

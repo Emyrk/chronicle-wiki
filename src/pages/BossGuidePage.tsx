@@ -1,80 +1,14 @@
-import { Link, useParams } from "react-router-dom";
-import { ExternalLink } from "lucide-react";
+import { Navigate, useParams } from "react-router-dom";
 import { resolveServerContext } from "@/data/servers";
-import { resolveGuide } from "@/data/guides";
-import { UnitExplorer } from "@/components/UnitExplorer";
+import { getRaidInstance } from "@/data/instances";
 import { NotFoundPage } from "./NotFoundPage";
 
 export function BossGuidePage() {
   const { serverSlug, instanceSlug, bossSlug } = useParams();
   const context = resolveServerContext(serverSlug);
-  if (!context || !instanceSlug || !bossSlug) return <NotFoundPage />;
-  const guide = resolveGuide(context.server.slug, `raids/${instanceSlug}/${bossSlug}`);
-  if (!guide) return <NotFoundPage />;
+  const instance = getRaidInstance(instanceSlug ?? "");
+  const encounter = instance?.encounters.find((candidate) => candidate.slug === bossSlug);
+  if (!context || !instance || !encounter) return <NotFoundPage />;
 
-  return (
-    <article className="space-y-6">
-      <div className="wiki-card p-4 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name} · {guide.raid}</p>
-            <h1 className="mt-2 text-3xl font-bold text-white sm:text-5xl">{guide.title}</h1>
-            <p className="mt-3 max-w-4xl text-lg text-zinc-300">{guide.summary}</p>
-          </div>
-          <a href={`${context.chronicle.baseUrl}/wowdb/creatures`} className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground hover:text-white">
-            Chronicle WoWDB <ExternalLink className="h-4 w-4" />
-          </a>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <span className="wiki-pill">{guide.sourceLabel}</span>
-          <span className="wiki-pill">{context.flavor.name}</span>
-          <span className="wiki-pill">{guide.creatures.length} units</span>
-          <span className="wiki-pill">{guide.spellIds.length} tracked spells</span>
-        </div>
-      </div>
-
-      {guide.callouts?.map((callout) => (
-        <div key={callout.title} className={callout.tone === "warning" ? "rounded-lg border border-amber-400/30 bg-amber-400/10 p-4" : "rounded-lg border border-sky-400/30 bg-sky-400/10 p-4"}>
-          <h2 className="font-semibold text-white">{callout.title}</h2>
-          <p className="mt-1 text-sm text-zinc-200">{callout.body}</p>
-        </div>
-      ))}
-
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="wiki-card prose-wiki p-4 sm:p-6">
-          {guide.sections.map((section) => (
-            <section key={section.title}>
-              <h2>{section.title}</h2>
-              {section.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            </section>
-          ))}
-        </div>
-        <aside className="space-y-4 lg:sticky lg:top-24">
-          <div className="wiki-card p-5">
-            <h2 className="text-2xl font-bold text-white">Fight evidence</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Use recent wipes, clears, and creature casts from {context.server.shortName} Chronicle to confirm assignments before raid night.
-            </p>
-          </div>
-          <div className="wiki-card p-5">
-            <h2 className="text-2xl font-bold text-white">Realm notes</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Start from the shared fight plan, then use realm notes for custom mechanics, positioning changes, or assignment differences.
-            </p>
-          </div>
-        </aside>
-      </div>
-
-      <section>
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-3xl font-bold text-white">Units and spells cast</h2>
-            <p className="text-sm text-muted-foreground">Spell and creature reference for preparing assignments from current logs.</p>
-          </div>
-          <Link to={`/${context.server.slug}/explorer`} className="text-sm text-primary underline">Open full explorer</Link>
-        </div>
-        <UnitExplorer creatures={guide.creatures} />
-      </section>
-    </article>
-  );
+  return <Navigate to={`/${context.server.slug}/raids/${instance.slug}?boss=${encounter.slug}`} replace />;
 }

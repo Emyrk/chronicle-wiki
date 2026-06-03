@@ -5,7 +5,6 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { SiteFooter } from "@/components/SiteFooter";
 import { describe, expect, it } from "vitest";
-import { BossGuidePage } from "./BossGuidePage";
 import { GuidesPage } from "./GuidesPage";
 import { HomePage } from "./HomePage";
 import { NotFoundPage } from "./NotFoundPage";
@@ -172,12 +171,12 @@ describe("mobile layout contracts", () => {
     expect(html).toContain("lg:sticky lg:top-24");
   });
 
-  it("stacks boss guide sidebars and wraps dense unit metadata before desktop widths", () => {
-    const html = renderRoute("/legacy/raids/molten-core/garr", createElement(BossGuidePage), "/:serverSlug/raids/:instanceSlug/:bossSlug");
+  it("keeps same-page boss tabs and mechanic cards mobile-safe", () => {
+    const html = renderRoute("/legacy/raids/molten-core?boss=garr", createElement(RaidPage), "/:serverSlug/raids/:instanceSlug");
 
-    expect(html).toContain("grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]");
-    expect(html).toContain("aside class=\"space-y-4 lg:sticky lg:top-24\"");
-    expect(html).toContain("min-w-0 flex-1");
+    expect(html).toContain("role=\"tablist\"");
+    expect(html).toContain("snap-x gap-2 overflow-x-auto overscroll-x-contain");
+    expect(html).toContain("shrink-0 snap-start rounded-full");
     expect(html).toContain("flex flex-wrap items-center justify-between gap-3");
   });
 });

@@ -76,11 +76,12 @@ describe("player-facing copy", () => {
     }
   });
 
-  it("renders the trimmed Molten Core raid MVP with all boss guide links and recent raids", () => {
+  it("renders the trimmed Molten Core raid MVP with same-page boss tabs, spell tooltips, and success rates", () => {
     const html = renderRoute("/turtle/raids/molten-core", "/:serverSlug/raids/:instanceSlug", createElement(RaidPage));
 
     expect(html).toContain("Recent raids");
     expect(html).toContain("https://turtle.chronicleclassic.com");
+    expect(html.match(/role="tab"/g)).toHaveLength(10);
     for (const boss of [
       "Lucifron",
       "Magmadar",
@@ -93,8 +94,22 @@ describe("player-facing copy", () => {
       "Majordomo Executus",
       "Ragnaros",
     ]) {
-      expect(html).toContain(`Open ${boss} guide`);
+      expect(html).toContain(boss);
     }
+    expect(html).toContain("Success rate");
+    expect(html).toContain("89% clears");
+    expect(html).toContain("Lucifron&#x27;s Curse");
+    expect(html).toContain("https://turtle.chronicleclassic.com/wowdb/spell/19702");
+    expect(html).not.toContain("Open Lucifron guide");
     expect(html).not.toMatch(/loot|recommended raid comp|consumes|resistance prep|attunement|raid prep checklist/i);
+  });
+
+  it("deep-links boss tabs through the raid page instead of separate boss guide pages", () => {
+    const html = renderRoute("/turtle/raids/molten-core?boss=ragnaros", "/:serverSlug/raids/:instanceSlug", createElement(RaidPage));
+
+    expect(html).toContain("Ragnaros");
+    expect(html).toContain("Lava Burst");
+    expect(html).toContain("78% clears");
+    expect(html).not.toContain("Lucifron&#x27;s Curse");
   });
 });

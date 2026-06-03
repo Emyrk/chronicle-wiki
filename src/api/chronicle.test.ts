@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiUrl, fetchSpell, fetchTalentTrees, fetchTalentTooltipSpell, prefetchTalentTooltipSpell, spellRecordQueryKey } from "./chronicle";
+import { apiUrl, bossSuccessRatesUrl, fetchSpell, fetchTalentTrees, fetchTalentTooltipSpell, prefetchTalentTooltipSpell, spellRecordQueryKey } from "./chronicle";
 import { resolveServerContext } from "../data/servers";
 
 function context(slug: string) {
@@ -23,6 +23,12 @@ describe("Chronicle API URLs", () => {
     await fetchTalentTrees(context("turtle"));
 
     expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/wowdb/talent-trees");
+  });
+
+  it("builds tenant-scoped boss success-rate URLs from the rankings API without dataset_id", () => {
+    expect(bossSuccessRatesUrl(context("turtle"), "Molten Core")).toBe(
+      "https://turtle.chronicleclassic.com/api/v1/rankings/success-rates?instance_name=Molten+Core",
+    );
   });
 
   it("normalizes remote talent classes with class metadata and order-sorted tabs", async () => {

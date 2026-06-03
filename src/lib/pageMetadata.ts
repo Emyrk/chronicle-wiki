@@ -1,6 +1,5 @@
 import { DEFAULT_CHRONICLE_BASE_URL, DEFAULT_CHRONICLE_FAVICON_HREF, resolveAgnosticWikiMetadata } from "@/data/metadata";
 import { getRaidInstance } from "@/data/instances";
-import { resolveGuide } from "@/data/guides";
 import { classFromSlug } from "@/data/talents";
 import { resolveServerContext } from "@/data/servers";
 import type { ResolvedServerContext } from "@/types";
@@ -132,15 +131,13 @@ export function routeMetadataForPathname(pathname: string): PageMetadata {
     }
 
     if (segments.length === 4) {
-      const guide = resolveGuide(context.server.slug, `raids/${instance.slug}/${segments[3]}`);
       const encounter = instance.encounters.find((candidate) => candidate.slug === segments[3]);
-      if (!guide && !encounter) return notFoundMetadata(normalizedPathname, context);
+      if (!encounter) return notFoundMetadata(normalizedPathname, context);
 
-      const name = guide?.title ?? encounter?.name ?? titleCase(segments[3]);
       return serverPageMetadata(context, {
-        title: `${name} Guide - ${context.server.name} - Chronicle Wiki`,
-        description: guide?.summary ?? encounter?.summary ?? `${name} guide for ${context.server.name}.`,
-        pathname: `${serverPath}/raids/${instance.slug}/${segments[3]}`,
+        title: `${instance.title} - ${context.server.name} - Chronicle Wiki`,
+        description: instance.description,
+        pathname: `${serverPath}/raids/${instance.slug}`,
         imageUrl: instance.backgroundImagePath ? absoluteWikiUrl(instance.backgroundImagePath) : undefined,
       });
     }
@@ -272,12 +269,4 @@ function setFaviconLinks(doc: Document, links: FaviconLinkDescriptor[]) {
   });
 
   managedLinks.slice(links.length).forEach((link) => link.remove());
-}
-
-function titleCase(slug: string) {
-  return slug
-    .split("-")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
 }

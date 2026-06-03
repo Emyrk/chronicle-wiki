@@ -19,6 +19,11 @@ export function apiUrl(context: ResolvedServerContext, path: string) {
   return `${context.chronicle.baseUrl}${cleanPath}`;
 }
 
+export function bossSuccessRatesUrl(context: ResolvedServerContext, instanceName: string) {
+  const params = new URLSearchParams({ instance_name: instanceName });
+  return apiUrl(context, `/api/v1/rankings/success-rates?${params.toString()}`);
+}
+
 function normalizeTalentTreeData(data: TalentTreeJSON): TalentTreeJSON {
   return {
     classes: Object.fromEntries(
