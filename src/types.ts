@@ -12,6 +12,7 @@ export interface WikiServer {
   websiteUrl?: string;
   logoUrl: string;
   bannerUrl: string;
+  faviconUrl?: string;
   flavor: string;
   iconBucket: string;
   theme: {
@@ -27,6 +28,7 @@ export interface WikiFlavor {
   clientVersion: string;
   maxLevel: number;
   maxTalentPoints: number;
+  faviconUrl?: string;
   fallbackFlavor?: string;
 }
 

@@ -8,6 +8,7 @@ export const flavors: Record<string, WikiFlavor> = {
     clientVersion: "1.12.1",
     maxLevel: 60,
     maxTalentPoints: 51,
+    faviconUrl: "https://chronicleclassic.com/favicon.ico",
   },
   "nightmares-of-ursol": {
     slug: "nightmares-of-ursol",
@@ -81,6 +82,7 @@ export const servers: Record<string, WikiServer> = {
     websiteUrl: "https://turtlecraft.gg/",
     logoUrl: "https://chronicleclassic.com/servers/turtle/logo.png",
     bannerUrl: "https://chronicleclassic.com/servers/turtle/banner.webp",
+    faviconUrl: "https://chronicleclassic.com/servers/turtle/logo.png",
     flavor: "nightmares-of-ursol",
     iconBucket: "turtle",
     theme: { primary: "#2f8f5b", accent: "#a3e635" },
@@ -96,6 +98,7 @@ export const servers: Record<string, WikiServer> = {
     websiteUrl: "https://octowow.st/",
     logoUrl: "https://chronicleclassic.com/servers/octowow/logo.webp",
     bannerUrl: "https://chronicleclassic.com/servers/octowow/banner.jpg",
+    faviconUrl: "https://chronicleclassic.com/servers/octowow/logo.webp",
     flavor: "nightmares-of-ursol",
     iconBucket: "octowow",
     theme: { primary: "#0891b2", accent: "#67e8f9" },
