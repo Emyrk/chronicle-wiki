@@ -117,9 +117,54 @@ const sharedWarriorTabs: TalentTabData[] = [
   },
 ];
 
+const sharedDeathKnightTabs: TalentTabData[] = [
+  {
+    id: 398,
+    name: "Blood",
+    backgroundFile: "DeathKnightBlood",
+    orderIndex: 0,
+    iconTexture: "spell_deathknight_bloodpresence",
+    talents: [
+      { id: 100, name: "Butchery", tierID: 0, columnIndex: 0, maxRank: 2, tabIndex: 0, spellRanks: [48979, 49483], iconTexture: "inv_axe_68" },
+      { id: 101, name: "Subversion", tierID: 0, columnIndex: 1, maxRank: 3, tabIndex: 0, spellRanks: [48997, 49490, 49491], iconTexture: "spell_deathknight_subversion" },
+      { id: 102, name: "Blade Barrier", tierID: 0, columnIndex: 2, maxRank: 5, tabIndex: 0, spellRanks: [49182, 49500, 49501, 55225, 55226], iconTexture: "ability_upgrademoonglaive" },
+      { id: 103, name: "Rune Tap", tierID: 2, columnIndex: 1, maxRank: 1, tabIndex: 0, spellRanks: [48982], iconTexture: "spell_deathknight_runetap" },
+      { id: 104, name: "Hysteria", tierID: 6, columnIndex: 1, maxRank: 1, tabIndex: 0, spellRanks: [49016], iconTexture: "spell_deathknight_bladedarmor" },
+      { id: 105, name: "Heart Strike", tierID: 10, columnIndex: 1, maxRank: 1, tabIndex: 0, spellRanks: [55050], iconTexture: "inv_weapon_shortblade_40" },
+    ],
+  },
+  {
+    id: 399,
+    name: "Frost",
+    backgroundFile: "DeathKnightFrost",
+    orderIndex: 1,
+    iconTexture: "spell_deathknight_frostpresence",
+    talents: [
+      { id: 110, name: "Improved Icy Touch", tierID: 0, columnIndex: 1, maxRank: 3, tabIndex: 1, spellRanks: [49175, 50031, 51456], iconTexture: "spell_deathknight_icetouch" },
+      { id: 111, name: "Toughness", tierID: 0, columnIndex: 2, maxRank: 5, tabIndex: 1, spellRanks: [49042, 49786, 49787, 49788, 49789], iconTexture: "spell_holy_devotion" },
+      { id: 112, name: "Lichborne", tierID: 2, columnIndex: 1, maxRank: 1, tabIndex: 1, spellRanks: [49039], iconTexture: "spell_shadow_raisedead" },
+      { id: 113, name: "Howling Blast", tierID: 10, columnIndex: 1, maxRank: 1, tabIndex: 1, spellRanks: [49184], iconTexture: "spell_frost_arcticwinds" },
+    ],
+  },
+  {
+    id: 400,
+    name: "Unholy",
+    backgroundFile: "DeathKnightUnholy",
+    orderIndex: 2,
+    iconTexture: "spell_deathknight_unholypresence",
+    talents: [
+      { id: 120, name: "Vicious Strikes", tierID: 0, columnIndex: 1, maxRank: 2, tabIndex: 2, spellRanks: [51745, 51746], iconTexture: "spell_deathknight_plaguestrike" },
+      { id: 121, name: "Virulence", tierID: 0, columnIndex: 2, maxRank: 3, tabIndex: 2, spellRanks: [48962, 49567, 49568], iconTexture: "spell_shadow_burningspirit" },
+      { id: 122, name: "Master of Ghouls", tierID: 2, columnIndex: 1, maxRank: 1, tabIndex: 2, spellRanks: [52143], iconTexture: "spell_shadow_animatedead" },
+      { id: 123, name: "Summon Gargoyle", tierID: 10, columnIndex: 1, maxRank: 1, tabIndex: 2, spellRanks: [49206], iconTexture: "ability_hunter_pet_bat" },
+    ],
+  },
+];
+
 export const fallbackTalentTrees: TalentTreeJSON = {
   classes: {
     "1": { id: 1, name: "Warrior", tabs: sharedWarriorTabs },
+    "6": { id: 6, name: "Death Knight", tabs: sharedDeathKnightTabs },
     "8": { id: 8, name: "Mage", tabs: sharedMageTabs },
   },
 };
@@ -130,13 +175,26 @@ export const classList = [
   { id: 3, slug: "hunter", name: "Hunter", iconTexture: "inv_weapon_bow_07" },
   { id: 4, slug: "rogue", name: "Rogue", iconTexture: "ability_backstab" },
   { id: 5, slug: "priest", name: "Priest", iconTexture: "inv_staff_30" },
+  { id: 6, slug: "death-knight", name: "Death Knight", iconTexture: "spell_deathknight_classicon" },
   { id: 7, slug: "shaman", name: "Shaman", iconTexture: "spell_nature_bloodlust" },
   { id: 8, slug: "mage", name: "Mage", iconTexture: "inv_staff_13" },
   { id: 9, slug: "warlock", name: "Warlock", iconTexture: "spell_nature_faeriefire" },
   { id: 11, slug: "druid", name: "Druid", iconTexture: "inv_misc_monsterclaw_04" },
 ];
 
-export function classIdFromSlug(slug: string | undefined) {
-  if (!slug) return 8;
-  return classList.find((cls) => cls.slug === slug.toLowerCase())?.id ?? 8;
+export function classFromSlug(slug: string | undefined) {
+  if (!slug) return undefined;
+  return classList.find((cls) => cls.slug === slug.toLowerCase());
+}
+
+export function classListForClassIds(classIds: number[]) {
+  const supported = new Set(classIds);
+  return classList.filter((cls) => supported.has(cls.id));
+}
+
+export function classIdFromSlug(slug: string | undefined, classIds = classList.map((cls) => cls.id)) {
+  if (!slug) return classIds.includes(8) ? 8 : classIds[0];
+  const cls = classFromSlug(slug);
+  if (!cls || !classIds.includes(cls.id)) return undefined;
+  return cls.id;
 }

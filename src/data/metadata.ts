@@ -5,6 +5,12 @@ export const DEFAULT_CHRONICLE_FAVICON_HREF = "https://chronicleclassic.com/favi
 
 export type Expansion = "vanilla" | "tbc" | "wotlk";
 
+const CLASS_IDS_BY_EXPANSION: Record<Expansion, number[]> = {
+  vanilla: [1, 2, 3, 4, 5, 7, 8, 9, 11],
+  tbc: [1, 2, 3, 4, 5, 7, 8, 9, 11],
+  wotlk: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11],
+};
+
 export interface WikiFlavorMetadata {
   slug: string;
   name: string;
@@ -68,6 +74,7 @@ export interface ResolvedWikiMetadata {
     maxLevel: number;
     maxTalentPoints: number;
     iconBucket: string;
+    classIds: number[];
   };
 }
 
@@ -141,6 +148,7 @@ export function resolveWikiMetadataFromCatalog(slug: string | undefined, catalog
       maxLevel: flavor.maxLevel,
       maxTalentPoints: flavor.maxTalentPoints,
       iconBucket: server.iconBucket,
+      classIds: CLASS_IDS_BY_EXPANSION[flavor.expansion],
     },
   };
 }

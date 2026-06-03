@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { classIdFromSlug, classList } from "@/data/talents";
+import { classFromSlug, classIdFromSlug, classListForClassIds } from "@/data/talents";
 import { resolveServerContext } from "@/data/servers";
 import { fetchTalentTrees } from "@/api/chronicle";
 import { TalentTreeViewer } from "@/components/TalentTreeViewer";
@@ -12,7 +12,11 @@ export function TalentPage() {
   const { serverSlug, classSlug } = useParams();
   const context = resolveServerContext(serverSlug);
   if (!context) return <NotFoundPage />;
-  const selectedClassId = classIdFromSlug(classSlug);
+  const availableClasses = classListForClassIds(context.talents.classIds);
+  const requestedClass = classFromSlug(classSlug);
+  if (classSlug && (!requestedClass || !context.talents.classIds.includes(requestedClass.id))) return <NotFoundPage />;
+
+  const selectedClassId = classIdFromSlug(classSlug, context.talents.classIds);
   const { data, isLoading } = useQuery({
     queryKey: ["talents", context.server.slug],
     queryFn: () => fetchTalentTrees(context),
@@ -28,7 +32,7 @@ export function TalentPage() {
           <p className="mt-2 max-w-3xl text-zinc-300">Plan, compare, and share class builds for {context.server.name}.</p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          {classList.map((cls) => (
+          {availableClasses.map((cls) => (
             <Link
               key={cls.id}
               to={`/${context.server.slug}/talents/${cls.slug}`}

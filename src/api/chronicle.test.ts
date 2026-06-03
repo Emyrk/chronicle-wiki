@@ -45,6 +45,16 @@ describe("Chronicle API URLs", () => {
     expect(result.data.classes["1"]?.tabs.map((tab) => tab.name)).toEqual(["Arms", "Fury"]);
   });
 
+  it("falls back to Death Knight talent data for Wrath servers", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("offline"));
+
+    const result = await fetchTalentTrees(context("chromie"));
+
+    expect(result.source).toBe("fallback");
+    expect(result.data.classes["6"]).toMatchObject({ id: 6, name: "Death Knight" });
+    expect(result.data.classes["6"]?.tabs.map((tab) => tab.name)).toEqual(["Blood", "Frost", "Unholy"]);
+  });
+
   it("does not append dataset_id to spell lookups", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,

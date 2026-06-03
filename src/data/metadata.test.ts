@@ -29,7 +29,22 @@ describe("canonical wiki metadata contract", () => {
       muted: "#c7c7c7",
       heroBackgroundUrl: "https://turtle.chronicleclassic.com/c/images/herobackground.avif",
     });
-    expect(turtle?.talents).toEqual({ maxLevel: 60, maxTalentPoints: 51, iconBucket: "turtle" });
+    expect(turtle?.talents).toEqual({
+      maxLevel: 60,
+      maxTalentPoints: 51,
+      iconBucket: "turtle",
+      classIds: [1, 2, 3, 4, 5, 7, 8, 9, 11],
+    });
+  });
+
+  it("exposes Death Knight class capability only for Wrath servers", () => {
+    expect(resolveWikiMetadata("chromie")?.talents.classIds).toContain(6);
+    expect(resolveWikiMetadata("nostrum")?.talents.classIds).toContain(6);
+    expect(resolveWikiMetadata("warmane")?.talents.classIds).toContain(6);
+
+    expect(resolveWikiMetadata("turtle")?.talents.classIds).not.toContain(6);
+    expect(resolveWikiMetadata("vanillaplus")?.talents.classIds).not.toContain(6);
+    expect(resolveWikiMetadata("faebright")?.talents.classIds).not.toContain(6);
   });
 
   it("provides an agnostic metadata context for site-level pages", () => {

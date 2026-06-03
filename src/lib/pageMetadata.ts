@@ -1,7 +1,7 @@
 import { DEFAULT_CHRONICLE_BASE_URL, DEFAULT_CHRONICLE_FAVICON_HREF, resolveAgnosticWikiMetadata } from "@/data/metadata";
 import { getRaidInstance } from "@/data/instances";
 import { resolveGuide } from "@/data/guides";
-import { classList } from "@/data/talents";
+import { classFromSlug } from "@/data/talents";
 import { resolveServerContext } from "@/data/servers";
 import type { ResolvedServerContext } from "@/types";
 
@@ -95,7 +95,11 @@ export function routeMetadataForPathname(pathname: string): PageMetadata {
   }
 
   if (segments.length >= 2 && segments[1] === "talents") {
-    const selectedClass = segments[2] ? classList.find((cls) => cls.slug === segments[2].toLowerCase()) : undefined;
+    const selectedClass = classFromSlug(segments[2]);
+    if (segments[2] && (!selectedClass || !context.talents.classIds.includes(selectedClass.id))) {
+      return notFoundMetadata(normalizedPathname, context);
+    }
+
     const classPrefix = selectedClass ? `${selectedClass.name} ` : "";
     const classDescription = selectedClass ? `${selectedClass.name} ` : "";
     const pathSuffix = selectedClass ? `/${selectedClass.slug}` : "";

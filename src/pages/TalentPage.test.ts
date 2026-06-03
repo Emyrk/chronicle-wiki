@@ -55,4 +55,26 @@ describe("TalentPage player-facing header", () => {
     expect(html).toContain(">Mage</span>");
     expect(html).toContain(">Warrior</span>");
   });
+
+  it("does not show Death Knight as a class option for Vanilla servers", () => {
+    const html = renderTalentPage("/turtle/talents/mage");
+
+    expect(html).not.toContain(">Death Knight</span>");
+    expect(html).not.toContain("/turtle/talents/death-knight");
+  });
+
+  it("shows Death Knight as a class option for Wrath servers", () => {
+    const html = renderTalentPage("/chromie/talents/death-knight");
+
+    expect(html).toContain(">Death Knight</span>");
+    expect(html).toContain("/chromie/talents/death-knight");
+    expect(html).toContain('src="https://icons.chronicleclassic.com/azerothcore/spell_deathknight_classicon.webp"');
+  });
+
+  it("renders unsupported direct Death Knight routes as missing pages", () => {
+    const html = renderTalentPage("/turtle/talents/death-knight");
+
+    expect(html).toContain("Page not found");
+    expect(html).not.toContain("Talent calculator");
+  });
 });

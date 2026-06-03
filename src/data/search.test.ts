@@ -38,4 +38,12 @@ describe("global search tool descriptions", () => {
   it("ranks current-server results before global server navigation when both match", () => {
     expect(globalSearchResults("turtle", "turtle").map((entry) => entry.href).slice(0, 2)).toEqual(["/turtle", "/turtle/talents"]);
   });
+
+  it("only exposes Death Knight talent search results for Death Knight capable servers", () => {
+    expect(globalSearchResults("turtle", "death knight talents")).toEqual([]);
+    expect(globalSearchResults("chromie", "death knight talents")[0]).toMatchObject({
+      title: "Death Knight talents",
+      href: "/chromie/talents/death-knight",
+    });
+  });
 });

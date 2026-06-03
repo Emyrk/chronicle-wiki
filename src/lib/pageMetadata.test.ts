@@ -104,6 +104,11 @@ describe("route page metadata", () => {
       description: "This Chronicle Wiki route does not exist yet.",
       canonicalUrl: "https://wiki.chronicleclassic.com/missing-route",
     });
+    expect(routeMetadataForPathname("/turtle/talents/death-knight")).toMatchObject({
+      title: "Page not found - Chronicle Wiki",
+      description: "This Chronicle Wiki route does not exist yet.",
+      canonicalUrl: "https://wiki.chronicleclassic.com/turtle/talents/death-knight",
+    });
   });
 
   it("describes canonical, OpenGraph, and Twitter head tags", () => {

@@ -1,8 +1,8 @@
 import { allGuideEntries } from "./guideIndex";
 import { allInstances, instanceAnchorId } from "./instances";
 import { baseGuides, flavorPatches, serverPatches } from "./guides";
-import { serverList } from "./servers";
-import { classList, fallbackTalentTrees } from "./talents";
+import { resolveServerContext, serverList } from "./servers";
+import { classList, classListForClassIds, fallbackTalentTrees } from "./talents";
 
 export interface SearchResult {
   title: string;
@@ -29,7 +29,8 @@ export function globalSearchResults(serverSlug: string, query: string): SearchRe
 }
 
 function searchCandidates(serverSlug: string): SearchCandidate[] {
-  const currentServer = serverList.find((server) => server.slug === serverSlug);
+  const currentContext = resolveServerContext(serverSlug);
+  const currentServer = currentContext?.server ?? serverList.find((server) => server.slug === serverSlug);
   const serverKeywords = currentServer ? serverSearchKeywords(currentServer) : [serverSlug];
   const staticResults: SearchCandidate[] = [
     {
@@ -111,7 +112,8 @@ function searchCandidates(serverSlug: string): SearchCandidate[] {
     priority: server.slug === serverSlug ? 95 : 45,
   }));
 
-  const talentResults: SearchCandidate[] = classList.flatMap((cls) => {
+  const talentClasses = currentContext ? classListForClassIds(currentContext.talents.classIds) : classList;
+  const talentResults: SearchCandidate[] = talentClasses.flatMap((cls) => {
     const tree = fallbackTalentTrees.classes[String(cls.id)];
     const classResult: SearchCandidate = {
       title: `${cls.name} talents`,
