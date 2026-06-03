@@ -111,9 +111,15 @@ describe("TalentTreeViewer prerequisite arrows", () => {
 });
 
 describe("TalentTreeViewer URL build state", () => {
-  it("encodes and decodes nonzero ranks in a stable order", () => {
-    expect(encodeTalentBuild({ 20: 2, 10: 0, 30: 1 })).toBe("20:2,30:1");
+  it("encodes and decodes nonzero ranks with compact URL-safe tokens", () => {
+    expect(encodeTalentBuild({ 20: 2, 10: 0, 30: 1 })).toBe("k.2_u.1");
+    expect(decodeTalentBuild("k.2_u.1_bad_14.0")).toEqual({ 20: 2, 30: 1 });
     expect(decodeTalentBuild("20:2,30:1,wat:2,40:0")).toEqual({ 20: 2, 30: 1 });
+  });
+
+  it("writes compact build state into URL search params without percent-escaped separators", () => {
+    const params = searchParamsWithTalentBuild(new URLSearchParams("foo=bar"), { 12: 2, 30: 1 });
+    expect(params.toString()).toBe("foo=bar&build=c.2_u.1");
   });
 
   it("normalizes shared ranks through row, arrow, max-rank, and point-cap rules", () => {
@@ -126,10 +132,8 @@ describe("TalentTreeViewer URL build state", () => {
     expect(normalizeTalentRanks([tabTalents], { 1: 2, 2: 5, 3: 9 }, 8)).toEqual({ 1: 2, 2: 5, 3: 1 });
   });
 
-  it("writes build state into URL search params without dropping other params", () => {
+  it("clears build state from URL search params without dropping other params", () => {
     const params = searchParamsWithTalentBuild(new URLSearchParams("foo=bar"), { 12: 2, 30: 1 });
-    expect(params.toString()).toBe("foo=bar&build=12%3A2%2C30%3A1");
-
     const cleared = searchParamsWithTalentBuild(params, {});
     expect(cleared.toString()).toBe("foo=bar");
   });

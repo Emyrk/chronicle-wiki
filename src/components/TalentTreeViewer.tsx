@@ -88,22 +88,30 @@ export function updateTalentRank(
   return nextRanks;
 }
 
+function decodeTalentBuildNumber(value: string, radix: number) {
+  if (!/^[0-9a-z]+$/i.test(value)) return Number.NaN;
+  const number = Number.parseInt(value, radix);
+  return Number.isFinite(number) ? number : Number.NaN;
+}
+
 export function encodeTalentBuild(ranks: TalentRanks) {
   return Object.entries(ranks)
     .map(([id, rank]) => [Number(id), rank] as const)
     .filter(([id, rank]) => Number.isFinite(id) && rank > 0)
     .sort(([left], [right]) => left - right)
-    .map(([id, rank]) => `${id}:${rank}`)
-    .join(",");
+    .map(([id, rank]) => `${id.toString(36)}.${rank.toString(36)}`)
+    .join("_");
 }
 
 export function decodeTalentBuild(value: string | null | undefined): TalentRanks {
   if (!value) return {};
   const ranks: TalentRanks = {};
-  for (const part of value.split(",")) {
-    const [idText, rankText] = part.split(":");
-    const id = Number(idText);
-    const rank = Number(rankText);
+  const isLegacyBuild = value.includes(":") || value.includes(",");
+  const entries = isLegacyBuild ? value.split(",").map((part) => part.split(":")) : value.split("_").map((part) => part.split("."));
+
+  for (const [idText, rankText] of entries) {
+    const id = decodeTalentBuildNumber(idText ?? "", isLegacyBuild ? 10 : 36);
+    const rank = decodeTalentBuildNumber(rankText ?? "", isLegacyBuild ? 10 : 36);
     if (Number.isInteger(id) && Number.isInteger(rank) && id > 0 && rank > 0) ranks[id] = rank;
   }
   return ranks;
