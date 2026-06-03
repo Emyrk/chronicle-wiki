@@ -164,10 +164,27 @@ function talentCenter(talent: Pick<TalentEntry, "tierID" | "columnIndex">) {
   };
 }
 
+export function prerequisiteArrowPolylinePoints(from: Pick<TalentEntry, "tierID" | "columnIndex">, to: Pick<TalentEntry, "tierID" | "columnIndex">) {
+  const fromPoint = talentCenter(from);
+  const toPoint = talentCenter(to);
+  const buttonEdge = TALENT_BUTTON_SIZE / 2;
+
+  if (from.tierID === to.tierID) {
+    const direction = toPoint.x >= fromPoint.x ? 1 : -1;
+    return `${fromPoint.x + direction * buttonEdge},${fromPoint.y} ${toPoint.x - direction * buttonEdge},${toPoint.y}`;
+  }
+
+  const startY = fromPoint.y + buttonEdge;
+  const endY = toPoint.y - buttonEdge;
+  if (fromPoint.x === toPoint.x) return `${fromPoint.x},${startY} ${toPoint.x},${endY}`;
+
+  const elbowY = endY > startY ? endY - TALENT_GRID_GAP : startY + TALENT_GRID_GAP;
+  return `${fromPoint.x},${startY} ${fromPoint.x},${elbowY} ${toPoint.x},${elbowY} ${toPoint.x},${endY}`;
+}
+
 function TalentPrereqArrows({ arrows, ranks, height }: { arrows: TalentPrereqArrow[]; ranks: TalentRanks; height: number }) {
   if (arrows.length === 0) return null;
 
-  const buttonEdge = TALENT_BUTTON_SIZE / 2;
   return (
     <svg
       aria-hidden="true"
@@ -186,17 +203,10 @@ function TalentPrereqArrows({ arrows, ranks, height }: { arrows: TalentPrereqArr
         </marker>
       </defs>
       {arrows.map(({ from, to, requiredRank }) => {
-        const fromPoint = talentCenter(from);
-        const toPoint = talentCenter(to);
         const active = (ranks[from.id] ?? 0) >= requiredRank;
         const strokeClass = active ? "stroke-amber-300 drop-shadow-[0_0_6px_rgba(252,211,77,0.55)]" : "stroke-zinc-600";
         const marker = active ? "url(#talent-prereq-arrow-active)" : "url(#talent-prereq-arrow-inactive)";
-        const startY = fromPoint.y + buttonEdge;
-        const endY = toPoint.y - buttonEdge;
-        const midY = startY + Math.max(12, (endY - startY) / 2);
-        const points = fromPoint.x === toPoint.x
-          ? `${fromPoint.x},${startY} ${toPoint.x},${endY}`
-          : `${fromPoint.x},${startY} ${fromPoint.x},${midY} ${toPoint.x},${midY} ${toPoint.x},${endY}`;
+        const points = prerequisiteArrowPolylinePoints(from, to);
 
         return (
           <polyline

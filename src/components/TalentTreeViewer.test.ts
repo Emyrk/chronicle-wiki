@@ -10,6 +10,7 @@ import {
   decodeTalentBuild,
   encodeTalentBuild,
   normalizeTalentRanks,
+  prerequisiteArrowPolylinePoints,
   prerequisiteArrows,
   rowPointRequirement,
   searchParamsWithTalentBuild,
@@ -356,6 +357,20 @@ describe("TalentTreeViewer prerequisite arrows", () => {
     const target = talent({ id: 3, tierID: 2, columnIndex: 1, prereqTalent: [999], prereqRank: [1] });
 
     expect(prerequisiteArrows([target])).toEqual([]);
+  });
+
+  it("draws same-row prerequisites horizontally from side edge to side edge", () => {
+    const source = talent({ id: 20, tierID: 2, columnIndex: 1 });
+    const target = talent({ id: 21, tierID: 2, columnIndex: 2, prereqTalent: [20] });
+
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,132 96,132");
+  });
+
+  it("routes one-column-right and two-row-down prerequisites through the gap above the target row", () => {
+    const source = talent({ id: 30, tierID: 0, columnIndex: 1 });
+    const target = talent({ id: 31, tierID: 2, columnIndex: 2, prereqTalent: [30] });
+
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("68,40 68,104 116,104 116,112");
   });
 });
 
