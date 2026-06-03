@@ -311,7 +311,7 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
   const rows = useMemo(() => talentGridRows(tab.talents), [tab.talents]);
   const height = talentGridHeight(rows);
   return (
-    <section className="wiki-card p-4">
+    <section className="wiki-card self-start p-4">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src={iconUrl(tab.iconTexture, context)} alt="" className="h-10 w-10 rounded border border-white/10" />
@@ -366,6 +366,8 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
 export function TalentTreeViewer({ data, context }: { data: ClassTalentData; context: ResolvedServerContext }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabTalentLists = useMemo(() => data.tabs.map((tab) => tab.talents), [data.tabs]);
+  const deepestTabRows = useMemo(() => Math.max(...data.tabs.map((tab) => talentGridRows(tab.talents)), 0), [data.tabs]);
+  const tabGridClassName = deepestTabRows > 7 ? "grid gap-4 xl:grid-cols-2 2xl:grid-cols-3" : "grid gap-4 xl:grid-cols-3";
   const maxPoints = context.flavor.maxTalentPoints;
   const [ranks, setRanks] = useState<TalentRanks>(() => normalizeTalentRanks(tabTalentLists, decodeTalentBuild(searchParams.get(TALENT_BUILD_PARAM)), maxPoints));
   const total = useMemo(() => totalTalentPoints(ranks), [ranks]);
@@ -393,7 +395,7 @@ export function TalentTreeViewer({ data, context }: { data: ClassTalentData; con
           <button className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-muted-foreground hover:text-white" onClick={() => commitRanks({})}>Reset {total}/{maxPoints} points</button>
         </div>
       </div>
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className={tabGridClassName}>
         {data.tabs.map((tab) => (
           <TalentTab
             key={tab.id}

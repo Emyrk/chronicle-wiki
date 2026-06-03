@@ -229,6 +229,51 @@ describe("TalentTreeViewer render geometry", () => {
     expect(html).toContain("grid-auto-rows:48px");
     expect(html).toContain("gap:8px");
     expect(html).toContain("h-10 w-10");
+    expect(html).toContain("grid gap-4 xl:grid-cols-3");
+  });
+
+  it("expands the tab layout and grid height for Wrath-depth talent rows", () => {
+    const data: ClassTalentData = {
+      id: 6,
+      name: "Death Knight",
+      tabs: [
+        {
+          id: 398,
+          name: "Blood",
+          backgroundFile: "DeathKnightBlood",
+          orderIndex: 0,
+          iconTexture: "spell_deathknight_bloodpresence",
+          talents: [
+            talent({ id: 100, tierID: 0, columnIndex: 1, maxRank: 5 }),
+            talent({ id: 101, tierID: 5, columnIndex: 2, maxRank: 1 }),
+            talent({ id: 102, tierID: 10, columnIndex: 1, maxRank: 1, prereqTalent: [101] }),
+          ],
+        },
+        {
+          id: 399,
+          name: "Frost",
+          backgroundFile: "DeathKnightFrost",
+          orderIndex: 1,
+          iconTexture: "spell_deathknight_frostpresence",
+          talents: [talent({ id: 103, tierID: 10, columnIndex: 1, maxRank: 1 })],
+        },
+        {
+          id: 400,
+          name: "Unholy",
+          backgroundFile: "DeathKnightUnholy",
+          orderIndex: 2,
+          iconTexture: "spell_deathknight_unholypresence",
+          talents: [talent({ id: 104, tierID: 10, columnIndex: 1, maxRank: 1 })],
+        },
+      ],
+    };
+
+    const html = renderTalentTree(data);
+
+    expect(html).toContain("grid gap-4 xl:grid-cols-2 2xl:grid-cols-3");
+    expect(html).toContain("width:192px;height:616px");
+    expect(html).toContain('viewBox="0 0 192 616"');
+    expect(html).toContain("Talent 102");
   });
 });
 
