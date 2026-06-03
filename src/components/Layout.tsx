@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useParams } from "react-router-dom";
 import { BookOpen, ExternalLink, Home, Search, TreePine } from "lucide-react";
 import { resolveServerContext } from "@/data/servers";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SiteSearch } from "@/components/SiteSearch";
 import { cn } from "@/lib/utils";
 
 export function Layout() {
@@ -15,7 +16,7 @@ export function Layout() {
   const { server, flavor } = context;
   const nav = [
     { to: `/${server.slug}`, label: "Home", icon: Home },
-    { to: `/${server.slug}/raids/molten-core`, label: "Molten Core", icon: BookOpen },
+    { to: `/${server.slug}/guides`, label: "Guides", icon: BookOpen },
     { to: `/${server.slug}/talents`, label: "Talents", icon: TreePine },
     { to: `/${server.slug}/explorer`, label: "Units", icon: Search },
   ];
@@ -39,6 +40,7 @@ export function Layout() {
             </div>
           </Link>
           <div className="flex flex-wrap items-center gap-2">
+            <SiteSearch />
             {nav.map((item) => {
               const Icon = item.icon;
               return (
