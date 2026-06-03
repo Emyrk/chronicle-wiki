@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { fallbackTalentTrees } from "../../src/data/talents";
 
 type RouteCase = {
   slug: string;
   path: string;
   heading: string;
+  visibleText?: string;
 };
 
 const routeCases: RouteCase[] = [
@@ -11,7 +13,7 @@ const routeCases: RouteCase[] = [
   { slug: "server-home", path: "/turtle", heading: "Turtle WoW" },
   { slug: "guides", path: "/turtle/guides", heading: "Guides" },
   { slug: "raid-overview", path: "/turtle/raids/molten-core", heading: "Molten Core" },
-  { slug: "boss-guide", path: "/turtle/raids/molten-core/garr", heading: "Garr" },
+  { slug: "boss-guide", path: "/turtle/raids/molten-core?boss=garr", heading: "Molten Core", visibleText: "Garr" },
   { slug: "talents", path: "/turtle/talents/mage", heading: "Talent calculator" },
 ];
 
@@ -20,6 +22,12 @@ test.beforeEach(async ({ context }) => {
     const request = route.request();
     const url = new URL(request.url());
     const isLocalApp = url.hostname === "127.0.0.1";
+    const isTalentTreeApi = url.hostname === "turtle.chronicleclassic.com" && url.pathname === "/api/v1/wowdb/talent-trees";
+
+    if (isTalentTreeApi) {
+      await route.fulfill({ json: fallbackTalentTrees });
+      return;
+    }
 
     if (isLocalApp) {
       await route.continue();
@@ -44,6 +52,7 @@ for (const routeCase of routeCases) {
       `,
     });
     await expect(page.getByRole("main").getByRole("heading", { name: routeCase.heading, level: 1 })).toBeVisible();
+    if (routeCase.visibleText) await expect(page.getByRole("main").getByText(routeCase.visibleText, { exact: true }).first()).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await expect(page).toHaveScreenshot(`${routeCase.slug}-${testInfo.project.name}.png`);
   });
