@@ -313,18 +313,21 @@ function talentDescription(talent: TalentEntry) {
   return "Talent details unavailable.";
 }
 
-function talentTooltipPosition(rect: DOMRect): TalentTooltipPosition {
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
+export function talentTooltipPosition(rect: Pick<DOMRect, "left" | "top" | "right" | "bottom" | "width" | "height">, viewport: Pick<Window, "innerWidth" | "innerHeight"> = window): TalentTooltipPosition {
+  const viewportWidth = viewport.innerWidth;
+  const viewportHeight = viewport.innerHeight;
+  const tooltipHeight = Math.min(TALENT_TOOLTIP_ESTIMATED_HEIGHT, Math.max(0, viewportHeight - TALENT_TOOLTIP_MARGIN * 2));
+  const maxTop = Math.max(TALENT_TOOLTIP_MARGIN, viewportHeight - tooltipHeight - TALENT_TOOLTIP_MARGIN);
   const left = Math.min(
     Math.max(rect.left + rect.width / 2 - TALENT_TOOLTIP_WIDTH / 2, TALENT_TOOLTIP_MARGIN),
     Math.max(TALENT_TOOLTIP_MARGIN, viewportWidth - TALENT_TOOLTIP_WIDTH - TALENT_TOOLTIP_MARGIN),
   );
   const belowTop = rect.bottom + TALENT_TOOLTIP_GAP;
   const aboveTop = rect.top - TALENT_TOOLTIP_GAP - TALENT_TOOLTIP_ESTIMATED_HEIGHT;
-  const top = belowTop + TALENT_TOOLTIP_ESTIMATED_HEIGHT > viewportHeight - TALENT_TOOLTIP_MARGIN && aboveTop > TALENT_TOOLTIP_MARGIN
+  const preferredTop = belowTop + TALENT_TOOLTIP_ESTIMATED_HEIGHT > viewportHeight - TALENT_TOOLTIP_MARGIN && aboveTop > TALENT_TOOLTIP_MARGIN
     ? aboveTop
-    : Math.min(belowTop, Math.max(TALENT_TOOLTIP_MARGIN, viewportHeight - TALENT_TOOLTIP_MARGIN));
+    : belowTop;
+  const top = Math.min(Math.max(preferredTop, TALENT_TOOLTIP_MARGIN), maxTop);
   return { left, top };
 }
 
@@ -423,6 +426,28 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
     if (rect) setTooltipPosition(talentTooltipPosition(rect));
   };
   const hideTooltip = () => setTooltipPosition(undefined);
+
+  useEffect(() => {
+    if (!tooltipPosition || typeof document === "undefined") return undefined;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (buttonRef.current?.contains(target)) return;
+      hideTooltip();
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") hideTooltip();
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [tooltipPosition]);
+
   const tooltip = (
     <TalentTooltipCard
       id={tooltipId}
@@ -451,6 +476,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
       onFocus={showTooltip}
       onBlur={hideTooltip}
       onClick={(event) => {
+        showTooltip();
         if (event.shiftKey || event.metaKey) onChange(Math.max(0, rank - 1));
         else onChange(Math.min(talent.maxRank, rank + 1));
       }}

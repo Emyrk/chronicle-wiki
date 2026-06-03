@@ -18,6 +18,7 @@ import {
   prerequisiteArrows,
   rowPointRequirement,
   searchParamsWithTalentBuild,
+  talentTooltipPosition,
   totalTalentPoints,
   updateTalentRank,
   TalentTreeViewer,
@@ -326,6 +327,18 @@ describe("TalentTreeViewer render geometry", () => {
     expect(html).toContain("min-w-max");
     expect(html).toContain("overscroll-x-contain");
     expect(html).toContain("touch-pan-x");
+  });
+
+  it("keeps touch tooltip positions inside a phone viewport", () => {
+    const position = talentTooltipPosition(
+      { left: 292, top: 160, right: 332, bottom: 200, width: 40, height: 40 },
+      { innerWidth: 360, innerHeight: 320 },
+    );
+
+    expect(position.left).toBeLessThanOrEqual(56);
+    expect(position.left).toBeGreaterThanOrEqual(16);
+    expect(position.top).toBeLessThanOrEqual(80);
+    expect(position.top).toBeGreaterThanOrEqual(16);
   });
 
   it("keeps talent buttons and tooltips usable on touch screens", () => {

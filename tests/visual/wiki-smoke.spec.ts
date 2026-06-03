@@ -49,6 +49,40 @@ for (const routeCase of routeCases) {
   });
 }
 
+test("mobile users can tap-open and close talent tooltips", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/turtle/talents/mage");
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0s !important;
+        scroll-behavior: auto !important;
+      }
+    `,
+  });
+
+  const talent = page.locator("[data-talent-tooltip-trigger]").first();
+  await talent.scrollIntoViewIfNeeded();
+  await talent.click();
+
+  const tooltip = page.getByRole("tooltip");
+  await expect(tooltip).toBeVisible();
+  const tooltipBox = await tooltip.boundingBox();
+  expect(tooltipBox).not.toBeNull();
+  expect(tooltipBox?.x).toBeGreaterThanOrEqual(0);
+  expect((tooltipBox?.x ?? 0) + (tooltipBox?.width ?? 0)).toBeLessThanOrEqual(390);
+
+  await page.getByRole("heading", { name: "Talent calculator", level: 1 }).click();
+  await expect(tooltip).toBeHidden();
+
+  await talent.click();
+  await expect(tooltip).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(tooltip).toBeHidden();
+});
+
 async function expectNoHorizontalOverflow(page: import("@playwright/test").Page) {
   const overflow = await page.evaluate(() => {
     const documentElement = document.documentElement;
