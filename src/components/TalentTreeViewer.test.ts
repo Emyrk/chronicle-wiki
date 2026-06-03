@@ -592,6 +592,14 @@ describe("TalentTreeViewer prerequisite arrows", () => {
     expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,44 88,128 156,128 156,142");
   });
 
+  it("routes VanillaPlus Fire Mage prerequisite arrows around intervening talent icons", () => {
+    const source = talent({ id: 32, tierID: 2, columnIndex: 1, tabIndex: 8, spellRanks: [11113] });
+    const blocker = talent({ id: 31, tierID: 3, columnIndex: 1, tabIndex: 10, spellRanks: [33897, 33898] });
+    const target = talent({ id: 1766, tierID: 4, columnIndex: 2, tabIndex: 14, spellRanks: [34125], prereqTalent: [32], prereqRank: [0] });
+
+    expect(prerequisiteArrowPolylinePoints(source, target, [source, blocker, target])).toBe("88,192 126,192 126,276 156,276 156,290");
+  });
+
   it("softens kinked prerequisite paths so turns do not read like flowchart elbows", () => {
     expect(prerequisiteArrowPathData("88,44 88,128 156,128 156,142")).toBe(
       "M 88 44 L 88 122 Q 88 128 94 128 L 150 128 Q 156 128 156 134 L 156 142",

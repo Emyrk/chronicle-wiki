@@ -200,7 +200,29 @@ function talentCenter(talent: Pick<TalentEntry, "tierID" | "columnIndex">) {
   };
 }
 
-export function prerequisiteArrowPolylinePoints(from: Pick<TalentEntry, "tierID" | "columnIndex">, to: Pick<TalentEntry, "tierID" | "columnIndex">) {
+function talentButtonBounds(talent: Pick<TalentEntry, "tierID" | "columnIndex">) {
+  const center = talentCenter(talent);
+  const buttonEdge = TALENT_BUTTON_SIZE / 2;
+  return {
+    left: center.x - buttonEdge,
+    right: center.x + buttonEdge,
+    top: center.y - buttonEdge,
+    bottom: center.y + buttonEdge,
+  };
+}
+
+function verticalSegmentCrossesTalent(x: number, startY: number, endY: number, talent: Pick<TalentEntry, "tierID" | "columnIndex">) {
+  const bounds = talentButtonBounds(talent);
+  const top = Math.min(startY, endY);
+  const bottom = Math.max(startY, endY);
+  return x >= bounds.left && x <= bounds.right && bottom >= bounds.top && top <= bounds.bottom;
+}
+
+export function prerequisiteArrowPolylinePoints(
+  from: Pick<TalentEntry, "tierID" | "columnIndex">,
+  to: Pick<TalentEntry, "tierID" | "columnIndex">,
+  talents: Array<Pick<TalentEntry, "id" | "tierID" | "columnIndex">> = [],
+) {
   const fromPoint = talentCenter(from);
   const toPoint = talentCenter(to);
   const buttonEdge = TALENT_BUTTON_SIZE / 2;
@@ -215,6 +237,15 @@ export function prerequisiteArrowPolylinePoints(from: Pick<TalentEntry, "tierID"
   if (fromPoint.x === toPoint.x) return `${fromPoint.x},${startY} ${toPoint.x},${endY}`;
 
   const elbowY = endY > startY ? endY - TALENT_ARROW_ELBOW_CLEARANCE : startY + TALENT_ARROW_ELBOW_CLEARANCE;
+  const blockers = talents.filter((talent) => talent !== from && talent !== to && verticalSegmentCrossesTalent(fromPoint.x, startY, elbowY, talent));
+  if (blockers.length > 0) {
+    const direction = toPoint.x >= fromPoint.x ? 1 : -1;
+    const detourX = direction > 0
+      ? Math.max(...blockers.map((talent) => talentButtonBounds(talent).right)) + TALENT_ARROW_ELBOW_CLEARANCE + TALENT_ARROW_SOURCE_CLEARANCE
+      : Math.min(...blockers.map((talent) => talentButtonBounds(talent).left)) - TALENT_ARROW_ELBOW_CLEARANCE - TALENT_ARROW_SOURCE_CLEARANCE;
+    return `${fromPoint.x},${startY} ${detourX},${startY} ${detourX},${elbowY} ${toPoint.x},${elbowY} ${toPoint.x},${endY}`;
+  }
+
   return `${fromPoint.x},${startY} ${fromPoint.x},${elbowY} ${toPoint.x},${elbowY} ${toPoint.x},${endY}`;
 }
 
@@ -255,7 +286,7 @@ export function prerequisiteArrowPathData(points: string) {
   return commands.join(" ");
 }
 
-function TalentPrereqArrows({ arrows, ranks, height }: { arrows: TalentPrereqArrow[]; ranks: TalentRanks; height: number }) {
+function TalentPrereqArrows({ arrows, ranks, height, talents }: { arrows: TalentPrereqArrow[]; ranks: TalentRanks; height: number; talents: TalentEntry[] }) {
   if (arrows.length === 0) return null;
 
   return (
@@ -279,7 +310,7 @@ function TalentPrereqArrows({ arrows, ranks, height }: { arrows: TalentPrereqArr
         const active = (ranks[from.id] ?? 0) >= requiredRank;
         const strokeClass = active ? "stroke-[#d8b35f]/85 drop-shadow-[0_0_4px_rgba(216,179,95,0.35)]" : "stroke-[#6d5a3f]/45";
         const marker = active ? "url(#talent-prereq-arrow-active)" : "url(#talent-prereq-arrow-inactive)";
-        const points = prerequisiteArrowPolylinePoints(from, to);
+        const points = prerequisiteArrowPolylinePoints(from, to, talents);
         const pathData = prerequisiteArrowPathData(points);
 
         return (
@@ -691,7 +722,7 @@ function TalentTab({
           style={{ width: `${TALENT_GRID_WIDTH + TALENT_GRID_GAP * 2}px` }}
         >
           <div className="relative" style={{ width: `${TALENT_GRID_WIDTH}px`, height: `${height}px` }}>
-            <TalentPrereqArrows arrows={arrows} ranks={ranks} height={height} />
+            <TalentPrereqArrows arrows={arrows} ranks={ranks} height={height} talents={tab.talents} />
             <div
               className="relative z-10 grid justify-items-center"
               style={{
