@@ -25,9 +25,7 @@ export function TalentPage() {
         <div>
           <p className="text-sm uppercase tracking-[0.25em] text-muted-foreground">{context.server.name}</p>
           <h1 className="mt-2 font-serif text-4xl font-bold text-white">Talent calculator</h1>
-          <p className="mt-2 max-w-3xl text-zinc-300">
-            Loads talent trees from {context.server.chronicleBaseUrl}. If the API is unavailable, this builder falls back to local Warrior/Mage fixtures so the UI stays testable.
-          </p>
+          <p className="mt-2 max-w-3xl text-zinc-300">Plan, compare, and share class builds for {context.server.name}.</p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {classList.map((cls) => (
@@ -44,11 +42,6 @@ export function TalentPage() {
       </div>
 
       {isLoading && <div className="wiki-card p-5 text-muted-foreground">Loading talent data…</div>}
-      {data?.source === "fallback" && (
-        <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
-          Using local fixture data because the Chronicle API did not return talent-tree data.
-        </div>
-      )}
       {selected ? <TalentTreeViewer data={selected} context={context} /> : <div className="wiki-card p-5 text-muted-foreground">No talent data for this class yet.</div>}
     </div>
   );

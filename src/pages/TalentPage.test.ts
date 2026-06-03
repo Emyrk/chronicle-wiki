@@ -39,6 +39,12 @@ describe("TalentPage player-facing header", () => {
     expect(html).not.toContain("Chronicle API JSON");
     expect(html).not.toContain("Server / flavor");
     expect(html).not.toContain("Reparse current source");
+    expect(html).not.toContain("Loads talent trees from");
+    expect(html).not.toContain("API is unavailable");
+    expect(html).not.toContain("falls back");
+    expect(html).not.toContain("fixtures");
+    expect(html).not.toContain("testable");
+    expect(html).not.toContain("Using local fixture data");
   });
 
   it("renders class icons through the selected server icon bucket while keeping labels visible", () => {

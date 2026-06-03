@@ -20,7 +20,7 @@ export function globalSearchResults(serverSlug: string, query: string): SearchRe
     },
     {
       title: "Talent calculator",
-      description: "Dataset-aware talent trees for the selected server.",
+      description: "Plan and share class builds for the selected server.",
       href: `/${serverSlug}/talents`,
       category: "Tools",
       keywords: ["talents", "calculator", "build", "class"],

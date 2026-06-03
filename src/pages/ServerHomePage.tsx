@@ -12,7 +12,7 @@ export function ServerHomePage() {
 
   const cards = [
     { to: `/${server.slug}/guides`, title: "Guides", body: "Raid and dungeon guide sections, starting with Molten Core as the first raid guide.", icon: BookOpen },
-    { to: `/${server.slug}/talents`, title: "Talent calculator", body: "Dataset-aware talent trees for the selected server.", icon: TreePine },
+    { to: `/${server.slug}/talents`, title: "Talent calculator", body: "Plan and share class builds for the selected server.", icon: TreePine },
     { to: `/${server.slug}/explorer`, title: "Unit explorer", body: "Creatures and spells cast, ready for log-derived data.", icon: Search },
   ];
 
