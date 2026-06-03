@@ -19,8 +19,8 @@ const donationLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border/60 bg-black/60">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 text-sm text-muted-foreground md:grid-cols-[1.2fr_1fr_1fr]">
+    <footer className="border-t border-border/60 bg-muted/30">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 text-sm text-muted-foreground md:grid-cols-[1.4fr_1fr_1fr]">
         <section>
           <p className="text-lg font-bold tracking-tight text-white">© 2026 Chronicle</p>
           <p className="mt-3 max-w-xl text-zinc-300">

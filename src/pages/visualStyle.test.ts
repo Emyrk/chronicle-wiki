@@ -1,4 +1,5 @@
 import { createElement } from "react";
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "@/components/Layout";
@@ -22,6 +23,31 @@ function renderRoute(path: string, element: React.ReactNode, routePath = path) {
 }
 
 describe("ChronicleClassic visual language", () => {
+  it("anchors global CSS to the tenant Chronicle token family instead of the playful blue-black dashboard theme", () => {
+    const css = readFileSync("src/index.css", "utf8");
+
+    expect(css).toContain("Libre+Baskerville");
+    expect(css).toContain("font-family: Friz Quadrata");
+    expect(css).toContain("--background: #2b2b2b");
+    expect(css).toContain("--primary: #5f8fa6");
+    expect(css).toContain("--secondary: #89744d");
+    expect(css).toContain("--link: #26a9f1");
+    expect(css).toContain("--radius: 0.2rem");
+    expect(css).not.toContain("radial-gradient(circle at 15% 0%");
+  });
+
+  it("uses the shared Chronicle shell on the server selector instead of a standalone wiki dashboard", () => {
+    const html = renderRoute("/", createElement(HomePage));
+
+    expect(html).toContain("chronicle-site-shell");
+    expect(html).toContain("chronicle-beta-banner");
+    expect(html).toContain("chronicle-site-nav");
+    expect(html).toContain("Chronicle is currently in beta");
+    expect(html).toContain("chronicle-logo.svg");
+    expect(html).toContain("wiki-section");
+    expect(html).toContain("wiki-server-card");
+  });
+
   it("applies tenant brand tokens and main-site chrome to Turtle wiki routes", () => {
     const html = renderToStaticMarkup(
       createElement(
@@ -55,7 +81,8 @@ describe("ChronicleClassic visual language", () => {
 
     expect(html).toContain("max-w-6xl");
     expect(html).toContain("text-4xl font-bold tracking-tight text-white");
-    expect(html).toContain("h-28");
+    expect(html).toContain("h-20");
+    expect(html).toContain("wiki-server-card");
     expect(html).toContain("border-border/60 bg-card");
     expect(html).not.toContain("font-serif text-5xl");
     expect(html).toContain("Legacy Vanilla");

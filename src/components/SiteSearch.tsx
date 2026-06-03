@@ -11,7 +11,7 @@ export function SiteSearch() {
 
   return (
     <div className="relative w-full lg:w-72">
-      <label className="flex items-center gap-2 rounded-lg border border-border/60 bg-black/50 px-3 py-2 text-sm text-muted-foreground focus-within:border-primary/70 focus-within:text-white">
+      <label className="flex items-center gap-2 border border-border/60 bg-black/40 px-3 py-2 text-sm text-muted-foreground focus-within:border-primary/70 focus-within:text-white" style={{ borderRadius: "var(--brand-radius)" }}>
         <Search className="h-4 w-4" />
         <input
           value={query}
@@ -21,7 +21,7 @@ export function SiteSearch() {
         />
       </label>
       {showResults && (
-        <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-lg border border-border/60 bg-zinc-950 shadow-2xl shadow-black/40 lg:w-96">
+        <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden border border-border/60 bg-zinc-950 shadow-2xl shadow-black/40 lg:w-96" style={{ borderRadius: "var(--brand-radius)" }}>
           {results.length > 0 ? (
             results.map((result) => (
               <Link
