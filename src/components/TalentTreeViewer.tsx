@@ -15,9 +15,9 @@ type TalentPrereqArrow = {
 
 const TALENT_BUTTON_SIZE = 40;
 const TALENT_GRID_COLUMNS = 4;
-const TALENT_CELL_WIDTH = 40;
-const TALENT_CELL_HEIGHT = 48;
-const TALENT_GRID_GAP = 8;
+const TALENT_CELL_WIDTH = 52;
+const TALENT_CELL_HEIGHT = 58;
+const TALENT_GRID_GAP = 16;
 const TALENT_ROW_STRIDE = TALENT_CELL_HEIGHT + TALENT_GRID_GAP;
 const TALENT_BUILD_PARAM = "build";
 
@@ -351,7 +351,7 @@ function TalentTab({ tab, ranks, context, onRankChange }: { tab: TalentTabData; 
                 Array.from({ length: TALENT_GRID_COLUMNS }).map((__, col) => {
                   const talent = tab.talents.find((candidate) => candidate.tierID === tier && candidate.columnIndex === col);
                   return (
-                    <div key={`${tier}-${col}`} className="flex h-12 w-10 items-start justify-center">
+                    <div key={`${tier}-${col}`} className="flex h-[58px] w-[52px] items-start justify-center">
                       {talent && (
                         <TalentButton
                           talent={talent}

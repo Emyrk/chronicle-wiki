@@ -253,7 +253,7 @@ describe("TalentTreeViewer render geometry", () => {
     expect(html).toContain("sm:-translate-x-1/2");
   });
 
-  it("matches ChronicleClassic's compact 4-column talent grid geometry", () => {
+  it("keeps an airy 4-column talent grid with room for short prerequisite arrows", () => {
     const data: ClassTalentData = {
       id: 1,
       name: "Warrior",
@@ -274,10 +274,10 @@ describe("TalentTreeViewer render geometry", () => {
 
     const html = renderTalentTree(data);
 
-    expect(html).toContain("width:192px;height:168px");
-    expect(html).toContain("grid-template-columns:repeat(4, 40px)");
-    expect(html).toContain("grid-auto-rows:48px");
-    expect(html).toContain("gap:8px");
+    expect(html).toContain("width:272px;height:222px");
+    expect(html).toContain("grid-template-columns:repeat(4, 52px)");
+    expect(html).toContain("grid-auto-rows:58px");
+    expect(html).toContain("gap:16px");
     expect(html).toContain("h-10 w-10");
     expect(html).toContain("grid min-w-0 gap-4 xl:grid-cols-3");
   });
@@ -321,8 +321,8 @@ describe("TalentTreeViewer render geometry", () => {
     const html = renderTalentTree(data);
 
     expect(html).toContain("grid min-w-0 gap-4 xl:grid-cols-2 2xl:grid-cols-3");
-    expect(html).toContain("width:192px;height:616px");
-    expect(html).toContain('viewBox="0 0 192 616"');
+    expect(html).toContain("width:272px;height:814px");
+    expect(html).toContain('viewBox="0 0 272 814"');
     expect(html).toContain("Talent 102");
   });
 });
@@ -363,14 +363,14 @@ describe("TalentTreeViewer prerequisite arrows", () => {
     const source = talent({ id: 20, tierID: 2, columnIndex: 1 });
     const target = talent({ id: 21, tierID: 2, columnIndex: 2, prereqTalent: [20] });
 
-    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,132 96,132");
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("108,168 136,168");
   });
 
   it("routes one-column-right and two-row-down prerequisites through the gap above the target row", () => {
     const source = talent({ id: 30, tierID: 0, columnIndex: 1 });
     const target = talent({ id: 31, tierID: 2, columnIndex: 2, prereqTalent: [30] });
 
-    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("68,40 68,104 116,104 116,112");
+    expect(prerequisiteArrowPolylinePoints(source, target)).toBe("88,40 88,132 156,132 156,148");
   });
 });
 
