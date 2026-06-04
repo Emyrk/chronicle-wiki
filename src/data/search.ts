@@ -1,6 +1,5 @@
 import { allGuideEntries } from "./guideIndex";
 import { allInstances } from "./instances";
-import { baseGuides, flavorPatches, serverPatches } from "./guides";
 import { resolveServerContext, serverList } from "./servers";
 import { classList, classListForClassIds, fallbackTalentTrees } from "./talents";
 
@@ -56,30 +55,6 @@ function searchCandidates(serverSlug: string): SearchCandidate[] {
       category: "Tools",
       keywords: [...serverKeywords, "talents", "calculator", "build", "class", "spec", "specialization", "template"],
       priority: 93,
-    },
-    {
-      title: "Unit explorer",
-      description: "Creatures and spells cast, organized for raid planning.",
-      href: `/${serverSlug}/explorer`,
-      category: "Tools",
-      keywords: ["units", "creatures", "spells", "casts", "explorer", ...unitExplorerKeywords()],
-      priority: 55,
-    },
-    {
-      title: "Creatures and units",
-      description: "Explore raid creatures, adds, and unit notes for the selected server.",
-      href: `/${serverSlug}/explorer`,
-      category: "Units",
-      keywords: ["units", "creatures", "adds", "flamewaker", "firesworn", "core hound", "lava spawn", "elemental"],
-      priority: 105,
-    },
-    {
-      title: "Spell casts",
-      description: "Review tracked encounter spells and cast evidence for raid planning.",
-      href: `/${serverSlug}/explorer`,
-      category: "Spells",
-      keywords: ["spells", "casts", "living bomb", "magma shackles", "magma splash", "antimagic pulse", "curse", "fear", "dispel"],
-      priority: 104,
     },
   ];
 
@@ -156,20 +131,6 @@ function stripPriority({ priority: _priority, ...result }: SearchCandidate): Sea
 
 function serverSearchKeywords(server: (typeof serverList)[number]) {
   return [server.slug, server.name, server.shortName, server.subtitle, server.description, ...server.tags];
-}
-
-function unitExplorerKeywords() {
-  return [
-    ...Object.values(baseGuides).flatMap((guide) => guide.creatures.flatMap((creature) => [creature.name, creature.role, creature.notes, ...creature.spells.flatMap((spell) => [spell.name, spell.school ?? "", spell.notes ?? ""])])),
-    ...Object.values(flavorPatches).flatMap((patches) => Object.values(patches).flatMap((patch) => [
-      ...(patch.addCreatures?.flatMap((creature) => [creature.name, creature.role, creature.notes, ...creature.spells.flatMap((spell) => [spell.name, spell.school ?? "", spell.notes ?? ""])]) ?? []),
-      ...(patch.addSpells?.flatMap((spell) => [spell.name, spell.notes ?? ""]) ?? []),
-    ])),
-    ...Object.values(serverPatches).flatMap((patches) => Object.values(patches).flatMap((patch) => [
-      ...(patch.addCreatures?.flatMap((creature) => [creature.name, creature.role, creature.notes, ...creature.spells.flatMap((spell) => [spell.name, spell.school ?? "", spell.notes ?? ""])]) ?? []),
-      ...(patch.addSpells?.flatMap((spell) => [spell.name, spell.notes ?? ""]) ?? []),
-    ])),
-  ];
 }
 
 function bossAliases(name: string) {

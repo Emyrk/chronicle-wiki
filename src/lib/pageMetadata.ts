@@ -109,14 +109,6 @@ export function routeMetadataForPathname(pathname: string): PageMetadata {
     });
   }
 
-  if (segments.length === 2 && segments[1] === "explorer") {
-    return serverPageMetadata(context, {
-      title: `Unit Explorer - ${context.server.name} - Chronicle Wiki`,
-      description: `Explore ${context.server.name} creatures and spells cast for raid planning.`,
-      pathname: `${serverPath}/explorer`,
-    });
-  }
-
   if (segments.length >= 3 && segments[1] === "raids") {
     const instance = getRaidInstance(segments[2]);
     if (!instance) return notFoundMetadata(normalizedPathname, context);

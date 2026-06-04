@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { BookOpen, Search, TreePine } from "lucide-react";
+import { BookOpen, TreePine } from "lucide-react";
 import { resolveServerContext } from "@/data/servers";
 import { ServerHero } from "@/components/ServerHero";
 import { NotFoundPage } from "./NotFoundPage";
@@ -13,7 +13,6 @@ export function ServerHomePage() {
   const cards = [
     { to: `/${server.slug}/guides`, title: "Guides", body: "Raid and dungeon guides organized for the selected server.", icon: BookOpen },
     { to: `/${server.slug}/talents`, title: "Talent calculator", body: "Plan and share class builds for the selected server.", icon: TreePine },
-    { to: `/${server.slug}/explorer`, title: "Unit explorer", body: "Creatures and spells cast, organized for raid planning.", icon: Search },
   ];
 
   return (

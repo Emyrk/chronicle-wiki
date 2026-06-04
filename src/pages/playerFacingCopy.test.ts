@@ -7,7 +7,6 @@ import { GuidesPage } from "./GuidesPage";
 import { HomePage } from "./HomePage";
 import { RaidPage } from "./RaidPage";
 import { ServerHomePage } from "./ServerHomePage";
-import { UnitExplorerPage } from "./UnitExplorerPage";
 import { WikiDevelopmentPage } from "./WikiDevelopmentPage";
 
 const forbiddenPlayerFacingCopy = [
@@ -67,7 +66,6 @@ describe("player-facing copy", () => {
       renderRoute("/turtle/raids/molten-core", "/:serverSlug/raids/:instanceSlug", createElement(RaidPage)),
       renderRoute("/turtle/raids/molten-core/garr", "/:serverSlug/raids/:instanceSlug/:bossSlug", createElement(BossGuidePage)),
       renderRoute("/vanillaplus/raids/molten-core/garr", "/:serverSlug/raids/:instanceSlug/:bossSlug", createElement(BossGuidePage)),
-      renderRoute("/turtle/explorer", "/:serverSlug/explorer", createElement(UnitExplorerPage)),
       renderToStaticMarkup(createElement(MemoryRouter, null, createElement(WikiDevelopmentPage))),
     ];
 

@@ -118,6 +118,21 @@ describe("ChronicleClassic visual language", () => {
     expect(guides).toContain("Search guides");
   });
 
+  it("does not expose the unused unit explorer from server home or tenant navigation", () => {
+    const serverHome = renderRoute("/legacy", createElement(ServerHomePage), "/:serverSlug");
+    const shell = renderToStaticMarkup(
+      createElement(
+        MemoryRouter,
+        { initialEntries: ["/legacy"] },
+        createElement(Routes, null, createElement(Route, { path: "/:serverSlug", element: createElement(Layout) }, createElement(Route, { index: true, element: createElement(ServerHomePage) }))),
+      ),
+    );
+
+    expect(serverHome).not.toContain("Unit explorer");
+    expect(shell).not.toContain("Units");
+    expect(shell).not.toContain("/legacy/explorer");
+  });
+
   it("applies the Chronicle shell to wiki-development and 404 pages without losing actions", () => {
     const development = renderRoute("/wiki-development", createElement(WikiDevelopmentPage));
     const notFound = renderRoute("/nope", createElement(NotFoundPage));

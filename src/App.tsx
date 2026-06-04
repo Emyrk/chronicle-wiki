@@ -6,7 +6,6 @@ import { ServerHomePage } from "@/pages/ServerHomePage";
 import { TalentPage } from "@/pages/TalentPage";
 import { RaidPage } from "@/pages/RaidPage";
 import { BossGuidePage } from "@/pages/BossGuidePage";
-import { UnitExplorerPage } from "@/pages/UnitExplorerPage";
 import { GuidesPage } from "@/pages/GuidesPage";
 import { WikiDevelopmentPage } from "@/pages/WikiDevelopmentPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -34,7 +33,6 @@ export default function App() {
         <Route path="raids" element={<Navigate to={defaultRaidSlug} replace />} />
         <Route path="raids/:instanceSlug" element={<RaidPage />} />
         <Route path="raids/:instanceSlug/:bossSlug" element={<BossGuidePage />} />
-        <Route path="explorer" element={<UnitExplorerPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />

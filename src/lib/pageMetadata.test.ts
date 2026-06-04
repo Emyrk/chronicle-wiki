@@ -76,7 +76,7 @@ describe("route page metadata", () => {
     });
   });
 
-  it("builds route-specific instance, boss, talents, and explorer metadata", () => {
+  it("builds route-specific instance, boss, and talents metadata", () => {
     expect(routeMetadataForPathname("/turtle/raids/molten-core")).toMatchObject({
       title: "Molten Core - Turtle WoW - Chronicle Wiki",
       description: "A ten-boss level 60 raid below Blackrock Mountain, built for quick boss lookup and server-scoped Chronicle context.",
@@ -92,10 +92,6 @@ describe("route page metadata", () => {
       title: "Mage Talent Calculator - Turtle WoW - Chronicle Wiki",
       description: "Plan and share Mage talent builds for Turtle WoW.",
     });
-    expect(routeMetadataForPathname("/turtle/explorer")).toMatchObject({
-      title: "Unit Explorer - Turtle WoW - Chronicle Wiki",
-      description: "Explore Turtle WoW creatures and spells cast for raid planning.",
-    });
   });
 
   it("returns a sensible 404 metadata object for unknown routes", () => {
@@ -108,6 +104,11 @@ describe("route page metadata", () => {
       title: "Page not found - Chronicle Wiki",
       description: "This Chronicle Wiki route does not exist yet.",
       canonicalUrl: "https://wiki.chronicleclassic.com/turtle/talents/death-knight",
+    });
+    expect(routeMetadataForPathname("/turtle/explorer")).toMatchObject({
+      title: "Page not found - Chronicle Wiki",
+      description: "This Chronicle Wiki route does not exist yet.",
+      canonicalUrl: "https://wiki.chronicleclassic.com/turtle/explorer",
     });
   });
 

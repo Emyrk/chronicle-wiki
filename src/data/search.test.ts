@@ -26,9 +26,9 @@ describe("global search tool descriptions", () => {
     });
   });
 
-  it("finds unit, spell, guide, server, class, and talent spec keywords", () => {
-    expect(globalSearchResults("turtle", "flamewaker")[0]).toMatchObject({ href: "/turtle/explorer", category: "Units" });
-    expect(globalSearchResults("turtle", "living bomb")[0]).toMatchObject({ href: "/turtle/explorer", category: "Spells" });
+  it("finds guide, server, class, and talent spec keywords without unused unit explorer results", () => {
+    expect(globalSearchResults("turtle", "flamewaker").some((entry) => entry.href === "/turtle/explorer")).toBe(false);
+    expect(globalSearchResults("turtle", "living bomb").some((entry) => entry.href === "/turtle/explorer")).toBe(false);
     expect(globalSearchResults("turtle", "dispels")[0]).toMatchObject({ href: "/turtle/guides" });
     expect(globalSearchResults("turtle", "octo")[0]).toMatchObject({ title: "Octo WoW", href: "/octo" });
     expect(globalSearchResults("turtle", "mage")[0]).toMatchObject({ title: "Mage talents", href: "/turtle/talents/mage" });
