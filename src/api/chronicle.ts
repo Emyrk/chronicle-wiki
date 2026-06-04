@@ -110,7 +110,7 @@ function normalizeTalentTreeData(data: TalentTreeJSON): TalentTreeJSON {
               ...tab,
               talents: (tab.talents ?? []).map((talent) => ({
                 ...talent,
-                name: talent.name ?? `Talent ${talent.id}`,
+                name: talent.name ?? "",
                 description: talent.description ?? talent.effect ?? (typeof talent.effects === "string" ? talent.effects : undefined),
                 rankDescriptions: talent.rankDescriptions ?? talent.rankDescription ?? (Array.isArray(talent.effects) ? talent.effects : undefined),
               })),

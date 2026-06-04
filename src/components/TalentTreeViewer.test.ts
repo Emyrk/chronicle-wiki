@@ -27,6 +27,8 @@ import {
   totalTalentPoints,
   updateTalentRank,
   isTalentBackgroundVisible,
+  isPlaceholderTalentName,
+  talentDisplayName,
   TalentTreeViewer,
 } from "./TalentTreeViewer";
 
@@ -43,12 +45,13 @@ function renderTalentTree(data: ClassTalentData, path = "/talents/test") {
   );
 }
 
-function renderTalentTreeWithCachedSpellNotes(data: ClassTalentData, path: string, spellNotes: Record<number, string>) {
+function renderTalentTreeWithCachedSpellNotes(data: ClassTalentData, path: string, spellNotes: Record<number, string | { name: string; notes: string }>) {
   const context = resolveServerContext("turtle");
   if (!context) throw new Error("missing turtle context");
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  for (const [spellId, notes] of Object.entries(spellNotes)) {
-    queryClient.setQueryData(talentTooltipSpellQueryKey(context, Number(spellId)), { id: Number(spellId), name: `Spell ${spellId}`, notes });
+  for (const [spellId, value] of Object.entries(spellNotes)) {
+    const spell = typeof value === "string" ? { name: `Spell ${spellId}`, notes: value } : value;
+    queryClient.setQueryData(talentTooltipSpellQueryKey(context, Number(spellId)), { id: Number(spellId), name: spell.name, notes: spell.notes });
   }
   return renderToStaticMarkup(
     createElement(
@@ -248,6 +251,38 @@ describe("TalentTreeViewer rank description merging", () => {
 });
 
 describe("TalentTreeViewer tooltips", () => {
+  it("maps placeholder talent names to hydrated spell names and avoids player-facing placeholder copy", () => {
+    expect(isPlaceholderTalentName("Talent 56")).toBe(true);
+    expect(talentDisplayName(talent({ id: 56, tierID: 0, columnIndex: 0 }), "Improved Heroic Strike")).toBe("Improved Heroic Strike");
+    expect(talentDisplayName(talent({ id: 56, name: "Improved Heroic Strike", tierID: 0, columnIndex: 0 }))).toBe("Improved Heroic Strike");
+    expect(talentDisplayName(talent({ id: 56, tierID: 0, columnIndex: 0 }))).toBe("Talent details loading");
+  });
+
+  it("renders cached spell names instead of placeholder talent names in tooltips and button titles", () => {
+    const placeholder = talent({
+      id: 56,
+      name: "Talent 56",
+      tierID: 0,
+      columnIndex: 0,
+      maxRank: 2,
+      spellRanks: [12282, 12663],
+      description: "Talent details unavailable.",
+    });
+    const data: ClassTalentData = {
+      id: 1,
+      name: "Warrior",
+      tabs: [{ id: 161, name: "Arms", backgroundFile: "WarriorArms", orderIndex: 0, iconTexture: "ability_warrior_savageblow", talents: [placeholder] }],
+    };
+
+    const html = renderTalentTreeWithCachedSpellNotes(data, "/talents/warrior", {
+      12282: { name: "Improved Heroic Strike", notes: "Reduces the cost of your Heroic Strike ability by 1 rage." },
+      12663: { name: "Improved Heroic Strike", notes: "Reduces the cost of your Heroic Strike ability by 2 rage." },
+    });
+
+    expect(html).toContain("Improved Heroic Strike");
+    expect(html).not.toMatch(/Talent 56/);
+  });
+
   it("renders a compact inline rank ladder for repeated numeric rank text", () => {
     const described = talent({
       id: 90,
@@ -588,6 +623,26 @@ describe("TalentTreeViewer render geometry", () => {
     expect(html).toContain("touch-pan-x");
   });
 
+  it("places talent tooltips above the trigger by default when vertical space allows", () => {
+    const position = talentTooltipPosition(
+      { left: 180, top: 300, right: 224, bottom: 344, width: 44, height: 44 },
+      { innerWidth: 800, innerHeight: 700 },
+    );
+
+    expect(position.top).toBe(68);
+    expect(position.top).toBeLessThan(300);
+  });
+
+  it("clamps above-preferred tooltips near the viewport top and horizontal edges", () => {
+    const position = talentTooltipPosition(
+      { left: 2, top: 120, right: 46, bottom: 164, width: 44, height: 44 },
+      { innerWidth: 320, innerHeight: 260 },
+    );
+
+    expect(position.top).toBeGreaterThanOrEqual(16);
+    expect(position.left).toBe(16);
+  });
+
   it("keeps touch tooltip positions inside a phone viewport", () => {
     const position = talentTooltipPosition(
       { left: 288, top: 160, right: 332, bottom: 204, width: 44, height: 44 },
@@ -668,7 +723,7 @@ describe("TalentTreeViewer render geometry", () => {
           talents: [
             talent({ id: 100, tierID: 0, columnIndex: 1, maxRank: 5 }),
             talent({ id: 101, tierID: 5, columnIndex: 2, maxRank: 1 }),
-            talent({ id: 102, tierID: 10, columnIndex: 1, maxRank: 1, prereqTalent: [101] }),
+            talent({ id: 102, name: "Heart Strike", tierID: 10, columnIndex: 1, maxRank: 1, prereqTalent: [101] }),
           ],
         },
         {
@@ -695,7 +750,7 @@ describe("TalentTreeViewer render geometry", () => {
     expect(html).toContain("grid min-w-0 gap-4 xl:grid-cols-2 2xl:grid-cols-3");
     expect(html).toContain("width:272px;height:814px");
     expect(html).toContain('viewBox="0 0 272 814"');
-    expect(html).toContain("Talent 102");
+    expect(html).toContain("Heart Strike");
   });
 });
 

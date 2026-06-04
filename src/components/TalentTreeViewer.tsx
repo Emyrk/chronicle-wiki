@@ -34,6 +34,7 @@ const TALENT_TOOLTIP_GAP = 8;
 const TALENT_TOOLTIP_ESTIMATED_HEIGHT = 224;
 const TALENT_TOOLTIP_CLASS_NAME = "pointer-events-none fixed z-[100] w-[min(18rem,calc(100vw-2rem))] max-h-[min(24rem,calc(100vh-2rem))] overflow-y-auto rounded-lg border border-amber-400/25 bg-zinc-950 p-3 text-left text-xs text-zinc-200 shadow-2xl shadow-black/60";
 const TALENT_TOOLTIP_SSR_CLASS_NAME = `${TALENT_TOOLTIP_CLASS_NAME} hidden group-hover:block group-focus-visible:block`;
+const TALENT_PLACEHOLDER_NAME_PATTERN = /^Talent \d+$/;
 
 type TalentTooltipPosition = {
   left: number;
@@ -346,6 +347,18 @@ function talentDescription(talent: TalentEntry) {
   return "Talent details unavailable.";
 }
 
+export function isPlaceholderTalentName(name: string | undefined) {
+  return TALENT_PLACEHOLDER_NAME_PATTERN.test((name ?? "").trim());
+}
+
+export function talentDisplayName(talent: Pick<TalentEntry, "name">, spellName?: string) {
+  const talentName = talent.name.trim();
+  if (talentName && !isPlaceholderTalentName(talentName)) return talentName;
+  const hydratedName = spellName?.trim();
+  if (hydratedName) return hydratedName;
+  return "Talent details loading";
+}
+
 export function talentTooltipPosition(rect: Pick<DOMRect, "left" | "top" | "right" | "bottom" | "width" | "height">, viewport: Pick<Window, "innerWidth" | "innerHeight"> = window): TalentTooltipPosition {
   const viewportWidth = viewport.innerWidth;
   const viewportHeight = viewport.innerHeight;
@@ -357,7 +370,7 @@ export function talentTooltipPosition(rect: Pick<DOMRect, "left" | "top" | "righ
   );
   const belowTop = rect.bottom + TALENT_TOOLTIP_GAP;
   const aboveTop = rect.top - TALENT_TOOLTIP_GAP - TALENT_TOOLTIP_ESTIMATED_HEIGHT;
-  const preferredTop = belowTop + TALENT_TOOLTIP_ESTIMATED_HEIGHT > viewportHeight - TALENT_TOOLTIP_MARGIN && aboveTop > TALENT_TOOLTIP_MARGIN
+  const preferredTop = aboveTop >= TALENT_TOOLTIP_MARGIN
     ? aboveTop
     : belowTop;
   const top = Math.min(Math.max(preferredTop, TALENT_TOOLTIP_MARGIN), maxTop);
@@ -462,7 +475,7 @@ function lockedTalentReasons(talent: TalentEntry, talents: TalentEntry[], ranks:
     const prereq = byId.get(prereqId);
     if (!prereq) continue;
     if ((ranks[prereq.id] ?? 0) < prereq.maxRank) {
-      reasons.push(`Requires ${prereq.name} at rank ${prereq.maxRank}/${prereq.maxRank}.`);
+      reasons.push(`Requires ${talentDisplayName(prereq)} at rank ${prereq.maxRank}/${prereq.maxRank}.`);
     }
   }
 
@@ -482,6 +495,7 @@ function TalentTooltipCard({
   id,
   className,
   position,
+  displayName,
 }: {
   talent: TalentEntry;
   rank: number;
@@ -495,6 +509,7 @@ function TalentTooltipCard({
   id: string;
   className: string;
   position?: TalentTooltipPosition;
+  displayName: string;
 }) {
   const hasRankSpecificDescription = Boolean(rankDescriptionParts || currentRankText || nextRankText);
 
@@ -505,7 +520,7 @@ function TalentTooltipCard({
       className={className}
       style={position ? { left: `${position.left}px`, top: `${position.top}px` } : undefined}
     >
-      <strong className="block text-sm text-white">{talent.name}</strong>
+      <strong className="block text-sm text-white">{displayName}</strong>
       <span className="mt-1 block font-semibold text-amber-200">Rank {rank}/{talent.maxRank}{locked ? " · Locked" : ""}</span>
       {!hasRankSpecificDescription && <span className="mt-2 block text-zinc-300">{description}</span>}
       {loadingSpellDetails && <span className="mt-2 block animate-pulse text-muted-foreground">Loading spell details…</span>}
@@ -570,13 +585,14 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
   });
   const primarySpell = currentSpellId ? currentRankQuery.data : nextRankQuery.data;
   const description = primarySpell?.notes ?? talentDescription(talent);
+  const displayName = talentDisplayName(talent, primarySpell?.name);
   const currentRankText = rank > 0 ? currentRankQuery.data?.notes ?? rankTexts[rank - 1] : undefined;
   const nextRankText = rank < talent.maxRank ? nextRankQuery.data?.notes ?? rankTexts[rank] ?? rankTexts[rank === 0 ? 0 : rank] : undefined;
   const fetchedRankTexts = rankSpellQueries.map((query, index) => query.data?.notes ?? rankTexts[index] ?? "");
   const rankDescriptionParts = mergeTalentRankDescriptions(rankDescriptionsForTooltip(rankTexts, rank, currentRankText, nextRankText, fetchedRankTexts), rank);
   const loadingSpellDetails = Boolean(tooltipPosition && primarySpellId && ((currentSpellId && currentRankQuery.isPending) || (nextSpellId && nextRankQuery.isPending) || rankSpellQueries.some((query) => query.isPending)));
   const lockReasons = locked ? lockedTalentReasons(talent, talents, ranks) : [];
-  const title = locked ? `${talent.name} locked. ${lockReasons.join(" ")}` : `${talent.name} (${rank}/${talent.maxRank})`;
+  const title = locked ? `${displayName} locked. ${lockReasons.join(" ")}` : `${displayName} (${rank}/${talent.maxRank})`;
   const prefetchTooltipSpells = () => {
     for (const spellId of talent.spellRanks) {
       if (!spellId) continue;
@@ -625,6 +641,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
       lockReasons={lockReasons}
       className={TALENT_TOOLTIP_CLASS_NAME}
       position={tooltipPosition}
+      displayName={displayName}
     />
   );
   return (
@@ -682,6 +699,7 @@ function TalentButton({ talent, rank, locked, talents, ranks, context, onChange 
           loadingSpellDetails={loadingSpellDetails}
           lockReasons={lockReasons}
           className={TALENT_TOOLTIP_SSR_CLASS_NAME}
+          displayName={displayName}
         />
       ) : tooltipPosition ? createPortal(tooltip, document.body) : null}
     </button>

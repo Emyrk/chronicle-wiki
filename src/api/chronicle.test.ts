@@ -85,6 +85,34 @@ describe("Chronicle API URLs", () => {
     expect(result.data?.classes["1"]?.tabs.map((tab) => tab.name)).toEqual(["Arms", "Fury"]);
   });
 
+  it("leaves missing remote talent names unresolved so tooltip spell names can hydrate them", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        classes: {
+          "1": {
+            tabs: [
+              {
+                id: 161,
+                name: "Arms",
+                orderIndex: 0,
+                talents: [{ id: 56, tierID: 0, columnIndex: 0, maxRank: 2, tabIndex: 0, spellRanks: [12282, 12663], iconTexture: "Ability_Rogue_Ambush" }],
+              },
+            ],
+          },
+        },
+      }),
+    } as Response);
+
+    const result = await fetchTalentTrees(context("turtle"));
+
+    expect(result.data?.classes["1"]?.tabs[0]?.talents[0]).toMatchObject({
+      name: "",
+      spellRanks: [12282, 12663],
+    });
+    expect(result.data?.classes["1"]?.tabs[0]?.talents[0]?.name).not.toMatch(/^Talent \d+$/);
+  });
+
   it("leaves spell rank hydration to async tooltip queries instead of fetching every spell with talent trees", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
