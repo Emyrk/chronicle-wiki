@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiUrl, bossSuccessRatesUrl, fetchSpell, fetchTalentTrees, fetchTalentTooltipSpell, prefetchTalentTooltipSpell, spellRecordQueryKey } from "./chronicle";
+import { apiUrl, bossSuccessRatesUrl, fetchRecentRaidLogs, fetchSpell, fetchTalentTrees, fetchTalentTooltipSpell, prefetchTalentTooltipSpell, recentRaidLogsUrl, spellRecordQueryKey } from "./chronicle";
 import { resolveServerContext } from "../data/servers";
 
 function context(slug: string) {
@@ -29,6 +29,39 @@ describe("Chronicle API URLs", () => {
     expect(bossSuccessRatesUrl(context("turtle"), "Molten Core")).toBe(
       "https://turtle.chronicleclassic.com/api/v1/rankings/success-rates?instance_name=Molten+Core",
     );
+  });
+
+  it("builds tenant-scoped recent raid log URLs with the Chronicle limit and instance name", () => {
+    expect(recentRaidLogsUrl(context("turtle"), "Molten Core")).toBe(
+      "https://turtle.chronicleclassic.com/api/v1/raidlogs/recent?limit=24&instance_name=Molten+Core",
+    );
+  });
+
+  it("fetches recent raid logs and limits the wiki surface to five raid cards", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        instances: Array.from({ length: 6 }, (_, index) => ({
+          id: `raid-${index}`,
+          slug: `raid-slug-${index}`,
+          name: "Molten Core",
+          realm_name: "Nordanaar",
+          uploader_name: "Recorder",
+          uploaded_at: "2026-05-14T03:08:31.956742Z",
+          first_encounter_time: "2026-05-13T18:11:51.062Z",
+          player_count: 25 + index,
+          boss_count: 10,
+          boss_kills: index,
+          duration_ms: 3600000 + index,
+        })),
+      }),
+    } as Response);
+
+    const raids = await fetchRecentRaidLogs(context("turtle"), "Molten Core");
+
+    expect(fetchMock).toHaveBeenCalledWith("https://turtle.chronicleclassic.com/api/v1/raidlogs/recent?limit=24&instance_name=Molten+Core");
+    expect(raids).toHaveLength(5);
+    expect(raids.map((raid) => raid.slug)).toEqual(["raid-slug-0", "raid-slug-1", "raid-slug-2", "raid-slug-3", "raid-slug-4"]);
   });
 
   it("normalizes remote talent classes with class metadata and order-sorted tabs", async () => {

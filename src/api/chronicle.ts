@@ -3,6 +3,41 @@ import { classList, type ClassTalentData, type TalentTreeJSON } from "../data/ta
 import type { ResolvedServerContext, SpellRef } from "../types";
 import { extractReferencedSpellIds, getEnglishText, resolvedSpellNotes, type WoWSpell } from "./wowdb";
 
+const RECENT_RAID_LOG_API_LIMIT = 24;
+const RECENT_RAID_LOG_CARD_LIMIT = 5;
+
+export type RecentRaidLog = {
+  id: string;
+  slug: string;
+  name: string;
+  realmName: string;
+  uploaderName: string;
+  uploadedAt: string;
+  firstEncounterTime: string;
+  playerCount: number;
+  bossCount: number;
+  bossKills: number;
+  durationMs: number;
+};
+
+type RecentRaidLogRecord = {
+  id?: string;
+  slug?: string;
+  name?: string;
+  realm_name?: string;
+  uploader_name?: string;
+  uploaded_at?: string;
+  first_encounter_time?: string;
+  player_count?: number;
+  boss_count?: number;
+  boss_kills?: number;
+  duration_ms?: number;
+};
+
+type RecentRaidLogResponse = {
+  instances?: RecentRaidLogRecord[];
+};
+
 const SPELL_CACHE_TIME = 30 * 60 * 1000;
 const REFERENCED_SPELL_FETCH_CONCURRENCY = 4;
 
@@ -22,6 +57,41 @@ export function apiUrl(context: ResolvedServerContext, path: string) {
 export function bossSuccessRatesUrl(context: ResolvedServerContext, instanceName: string) {
   const params = new URLSearchParams({ instance_name: instanceName });
   return apiUrl(context, `/api/v1/rankings/success-rates?${params.toString()}`);
+}
+
+export function recentRaidLogsUrl(context: ResolvedServerContext, instanceName: string) {
+  const params = new URLSearchParams({
+    limit: String(RECENT_RAID_LOG_API_LIMIT),
+    instance_name: instanceName,
+  });
+  return apiUrl(context, `/api/v1/raidlogs/recent?${params.toString()}`);
+}
+
+function normalizeRecentRaidLog(record: RecentRaidLogRecord): RecentRaidLog | null {
+  if (!record.id || !record.slug) return null;
+  return {
+    id: record.id,
+    slug: record.slug,
+    name: record.name ?? "Raid log",
+    realmName: record.realm_name ?? "Unknown realm",
+    uploaderName: record.uploader_name ?? "Unknown recorder",
+    uploadedAt: record.uploaded_at ?? "",
+    firstEncounterTime: record.first_encounter_time ?? record.uploaded_at ?? "",
+    playerCount: record.player_count ?? 0,
+    bossCount: record.boss_count ?? 0,
+    bossKills: record.boss_kills ?? 0,
+    durationMs: record.duration_ms ?? 0,
+  };
+}
+
+export async function fetchRecentRaidLogs(context: ResolvedServerContext, instanceName: string): Promise<RecentRaidLog[]> {
+  const response = await fetch(recentRaidLogsUrl(context, instanceName));
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const data = await response.json() as RecentRaidLogResponse;
+  return (data.instances ?? [])
+    .map(normalizeRecentRaidLog)
+    .filter((raid): raid is RecentRaidLog => Boolean(raid))
+    .slice(0, RECENT_RAID_LOG_CARD_LIMIT);
 }
 
 function normalizeTalentTreeData(data: TalentTreeJSON): TalentTreeJSON {

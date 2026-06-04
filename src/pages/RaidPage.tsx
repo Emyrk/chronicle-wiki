@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { resolveServerContext } from "@/data/servers";
 import { getRaidInstance } from "@/data/instances";
 import { resolveGuide } from "@/data/guides";
 import { formatSuccessRate, moltenCoreBossSuccessRate } from "@/data/bossSuccessRates";
-import type { SpellRef } from "@/types";
+import { fetchRecentRaidLogs, type RecentRaidLog } from "@/api/chronicle";
+import type { ResolvedServerContext, SpellRef } from "@/types";
 import { NotFoundPage } from "./NotFoundPage";
 
 export function RaidPage() {
@@ -62,15 +64,7 @@ export function RaidPage() {
             </section>
           ))}
 
-          <section id="recent-raids" className="wiki-card prose-wiki scroll-mt-24 p-4 sm:p-6">
-            <h2>Recent raids</h2>
-            <p>
-              Check recent {instance.title} raids on {context.server.shortName} Chronicle before raid night for current clears, wipes, and roster context.
-            </p>
-            <a href={`${context.chronicle.baseUrl}/raids?instance=${instance.slug}`} className="text-sm font-semibold text-primary underline">
-              Open recent {instance.title} raids
-            </a>
-          </section>
+          <RecentRaidsSection context={context} instanceTitle={instance.title} />
 
           <section id="bosses" className="wiki-card scroll-mt-24 p-4 sm:p-6" aria-labelledby="instance-boss-tabs">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -131,6 +125,125 @@ export function RaidPage() {
       </div>
     </div>
   );
+}
+
+function RecentRaidsSection({ context, instanceTitle }: { context: ResolvedServerContext; instanceTitle: string }) {
+  const { raids, status } = useRecentRaidLogs(context, instanceTitle);
+
+  return (
+    <section id="recent-raids" className="wiki-card scroll-mt-24 p-4 sm:p-6" aria-labelledby="recent-raids-title">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{context.server.shortName} raid history</p>
+          <h2 id="recent-raids-title" className="text-3xl font-bold text-white">Recent raids</h2>
+        </div>
+        <span className="wiki-pill">Latest 5</span>
+      </div>
+      <p className="mt-3 max-w-3xl text-sm text-zinc-300">
+        Recent {instanceTitle} runs from {context.server.shortName} Chronicle, useful for checking current clears, wipes, and roster context before raid night.
+      </p>
+      <RecentRaidState status={status} raids={raids} chronicleBaseUrl={context.chronicle.baseUrl} />
+    </section>
+  );
+}
+
+export function RecentRaidState({ status, raids, chronicleBaseUrl }: { status: RecentRaidStatus; raids: RecentRaidLog[]; chronicleBaseUrl: string }) {
+  if (status === "loading") {
+    return <p className="mt-4 rounded-xl border border-border/70 bg-black/25 p-4 text-sm text-zinc-300">Loading recent raid cards…</p>;
+  }
+
+  if (status === "error") {
+    return <p className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/10 p-4 text-sm text-amber-100">Recent raid cards are unavailable right now. Try again soon.</p>;
+  }
+
+  if (raids.length === 0) {
+    return <p className="mt-4 rounded-xl border border-border/70 bg-black/25 p-4 text-sm text-zinc-300">No recent raid cards found for this instance yet.</p>;
+  }
+
+  return <RecentRaidCards raids={raids} chronicleBaseUrl={chronicleBaseUrl} />;
+}
+
+export function RecentRaidCards({ raids, chronicleBaseUrl }: { raids: RecentRaidLog[]; chronicleBaseUrl: string }) {
+  return (
+    <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {raids.map((raid) => (
+        <a
+          key={raid.id}
+          data-raid-card="recent"
+          href={`${chronicleBaseUrl}/raids/${raid.slug}`}
+          className="rounded-2xl border border-border/70 bg-black/30 p-4 text-zinc-200 transition hover:border-primary/60 hover:bg-primary/10 hover:text-white"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{raid.realmName}</p>
+              <h3 className="mt-1 text-xl font-bold text-white">{raid.name}</h3>
+            </div>
+            <span className="wiki-pill">{raid.bossKills}/{raid.bossCount} bosses</span>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+            <RaidCardStat label="Players" value={`${raid.playerCount} players`} />
+            <RaidCardStat label="Duration" value={formatDuration(raid.durationMs)} />
+            <RaidCardStat label="Started" value={formatRaidDate(raid.firstEncounterTime)} />
+            <RaidCardStat label="Recorder" value={raid.uploaderName} />
+          </div>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function RaidCardStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border/50 bg-black/25 px-3 py-2">
+      <p className="text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <p className="mt-1 font-semibold text-zinc-100">{value}</p>
+    </div>
+  );
+}
+
+type RecentRaidStatus = "loading" | "loaded" | "empty" | "error";
+
+function useRecentRaidLogs(context: ResolvedServerContext, instanceTitle: string) {
+  const [raids, setRaids] = useState<RecentRaidLog[]>([]);
+  const [status, setStatus] = useState<RecentRaidStatus>("loading");
+
+  useEffect(() => {
+    let active = true;
+    setStatus("loading");
+    fetchRecentRaidLogs(context, instanceTitle)
+      .then((nextRaids) => {
+        if (!active) return;
+        setRaids(nextRaids);
+        setStatus(nextRaids.length > 0 ? "loaded" : "empty");
+      })
+      .catch(() => {
+        if (!active) return;
+        setRaids([]);
+        setStatus("error");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [context.chronicle.baseUrl, instanceTitle]);
+
+  return { raids, status };
+}
+
+function formatDuration(durationMs: number) {
+  const totalMinutes = Math.max(0, Math.round(durationMs / 60000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+}
+
+function formatRaidDate(value: string) {
+  if (!value) return "Unknown";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown";
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function mechanicsForGuide(creatures: Array<{ spells: SpellRef[] }>) {
