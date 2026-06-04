@@ -131,6 +131,8 @@ describe("ChronicleClassic visual language", () => {
     expect(serverHome).not.toContain("Unit explorer");
     expect(shell).not.toContain("Units");
     expect(shell).not.toContain("/legacy/explorer");
+    expect(shell).not.toContain(">Home</a>");
+    expect(shell).not.toContain("lucide-house");
   });
 
   it("applies the Chronicle shell to wiki-development and 404 pages without losing actions", () => {

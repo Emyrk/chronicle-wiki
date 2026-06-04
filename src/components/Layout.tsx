@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useParams } from "react-router-dom";
-import { BookOpen, ExternalLink, Home, TreePine } from "lucide-react";
+import { BookOpen, ExternalLink, TreePine } from "lucide-react";
 import { resolveServerContext } from "@/data/servers";
 import { IssueQuicklink } from "@/components/IssueQuicklink";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -18,7 +18,6 @@ export function Layout() {
   const { server, flavor } = context;
   const theme = context.branding.theme;
   const nav = [
-    { to: `/${server.slug}`, label: "Home", icon: Home },
     { to: `/${server.slug}/guides`, label: "Guides", icon: BookOpen },
     { to: `/${server.slug}/talents`, label: "Talents", icon: TreePine },
   ];
